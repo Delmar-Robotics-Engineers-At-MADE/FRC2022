@@ -6,14 +6,17 @@
 #include <frc/TimedRobot.h>
 #include <frc/drive/DifferentialDrive.h>
 #include <frc/motorcontrol/PWMSparkMax.h>
+#include "ctre/Phoenix.h"
+
+using namespace frc;
 
 /**
  * This is a demo program showing the use of the DifferentialDrive class.
  * Runs the motors with tank steering.
  */
 class Robot : public frc::TimedRobot {
-  frc::PWMSparkMax m_leftMotor{0};
-  frc::PWMSparkMax m_rightMotor{1};
+  WPI_TalonFX m_leftMotor{0};
+  WPI_TalonFX m_rightMotor{12};
   frc::DifferentialDrive m_robotDrive{m_leftMotor, m_rightMotor};
   frc::Joystick m_leftStick{0};
   frc::Joystick m_rightStick{1};
