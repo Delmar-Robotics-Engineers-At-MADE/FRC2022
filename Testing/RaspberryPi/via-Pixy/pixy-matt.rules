@@ -1,0 +1,2 @@
+# Pixy device, set permissions
+SUBSYSTEM=="usb", ATTR{product}=="Pixy", MODE="0660", GROUP="pi"
