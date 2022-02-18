@@ -12,7 +12,7 @@
 
 class Robot : public frc::TimedRobot {
   // initialize motor
-  static const int deviceID = 9;
+  static const int deviceID = 1;
   rev::CANSparkMax m_motor{deviceID, rev::CANSparkMax::MotorType::kBrushless};
 
   /**
