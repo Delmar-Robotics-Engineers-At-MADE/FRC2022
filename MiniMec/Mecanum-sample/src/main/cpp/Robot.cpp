@@ -10,6 +10,11 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/DriverStation.h>
 
+// for ball tracking
+#include <networktables/NetworkTable.h>
+#include <networktables/NetworkTableInstance.h>
+#include <networktables/NetworkTableEntry.h>
+#include <frc/controller/PIDController.h>
 
 /**
  * This is a demo program showing how to use Mecanum control with the
@@ -22,6 +27,15 @@ class Robot : public frc::TimedRobot {
     // match your robot.
     m_frontRight.SetInverted(true);
     m_rearRight.SetInverted(true);
+
+    // get network table populated by raspberry pi using pixycam
+    nt::NetworkTableInstance networkTables = nt::NetworkTableInstance::GetDefault();
+    m_pixyTable = networkTables.GetTable("PixyBlocks");
+
+    // use pid for ball tracking
+    m_pidController = new frc2::PIDController (kP, kI, kD);
+    m_pidController->SetTolerance(8, 8);  // pixy cam image coords, roughly 0 to 300
+    m_pidController->SetSetpoint(150); // center of image
 
     try{
         /***********************************************************************
@@ -50,16 +64,38 @@ class Robot : public frc::TimedRobot {
       }
   }
 
+  void TeleopInit() override {
+    m_ahrs->ZeroYaw();   // use current robot orientation as field forward
+  }
+
   void TeleopPeriodic() override {
-    /* Use the joystick X axis for lateral movement, Y axis for forward
-     * movement, and Z axis for rotation.
-     */
-    m_robotDrive.DriveCartesian(m_stick.GetY(), -m_stick.GetX(), -m_stick.GetZ(), m_ahrs->GetAngle());
 
     bool reset_yaw_button_pressed = m_stick.GetRawButton(1);
+    bool track_ball_button_pressed = m_stick.GetRawButton(2);
+
     if ( reset_yaw_button_pressed ) {
       m_ahrs->ZeroYaw();  
+
+    } else if (track_ball_button_pressed) {
+      // get ball position from pixy
+      bool ball_seen = (m_pixyTable->GetNumber("STATUS", 0) == 1);
+      if (ball_seen) {
+        double ball_x = m_pixyTable->GetNumber("X", 150); // position of ball
+        double rotate_speed = m_pidController->Calculate(ball_x);
+        // use cartesian drive as if we were driver controlled, but only rotate
+        m_robotDrive.DriveCartesian(0, 0, rotate_speed);
       }
+    } else { // no buttons pressed
+
+      /* Use the joystick X axis for lateral movement, Y axis for forward
+      * movement, and Z axis for rotation.
+      */
+      m_robotDrive.DriveCartesian(m_stick.GetY(), -m_stick.GetX(), -m_stick.GetZ(), m_ahrs->GetAngle());
+
+  }
+
+    
+
 
   }
 
@@ -81,6 +117,13 @@ class Robot : public frc::TimedRobot {
   frc::Joystick m_stick{0};
 
   AHRS *m_ahrs;
+
+  // for ball tracking
+  std::shared_ptr<nt::NetworkTable> m_pixyTable;
+  frc2::PIDController *m_pidController;
+  double kP = 0.012;
+  double kI = 0.0;
+  double kD = 0.0005;
 };
 
 #ifndef RUNNING_FRC_TESTS
