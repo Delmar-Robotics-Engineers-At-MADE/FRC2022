@@ -1,2 +1,3 @@
 # Pixy device, set permissions
+# reference: https://forum.pixycam.com/t/python-get-blocks-python-demo-py-segmentation-faultpython-get-blocks-python-demo-py-segmentation-fault/6091
 SUBSYSTEM=="usb", ATTR{product}=="Pixy", MODE="0660", GROUP="pi"
