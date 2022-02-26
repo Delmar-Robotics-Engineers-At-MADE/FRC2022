@@ -5,7 +5,7 @@
 #include <frc/Joystick.h>
 #include <frc/TimedRobot.h>
 #include <frc/drive/MecanumDrive.h>
-#include <frc/motorcontrol/VictorSP.h>
+#include <frc/motorcontrol/Talon.h>
 #include "AHRS.h"
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/DriverStation.h>
@@ -92,7 +92,7 @@ class Robot : public frc::TimedRobot {
       */
       m_robotDrive.DriveCartesian(m_stick.GetY(), -m_stick.GetX(), -m_stick.GetZ(), m_ahrs->GetAngle());
 
-  }
+    }
 
     
 
@@ -107,10 +107,10 @@ class Robot : public frc::TimedRobot {
 
   static constexpr int kJoystickChannel = 0;
 
-  frc::VictorSP m_frontLeft{kFrontLeftChannel};
-  frc::VictorSP m_rearLeft{kRearLeftChannel};
-  frc::VictorSP m_frontRight{kFrontRightChannel};
-  frc::VictorSP m_rearRight{kRearRightChannel};
+  frc::Talon m_frontLeft{kFrontLeftChannel};
+  frc::Talon m_rearLeft{kRearLeftChannel};
+  frc::Talon m_frontRight{kFrontRightChannel};
+  frc::Talon m_rearRight{kRearRightChannel};
   frc::MecanumDrive m_robotDrive{m_frontLeft, m_rearLeft, m_frontRight,
                                  m_rearRight};
 
