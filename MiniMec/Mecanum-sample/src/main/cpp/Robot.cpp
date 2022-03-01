@@ -1,130 +1,62 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
-#include <frc/Joystick.h>
-#include <frc/TimedRobot.h>
-#include <frc/drive/MecanumDrive.h>
-#include <frc/motorcontrol/Talon.h>
-#include "AHRS.h"
+#include <Robot.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/DriverStation.h>
+#include <PixyBallTracker.h>
 
-// for ball tracking
-#include <networktables/NetworkTable.h>
-#include <networktables/NetworkTableInstance.h>
-#include <networktables/NetworkTableEntry.h>
-#include <frc/controller/PIDController.h>
+const double kP = 0.012;
+const double kI = 0.0;
+const double kD = 0.0005;
 
-/**
- * This is a demo program showing how to use Mecanum control with the
- * MecanumDrive class.
- */
-class Robot : public frc::TimedRobot {
- public:
-  void RobotInit() override {
-    // Invert the right side motors. You may need to change or remove this to
-    // match your robot.
-    m_frontRight.SetInverted(true);
-    m_rearRight.SetInverted(true);
+void Robot::RobotInit() {
+  // Invert the right side motors. You may need to change or remove this to
+  // match your robot.
+  m_frontRight.SetInverted(true);
+  m_rearRight.SetInverted(true);
 
-    // get network table populated by raspberry pi using pixycam
-    nt::NetworkTableInstance networkTables = nt::NetworkTableInstance::GetDefault();
-    m_pixyTable = networkTables.GetTable("PixyBlocks");
+  mTracker = new PixyBallTracker (kP, kI, kD);
 
-    // use pid for ball tracking
-    m_pidController = new frc2::PIDController (kP, kI, kD);
-    m_pidController->SetTolerance(8, 8);  // pixy cam image coords, roughly 0 to 300
-    m_pidController->SetSetpoint(150); // center of image
+  try{
+      m_ahrs = new AHRS(frc::SPI::Port::kMXP);
 
-    try{
-        /***********************************************************************
-         * navX-MXP:
-         * - Communication via RoboRIO MXP (SPI, I2C) and USB.            
-         * - See http://navx-mxp.kauailabs.com/guidance/selecting-an-interface.
-         * 
-         * navX-Micro:
-         * - Communication via I2C (RoboRIO MXP or Onboard) and USB.
-         * - See http://navx-micro.kauailabs.com/guidance/selecting-an-interface.
-         * 
-         * VMX-pi:
-         * - Communication via USB.
-         * - See https://vmx-pi.kauailabs.com/installation/roborio-installation/
-         * 
-         * Multiple navX-model devices on a single robot are supported.
-         ************************************************************************/
-        m_ahrs = new AHRS(frc::SPI::Port::kMXP);
+    } catch (std::exception &ex) {
+      std::string what_string = ex.what();
+      std::string err_msg("Error instantiating navX MXP:  " + what_string);
+      const char *p_err_msg = err_msg.c_str();
+      FRC_ReportError(0, "{}", p_err_msg); // frc::DriverStation::ReportError(p_err_msg);
+    }
+}
 
+void Robot::TeleopInit()  {
+  m_ahrs->ZeroYaw();   // use current robot orientation as field forward
+}
 
-      } catch (std::exception &ex) {
-        std::string what_string = ex.what();
-        std::string err_msg("Error instantiating navX MXP:  " + what_string);
-        const char *p_err_msg = err_msg.c_str();
-        FRC_ReportError(0, "{}", p_err_msg); // frc::DriverStation::ReportError(p_err_msg);
-      }
-  }
+void Robot::TeleopPeriodic() {
 
-  void TeleopInit() override {
-    m_ahrs->ZeroYaw();   // use current robot orientation as field forward
-  }
+  bool reset_yaw_button_pressed = m_stick.GetRawButton(1);
+  bool track_ball_button_pressed = m_stick.GetRawButton(2);
 
-  void TeleopPeriodic() override {
+  if ( reset_yaw_button_pressed ) {
+    m_ahrs->ZeroYaw();  
 
-    bool reset_yaw_button_pressed = m_stick.GetRawButton(1);
-    bool track_ball_button_pressed = m_stick.GetRawButton(2);
-
-    if ( reset_yaw_button_pressed ) {
-      m_ahrs->ZeroYaw();  
-
-    } else if (track_ball_button_pressed) {
-      // get ball position from pixy
-      bool ball_seen = (m_pixyTable->GetNumber("STATUS", 0) == 1);
-      if (ball_seen) {
-        double ball_x = m_pixyTable->GetNumber("X", 150); // position of ball
-        double rotate_speed = m_pidController->Calculate(ball_x);
-        // use cartesian drive as if we were driver controlled, but only rotate
-        m_robotDrive.DriveCartesian(0, 0, rotate_speed);
-      }
-    } else { // no buttons pressed
-
-      /* Use the joystick X axis for lateral movement, Y axis for forward
-      * movement, and Z axis for rotation.
-      */
-      m_robotDrive.DriveCartesian(m_stick.GetY(), -m_stick.GetX(), -m_stick.GetZ(), m_ahrs->GetAngle());
-
+  } else if (track_ball_button_pressed) {
+    bool ballSeen = mTracker->BallSeen();
+    if (ballSeen) {
+      double rotateSpeed = mTracker->CalculateResponse();
+      // use cartesian drive as if we were driver controlled, but only rotate
+      m_robotDrive.DriveCartesian(0, 0, rotateSpeed);
     }
 
-    
+  } else { // no buttons pressed
 
+    /* Use the joystick X axis for lateral movement, Y axis for forward
+    * movement, and Z axis for rotation.
+    */
+    m_robotDrive.DriveCartesian(m_stick.GetY(), -m_stick.GetX(), -m_stick.GetZ(), m_ahrs->GetAngle());
 
   }
 
- private:
-  static constexpr int kFrontLeftChannel = 1; //1
-  static constexpr int kRearLeftChannel = 0; //0
-  static constexpr int kFrontRightChannel = 3; //3
-  static constexpr int kRearRightChannel = 2; //2
+}
 
-  static constexpr int kJoystickChannel = 0;
-
-  frc::Talon m_frontLeft{kFrontLeftChannel};
-  frc::Talon m_rearLeft{kRearLeftChannel};
-  frc::Talon m_frontRight{kFrontRightChannel};
-  frc::Talon m_rearRight{kRearRightChannel};
-  frc::MecanumDrive m_robotDrive{m_frontLeft, m_rearLeft, m_frontRight,
-                                 m_rearRight};
-
-  frc::Joystick m_stick{0};
-
-  AHRS *m_ahrs;
-
-  // for ball tracking
-  std::shared_ptr<nt::NetworkTable> m_pixyTable;
-  frc2::PIDController *m_pidController;
-  double kP = 0.012;
-  double kI = 0.0;
-  double kD = 0.0005;
-};
 
 #ifndef RUNNING_FRC_TESTS
 int main() {
