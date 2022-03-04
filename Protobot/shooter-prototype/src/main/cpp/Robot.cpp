@@ -16,26 +16,39 @@ class Robot : public frc::TimedRobot {
 private:
   WPI_TalonFX mPortShooter{0};  // LEADER
   WPI_TalonFX mStarShooter{15};
-  double mMotorOutPercent = 0.0;
-
+  double mMotorOutVelocity = 0.0;
+  
  public:
   void RobotInit() override {
-    frc::SmartDashboard::PutNumber("motor output percentage", mMotorOutPercent);
+    frc::SmartDashboard::PutNumber("motor output percentage", mMotorOutVelocity);
+    mStarShooter.ConfigFactoryDefault();
+    mPortShooter.ConfigFactoryDefault();
 
     // one follower and one reversed
     mStarShooter.Follow(mPortShooter);
-    mStarShooter.SetInverted(false);
-    mPortShooter.SetInverted(true);
+    mStarShooter.SetInverted(true);
+    mPortShooter.SetInverted(false);
+
+    mPortShooter.SetNeutralMode(NeutralMode::Coast);
+    mStarShooter.SetNeutralMode(NeutralMode::Coast);
+
+    mPortShooter.Config_kF(0, 0.045, 30);
+    mPortShooter.Config_kP(0, 0.009, 30);
+    mPortShooter.Config_kI(0, 0.00005, 30);
+    mPortShooter.Config_kD(0, 0.0, 30);
+
+    mPortShooter.ConfigSelectedFeedbackSensor(FeedbackDevice::IntegratedSensor, 0, 30);
     
   }
 
   void TeleopInit() override {
-    frc::SmartDashboard::PutNumber("motor output percentage", mMotorOutPercent);
+    mMotorOutVelocity = 0.0;
+    frc::SmartDashboard::PutNumber("motor output percentage", mMotorOutVelocity);
   }
 
   void TeleopPeriodic() override {
-    mMotorOutPercent = frc::SmartDashboard::GetNumber("motor output percentage", 0);
-    mPortShooter.Set(ControlMode::PercentOutput, mMotorOutPercent);
+    mMotorOutVelocity = frc::SmartDashboard::GetNumber("motor output percentage", 0);
+    mPortShooter.Set(ControlMode::Velocity, mMotorOutVelocity);
   }
 };
 
