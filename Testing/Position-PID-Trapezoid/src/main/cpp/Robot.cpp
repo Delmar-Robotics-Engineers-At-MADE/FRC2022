@@ -9,6 +9,13 @@
 #include <frc/TimedRobot.h>
 #include <frc/SmartDashboard/SmartDashboard.h>
 #include "rev/CANSparkMax.h"
+#include <frc/trajectory/TrapezoidProfile.h>
+#include <frc/controller/SimpleMotorFeedforward.h>
+#include <units/acceleration.h>
+#include <units/length.h>
+#include <units/time.h>
+#include <units/velocity.h>
+#include <units/voltage.h>
 
 class Robot : public frc::TimedRobot {
   // initialize motor
@@ -33,8 +40,19 @@ class Robot : public frc::TimedRobot {
   // motor max RPM
   const double MaxRPM = 5700;
 
+  // for trapezoidal
+  frc::TrapezoidProfile<units::meters>::Constraints m_constraints{1.75_mps, 0.75_mps_sq};
+  frc::TrapezoidProfile<units::meters>::State m_goal;
+  frc::TrapezoidProfile<units::meters>::State m_setpoint;
+
+  frc::SimpleMotorFeedforward<units::meters> m_feedforward{
+    // Note: These gains are fake, and will have to be tuned for your robot.
+    1_V, 1.5_V * 1_s / 1_m};
+
+  static constexpr units::second_t kDt = 20_ms;
+
  public:
-  void RobotInit() {
+  void RobotInit() override {
     /**
      * The RestoreFactoryDefaults method can be used to reset the configuration parameters
      * in the SPARK MAX to their factory default state. If no argument is passed, these
@@ -59,6 +77,8 @@ class Robot : public frc::TimedRobot {
     frc::SmartDashboard::PutNumber("Max Output", kMaxOutput);
     frc::SmartDashboard::PutNumber("Min Output", kMinOutput);
   }
+
+
   void TeleopPeriodic() {
     // read PID coefficients from SmartDashboard
     double p = frc::SmartDashboard::GetNumber("P Gain", 0);
@@ -83,17 +103,23 @@ class Robot : public frc::TimedRobot {
     // read setpoint from joystick and scale by max rpm
     double SetPoint = 0.0;// = MaxRPM*m_stick.GetY();
 
-    if (m_stick.GetRawButton(1)) {
-      SetPoint = 100;
-    } else if (m_stick.GetRawButton(2)) {
-      SetPoint = 500;
+    if (m_stick.GetRawButton(2)) {
+      m_goal = {5_m, 0_mps};
     } else if (m_stick.GetRawButton(3)) {
-      SetPoint = 750;
-    } else if (m_stick.GetRawButton(4)) {
-      SetPoint = 2500;
+      m_goal = {0_m, 0_mps};
     } else {
-      SetPoint = 0;
+      m_goal = {0_m, 0_mps};
     }
+
+    // Create a motion profile with the given maximum velocity and maximum
+    // acceleration constraints for the next setpoint, the desired goal, and the
+    // current setpoint.
+    frc::TrapezoidProfile<units::meters> profile{m_constraints, m_goal, m_setpoint};
+
+    // Retrieve the profiled setpoint for the next timestep. This setpoint moves
+    // toward the goal while obeying the constraints.
+    m_setpoint = profile.Calculate(kDt);
+
     /**
      * PIDController objects are commanded to a set point using the 
      * SetReference() method.
@@ -109,7 +135,11 @@ class Robot : public frc::TimedRobot {
      *  rev::ControlType::kVoltage
      */
     
-    m_pidController.SetReference(SetPoint, rev::ControlType::kVelocity);
+    // Send setpoint to motor, example is this:
+    // m_motor.SetSetpoint(ExampleSmartMotorController::PIDMode::kPosition,
+    //                     m_setpoint.position.value(),
+    //                     m_feedforward.Calculate(m_setpoint.velocity) / 12_V);
+    m_pidController.SetReference(m_setpoint.position.value(), rev::ControlType::kPosition, 0,  m_feedforward.Calculate(m_setpoint.velocity) / 12_V);
 
     frc::SmartDashboard::PutNumber("SetPoint", SetPoint);
     frc::SmartDashboard::PutNumber("ProcessVariable", m_encoder.GetVelocity());
