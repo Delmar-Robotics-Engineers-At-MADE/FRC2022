@@ -12,7 +12,7 @@
 
 class Robot : public frc::TimedRobot {
   // initialize motor
-  static const int deviceID = 9;
+  static const int deviceID = 62;
   rev::CANSparkMax m_motor{deviceID, rev::CANSparkMax::MotorType::kBrushless};
 
   /**
@@ -27,9 +27,10 @@ class Robot : public frc::TimedRobot {
 
   // PID coefficients
   double kP = 0.1, kI = 1e-4, kD = 1, kIz = 0, kFF = 0, kMaxOutput = 1, kMinOutput = -1;
+  double kRotations = 0.0;
 
  public:
-  void RobotInit() {
+  void RobotInit() override {
     /**
      * The RestoreFactoryDefaults method can be used to reset the configuration parameters
      * in the SPARK MAX to their factory default state. If no argument is passed, these
@@ -53,7 +54,11 @@ class Robot : public frc::TimedRobot {
     frc::SmartDashboard::PutNumber("Feed Forward", kFF);
     frc::SmartDashboard::PutNumber("Max Output", kMaxOutput);
     frc::SmartDashboard::PutNumber("Min Output", kMinOutput);
-    frc::SmartDashboard::PutNumber("Set Rotations", 0);
+    frc::SmartDashboard::PutNumber("Target Rotations", 0);
+    
+  }
+  void TeleopInit() override{
+    //m_encoder.SetPosition(0.0);
   }
   void TeleopPeriodic() {
     // read PID coefficients from SmartDashboard
@@ -64,7 +69,7 @@ class Robot : public frc::TimedRobot {
     double ff = frc::SmartDashboard::GetNumber("Feed Forward", 0);
     double max = frc::SmartDashboard::GetNumber("Max Output", 0);
     double min = frc::SmartDashboard::GetNumber("Min Output", 0);
-    double rotations = frc::SmartDashboard::GetNumber("Set Rotations", 0);
+    double rotations = frc::SmartDashboard::GetNumber("Target Rotations", 0);
 
     // if PID coefficients on SmartDashboard have changed, write new values to controller
     if((p != kP)) { m_pidController.SetP(p); kP = p; }
@@ -91,7 +96,11 @@ class Robot : public frc::TimedRobot {
      *  rev::ControlType::kVelocity
      *  rev::ControlType::kVoltage
      */
-    m_pidController.SetReference(rotations, rev::ControlType::kPosition);
+    if((rotations != kRotations)) {
+      m_motor.StopMotor();
+      m_pidController.SetReference(rotations, rev::ControlType::kPosition);
+      kRotations = rotations;
+    }
     
     frc::SmartDashboard::PutNumber("SetPoint", rotations);
     frc::SmartDashboard::PutNumber("ProcessVariable", m_encoder.GetPosition());
