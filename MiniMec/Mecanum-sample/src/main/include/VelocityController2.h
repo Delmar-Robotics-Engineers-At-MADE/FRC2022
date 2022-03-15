@@ -19,9 +19,9 @@ private:
 
 public:
   VelocityController2 (frc::MecanumDrive *drive); // constructor
-  double ForwardAtSpeed (units::feet_per_second_t feetPerSec);
+  double ForwardAtSpeed (units::feet_per_second_t feetPerSec, double gyroAngle);
   void SetTrapezoidGoal (units::foot_t distance, units::feet_per_second_t fps);
-  bool DriveTrapezoid(); // returns true when done
+  bool DriveTrapezoid(double gyroAngle); // returns true when done
   void StartMotionTimer();
 
 };

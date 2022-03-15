@@ -77,7 +77,7 @@ void Robot::AutonomousPeriodic() {
   // } else {
   //   mRobotDrive.DriveCartesian(0, 0, 0); // same as mRobotDrive.StopMotor(); ?
   // }
-  mVelocityController->DriveTrapezoid();
+  mVelocityController->DriveTrapezoid(mAHRS->GetAngle());
 }
 
 #ifndef RUNNING_FRC_TESTS

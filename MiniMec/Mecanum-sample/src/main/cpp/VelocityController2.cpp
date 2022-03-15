@@ -4,10 +4,10 @@
 
 static constexpr units::second_t kDt = 20_ms;
 
-double VelocityController2::ForwardAtSpeed (units::feet_per_second_t feetPerSec) {
+double VelocityController2::ForwardAtSpeed (units::feet_per_second_t feetPerSec, double gyroAngle) {
     units::feet_per_second_t conversionFactor = (units::feet_per_second_t)2.2;
     double speedInFeetPerSec = feetPerSec/conversionFactor;
-    mRobotDrive->DriveCartesian(-speedInFeetPerSec, 0, 0);
+    mRobotDrive->DriveCartesian(-speedInFeetPerSec, 0, 0, gyroAngle);
 }
 
 VelocityController2::VelocityController2 (frc::MecanumDrive *drive) { // constructor
@@ -20,9 +20,9 @@ void VelocityController2::SetTrapezoidGoal (units::foot_t distance, units::feet_
   mProfile = new frc::TrapezoidProfile<units::feet> (mConstraints, mGoal, mInitialState);
 }
 
-bool VelocityController2::DriveTrapezoid () {
+bool VelocityController2::DriveTrapezoid (double gyroAngle) {
   frc::TrapezoidProfile<units::length::feet>::State setpoint = mProfile->Calculate(mTimer.Get()); 
-  ForwardAtSpeed(setpoint.velocity);
+  ForwardAtSpeed(setpoint.velocity, gyroAngle);
   // std::cout << "v:" << (double)setpoint.velocity << "  x" << (double)setpoint.position << std::endl;
   return mProfile->IsFinished(mTimer.Get());
 }
