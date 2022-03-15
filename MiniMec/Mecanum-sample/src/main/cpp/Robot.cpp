@@ -28,11 +28,13 @@ void Robot::RobotInit() {
 void Robot::DoOnceInit()  {
   if (!mDoOnceInited) {
     mDoOnceInited = true;
+
+    mAHRS->ZeroYaw();   // use current robot orientation as field forward
     }  
 }
 
 void Robot::RepeatableInit() {
-  mAHRS->ZeroYaw();   // use current robot orientation as field forward
+  
 }
 
 void Robot::TeleopInit() {

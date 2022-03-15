@@ -6,6 +6,7 @@
 #include <units/acceleration.h>
 #include <frc/trajectory/TrapezoidProfile.h>
 #include "AHRS.h"
+#include <frc/controller/PIDController.h>
 
 
 class VelocityController2 {
@@ -20,7 +21,8 @@ private:
   frc::TrapezoidProfile<units::feet>::State mGoal;
   frc::TrapezoidProfile<units::feet>::State mInitialState;
   frc::TrapezoidProfile<units::feet> *mProfile;
-  frc::Timer mTimer;
+  frc::Timer mTimer;  
+  frc2::PIDController *mPIDControllerGyro; // for orienting robot with gyro
 
 public:
   VelocityController2 (frc::MecanumDrive *drive, AHRS *gyro); // constructor
@@ -28,6 +30,9 @@ public:
   void SetTrapezoidGoal (units::foot_t distance, units::feet_per_second_t fps);
   bool DriveTrapezoid(); // returns true when done
   void StartMotionTimer();
+  void StopDriving();
+  bool TurnRight (double degrees);
+  bool TurnStraight ();
 
 };
 

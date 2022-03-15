@@ -8,6 +8,7 @@ AutonomousController::AutonomousController (VelocityController2 *vcontroller) { 
   mChooser.SetDefaultOption(kAutoNameDriveTurnAround, kAutoNameDriveTurnAround);
   mChooser.AddOption(kAutoNameDriveTurnAround, kAutoNameDriveTurnAround);
   mChooser.AddOption(kAutoNameDriveOnly, kAutoNameDriveOnly);
+  mChooser.AddOption(kAutoNameTurnOnly, kAutoNameTurnOnly);
   mChooser.AddOption(kAutoNameJustInit, kAutoNameJustInit);
 
   mChooserOptionsDistance.SetDefaultOption(kAutoOption2Feet,kAutoOption2Feet);
@@ -25,6 +26,7 @@ AutonomousController::AutonomousController (VelocityController2 *vcontroller) { 
 }
 
 void AutonomousController::AutonomousInit() {
+  frc::SmartDashboard::PutBoolean("Auto Complete", false);
   mAutoSelected = mChooser.GetSelected();
   mAutoSelectedOptionsDistance = mChooserOptionsDistance.GetSelected();
   mAutoSelectedOptionsWait = mChooserOptionsWait.GetSelected();
@@ -32,6 +34,8 @@ void AutonomousController::AutonomousInit() {
       frc::SmartDashboard::PutBoolean("Auto Does Something", true);
       mVelocityController->SetTrapezoidGoal(5.0_ft, 0_fps);
       mVelocityController->StartMotionTimer();
+  } else if (mAutoSelected == kAutoNameTurnOnly) {
+      frc::SmartDashboard::PutBoolean("Auto Does Something", true);
   } else if (mAutoSelected == kAutoNameJustInit) {
       frc::SmartDashboard::PutBoolean("Auto Does Something", false);
   } else {
@@ -40,7 +44,50 @@ void AutonomousController::AutonomousInit() {
 }
 
 void AutonomousController::AutonomousPeriodic() {
+  bool turningDone = false; bool drivingDone = false;
   if (mAutoSelected == kAutoNameDriveTurnAround) {
-      mVelocityController->DriveTrapezoid();
+    switch (mdtsAutoState) {
+      case kdtsBegin:
+        mdtsAutoState = kdtsDriving;
+        break;
+      case kdtsDriving:
+        drivingDone = mVelocityController->DriveTrapezoid();
+        if (drivingDone) {mdtsAutoState = kdtsTurning;}
+        break;
+      case kdtsTurning:
+        turningDone = mVelocityController->TurnRight(180);
+        if (turningDone) {
+          frc::SmartDashboard::PutBoolean("Auto Complete", true);
+          mdtsAutoState = kdtsCompleted;
+          }
+        break;
+      case kdtsCompleted:
+        mVelocityController->StopDriving();
+        break;    
+      case kdtsUnknownState:
+      default:
+        frc::SmartDashboard::PutBoolean("Auto Does Something", false);
+        break;
+    }
+  } else if (mAutoSelected == kAutoNameTurnOnly) {
+    switch (mtosAutoState) {
+      case ktosBegin:
+        mtosAutoState = ktosTurning;
+        break;
+      case ktosTurning:
+        turningDone = mVelocityController->TurnRight(90);
+        if (turningDone) {
+          frc::SmartDashboard::PutBoolean("Auto Complete", true);
+          mtosAutoState = ktosCompleted;
+          }
+        break;
+      case ktosCompleted:
+        mVelocityController->StopDriving();
+        break;
+      case ktosUnknownState:
+      default:
+        frc::SmartDashboard::PutBoolean("Auto Does Something", false);
+        break;
+    }
   }
 }

@@ -4,6 +4,10 @@
 
 static constexpr units::second_t kDt = 20_ms;
 
+const static double kPtunedGyro = 0.02;
+const static double kItunedGyro = 0.0;
+const static double kDtunedGyro = 0.0;
+
 double VelocityController2::ForwardAtSpeed (units::feet_per_second_t feetPerSec, double gyroAngle) {
     units::feet_per_second_t conversionFactor = (units::feet_per_second_t)2.2;
     double speedInFeetPerSec = feetPerSec/conversionFactor;
@@ -13,6 +17,8 @@ double VelocityController2::ForwardAtSpeed (units::feet_per_second_t feetPerSec,
 VelocityController2::VelocityController2 (frc::MecanumDrive *drive, AHRS *gyro) { // constructor
   mRobotDrive = drive;
   mAHRS = gyro;
+  mPIDControllerGyro = new frc2::PIDController (kPtunedGyro, kItunedGyro, kDtunedGyro);
+  mPIDControllerGyro->SetTolerance(8, 8);  // within 8 degrees of direction is considered on set point
 }
 
 void VelocityController2::SetTrapezoidGoal (units::foot_t distance, units::feet_per_second_t fps) {
@@ -31,4 +37,25 @@ bool VelocityController2::DriveTrapezoid () {
 void VelocityController2::StartMotionTimer() {
   mTimer.Reset();
   mTimer.Start();
+}
+
+bool VelocityController2::TurnRight (double degrees){
+  // offset everything 180 deg. to avoid discontinuity at 0/360
+  mPIDControllerGyro->SetSetpoint(degrees + 180.0);
+  double rotateRate = mPIDControllerGyro->Calculate(mAHRS->GetAngle() + 180.0);
+  mRobotDrive->DriveCartesian(0, 0, -rotateRate, mAHRS->GetAngle());
+  return mPIDControllerGyro->AtSetpoint();
+}
+
+bool VelocityController2::TurnStraight (){
+  // offset everything 180 deg. to avoid discontinuity at 0/360
+  // mPIDControllerGyro->SetSetpoint(180.0);
+  // double rotateRate = mPIDControllerGyro->Calculate(mAHRS->GetAngle() + 180.0);
+  // mRobotDrive->DriveCartesian(0, 0, 0, rotateRate);
+  // return mPIDControllerGyro->AtSetpoint();
+  TurnRight(0);
+}
+
+void VelocityController2::StopDriving() {
+  mRobotDrive->DriveCartesian(0, 0, 0);
 }
