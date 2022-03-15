@@ -4,23 +4,35 @@
 #include <frc/Joystick.h>
 #include "AHRS.h"
 #include <PixyBallTracker.h>
+#include <VelocityController2.h>
 
 class Robot : public frc::TimedRobot {
 public:
   void RobotInit() override;
   void TeleopInit() override;
   void TeleopPeriodic() override;
+  void AutonomousInit() override;
+  void AutonomousPeriodic() override;
 
 private:
-  frc::Talon m_frontLeft{1};
-  frc::Talon m_rearLeft{0};
-  frc::Talon m_frontRight{3};
-  frc::Talon m_rearRight{2};
-  frc::MecanumDrive m_robotDrive{m_frontLeft, m_rearLeft, m_frontRight, m_rearRight};
+  frc::Talon mFrontLeft{1};
+  frc::Talon mRearLeft{0};
+  frc::Talon mFrontRight{3};
+  frc::Talon mRearRight{2};
+  frc::MecanumDrive mRobotDrive{mFrontLeft, mRearLeft, mFrontRight, mRearRight};
 
-  frc::Joystick m_stick{0};
+  frc::Joystick mStick{0};
 
-  AHRS *m_ahrs;
+  AHRS *mAHRS;
 
   PixyBallTracker *mTracker;
+
+  frc::Timer mAutonomousTimer;
+
+  VelocityController2 *mVelocityController;
+
+  bool mDoOnceInited = false;
+
+  void DoOnceInit();
+  void RepeatableInit();
 };
