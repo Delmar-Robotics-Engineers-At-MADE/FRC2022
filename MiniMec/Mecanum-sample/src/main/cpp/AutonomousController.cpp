@@ -47,51 +47,66 @@ void AutonomousController::AutonomousInit() {
   std::cout << "auto init: " << mAutoSelected << std::endl;
 }
 
-void AutonomousController::AutonomousPeriodic() {
+void AutonomousController::DriveTurnAround() {
   bool turningDone = false; bool drivingDone = false;
+  switch (mdtsAutoState) {
+    case kdtsBegin:
+      mdtsAutoState = kdtsDriving;
+      break;
+    case kdtsDriving:
+      drivingDone = mVelocityController->DriveTrapezoid();
+      if (drivingDone) {mdtsAutoState = kdtsStraightening;}
+      break;
+    case kdtsStraightening:
+      turningDone = mVelocityController->TurnRight(0);
+      if (turningDone) { mdtsAutoState = kdtsTurning; }
+      break;
+    case kdtsTurning:
+      turningDone = mVelocityController->TurnRight(180);
+      if (turningDone) {
+        frc::SmartDashboard::PutBoolean("Auto Complete", true);
+        mdtsAutoState = kdtsCompleted;
+        }
+      break;
+    case kdtsCompleted:
+      mVelocityController->StopDriving();
+      break;    
+    case kdtsUnknownState:
+    default:
+      frc::SmartDashboard::PutBoolean("Auto Does Something", false);
+      break;
+  }
+}
+
+void AutonomousController::TurnOnly() {
+  bool turningDone = false;
+  switch (mtosAutoState) {
+    case ktosBegin:
+      mtosAutoState = ktosTurning;
+      break;
+    case ktosTurning:
+      turningDone = mVelocityController->TurnRight(90);
+      if (turningDone) {
+        frc::SmartDashboard::PutBoolean("Auto Complete", true);
+        mtosAutoState = ktosCompleted;
+        }
+      break;
+    case ktosCompleted:
+      mVelocityController->StopDriving();
+      break;
+    case ktosUnknownState:
+    default:
+      frc::SmartDashboard::PutBoolean("Auto Does Something", false);
+      break;
+  }
+}
+
+void AutonomousController::AutonomousPeriodic() {
   if (mAutoSelected == kAutoNameDriveTurnAround) {
-    switch (mdtsAutoState) {
-      case kdtsBegin:
-        mdtsAutoState = kdtsDriving;
-        break;
-      case kdtsDriving:
-        drivingDone = mVelocityController->DriveTrapezoid();
-        if (drivingDone) {mdtsAutoState = kdtsTurning;}
-        break;
-      case kdtsTurning:
-        turningDone = mVelocityController->TurnRight(180);
-        if (turningDone) {
-          frc::SmartDashboard::PutBoolean("Auto Complete", true);
-          mdtsAutoState = kdtsCompleted;
-          }
-        break;
-      case kdtsCompleted:
-        mVelocityController->StopDriving();
-        break;    
-      case kdtsUnknownState:
-      default:
-        frc::SmartDashboard::PutBoolean("Auto Does Something", false);
-        break;
-    }
+    DriveTurnAround();
   } else if (mAutoSelected == kAutoNameTurnOnly) {
-    switch (mtosAutoState) {
-      case ktosBegin:
-        mtosAutoState = ktosTurning;
-        break;
-      case ktosTurning:
-        turningDone = mVelocityController->TurnRight(90);
-        if (turningDone) {
-          frc::SmartDashboard::PutBoolean("Auto Complete", true);
-          mtosAutoState = ktosCompleted;
-          }
-        break;
-      case ktosCompleted:
-        mVelocityController->StopDriving();
-        break;
-      case ktosUnknownState:
-      default:
-        frc::SmartDashboard::PutBoolean("Auto Does Something", false);
-        break;
-    }
+    TurnOnly();
+  } else {
+    mVelocityController->StopDriving();
   }
 }

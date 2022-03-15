@@ -8,6 +8,7 @@ enum DriveTurnStates {
 		kdtsUnknownState = 0,
     kdtsBegin,
 		kdtsDriving,
+    kdtsStraightening,
 		kdtsTurning,
 		kdtsCompleted
 	};
@@ -44,6 +45,9 @@ private:
   VelocityController2 *mVelocityController;
   DriveTurnStates mdtsAutoState = kdtsUnknownState; 
   TurnOnlyStates mtosAutoState = ktosUnknownState; 
+
+  void DriveTurnAround();
+  void TurnOnly();
 
 };
 
