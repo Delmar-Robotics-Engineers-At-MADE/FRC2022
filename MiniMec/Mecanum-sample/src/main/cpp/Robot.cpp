@@ -1,7 +1,6 @@
 #include <Robot.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/DriverStation.h>
-#include <PixyBallTracker.h>
 
 const double kP = 0.012;
 const double kI = 0.0;
@@ -35,16 +34,11 @@ void Robot::TeleopPeriodic() {
   bool reset_yaw_button_pressed = m_stick.GetRawButton(1);
   bool track_ball_button_pressed = m_stick.GetRawButton(2);
 
-  if ( reset_yaw_button_pressed ) {
-    m_ahrs->ZeroYaw();  
-
-  } else if (track_ball_button_pressed) {
-    bool ballSeen = mTracker->BallSeen();
-    if (ballSeen) {
+  if (track_ball_button_pressed && mTracker->BallSeen()) { 
       double rotateSpeed = mTracker->CalculateResponse();
       // use cartesian drive as if we were driver controlled, but only rotate
       m_robotDrive.DriveCartesian(0, 0, rotateSpeed);
-    }
+    
 
   } else { // no buttons pressed
 
