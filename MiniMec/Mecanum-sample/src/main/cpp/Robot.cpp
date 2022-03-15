@@ -67,8 +67,6 @@ void Robot::TeleopPeriodic() {
 void Robot::AutonomousInit() {
   DoOnceInit();
   RepeatableInit();
-  // mAutonomousTimer.Reset();
-  // mAutonomousTimer.Start();
   mAutoController->AutonomousInit();
 }
 

@@ -1,5 +1,6 @@
 #include <AutonomousController.h>
 #include <frc/smartdashboard/SmartDashboard.h>
+#include <iostream>
 
 AutonomousController::AutonomousController (VelocityController2 *vcontroller) { // constructor
 
@@ -41,6 +42,9 @@ void AutonomousController::AutonomousInit() {
   } else {
       frc::SmartDashboard::PutBoolean("Auto Does Something", false);
   }
+  mdtsAutoState = kdtsBegin; 
+  mtosAutoState = ktosBegin; 
+  std::cout << "auto init: " << mAutoSelected << std::endl;
 }
 
 void AutonomousController::AutonomousPeriodic() {

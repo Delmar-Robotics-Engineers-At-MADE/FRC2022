@@ -42,8 +42,8 @@ private:
   std::string mAutoSelectedOptionsWait;
 
   VelocityController2 *mVelocityController;
-  DriveTurnStates mdtsAutoState = kdtsBegin; 
-  TurnOnlyStates mtosAutoState = ktosBegin; 
+  DriveTurnStates mdtsAutoState = kdtsUnknownState; 
+  TurnOnlyStates mtosAutoState = ktosUnknownState; 
 
 };
 

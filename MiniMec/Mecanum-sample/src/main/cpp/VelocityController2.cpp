@@ -1,6 +1,6 @@
 #include <VelocityController2.h>
 #include <algorithm>
-// #include <iostream>
+#include <iostream>
 
 static constexpr units::second_t kDt = 20_ms;
 
@@ -30,7 +30,7 @@ void VelocityController2::SetTrapezoidGoal (units::foot_t distance, units::feet_
 bool VelocityController2::DriveTrapezoid () {
   frc::TrapezoidProfile<units::length::feet>::State setpoint = mProfile->Calculate(mTimer.Get()); 
   ForwardAtSpeed(setpoint.velocity, mAHRS->GetAngle());
-  // std::cout << "v:" << (double)setpoint.velocity << "  x" << (double)setpoint.position << std::endl;
+  std::cout << "v:" << (double)setpoint.velocity << "  x" << (double)setpoint.position << std::endl;
   return mProfile->IsFinished(mTimer.Get());
 }
 
