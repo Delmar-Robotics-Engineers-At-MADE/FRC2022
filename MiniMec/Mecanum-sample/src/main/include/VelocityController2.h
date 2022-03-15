@@ -1,7 +1,11 @@
+#ifndef VELOCITYCONTROLLER
+#define VELOCITYCONTROLLER
+
 #include <frc/drive/MecanumDrive.h>
 #include <units/velocity.h>
 #include <units/acceleration.h>
 #include <frc/trajectory/TrapezoidProfile.h>
+#include "AHRS.h"
 
 
 class VelocityController2 {
@@ -11,6 +15,7 @@ class VelocityController2 {
 
 private:
   frc::MecanumDrive *mRobotDrive;
+  AHRS *mAHRS;
   frc::TrapezoidProfile<units::feet>::Constraints mConstraints{2.5_fps, 1_fps_sq};
   frc::TrapezoidProfile<units::feet>::State mGoal;
   frc::TrapezoidProfile<units::feet>::State mInitialState;
@@ -18,10 +23,12 @@ private:
   frc::Timer mTimer;
 
 public:
-  VelocityController2 (frc::MecanumDrive *drive); // constructor
+  VelocityController2 (frc::MecanumDrive *drive, AHRS *gyro); // constructor
   double ForwardAtSpeed (units::feet_per_second_t feetPerSec, double gyroAngle);
   void SetTrapezoidGoal (units::foot_t distance, units::feet_per_second_t fps);
-  bool DriveTrapezoid(double gyroAngle); // returns true when done
+  bool DriveTrapezoid(); // returns true when done
   void StartMotionTimer();
 
 };
+
+#endif

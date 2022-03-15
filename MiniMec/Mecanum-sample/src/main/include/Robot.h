@@ -1,10 +1,13 @@
+
+
 #include <frc/TimedRobot.h>
 #include <frc/drive/MecanumDrive.h>
 #include <frc/motorcontrol/Talon.h>
 #include <frc/Joystick.h>
 #include "AHRS.h"
 #include <PixyBallTracker.h>
-#include <VelocityController2.h>
+#include <VelocityController.h>
+#include <AutonomousController.h>
 
 class Robot : public frc::TimedRobot {
 public:
@@ -27,9 +30,10 @@ private:
 
   PixyBallTracker *mTracker;
 
-  frc::Timer mAutonomousTimer;
-
   VelocityController2 *mVelocityController;
+  AutonomousController *mAutoController;
+
+  // frc::Timer mAutonomousTimer;
 
   bool mDoOnceInited = false;
 

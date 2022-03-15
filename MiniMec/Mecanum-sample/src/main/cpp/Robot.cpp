@@ -10,9 +10,6 @@ void Robot::RobotInit() {
   mFrontRight.SetInverted(true);
   mRearRight.SetInverted(true);
 
-  mTracker = new PixyBallTracker (kP, kI, kD);
-  mVelocityController = new VelocityController2(&mRobotDrive);
-
   try{
       mAHRS = new AHRS(frc::SPI::Port::kMXP);
 
@@ -22,6 +19,10 @@ void Robot::RobotInit() {
       const char *p_err_msg = err_msg.c_str();
       FRC_ReportError(0, "{}", p_err_msg); // frc::DriverStation::ReportError(p_err_msg);
     }
+
+  mTracker = new PixyBallTracker (kP, kI, kD);
+  mVelocityController = new VelocityController2(&mRobotDrive, mAHRS);
+  mAutoController = new AutonomousController(mVelocityController);
 }
 
 void Robot::DoOnceInit()  {
@@ -64,10 +65,9 @@ void Robot::TeleopPeriodic() {
 void Robot::AutonomousInit() {
   DoOnceInit();
   RepeatableInit();
-  mAutonomousTimer.Reset();
-  mAutonomousTimer.Start();
-  mVelocityController->SetTrapezoidGoal(5.0_ft, 0_fps);
-  mVelocityController->StartMotionTimer();
+  // mAutonomousTimer.Reset();
+  // mAutonomousTimer.Start();
+  mAutoController->AutonomousInit();
 }
 
 void Robot::AutonomousPeriodic() {
@@ -77,7 +77,7 @@ void Robot::AutonomousPeriodic() {
   // } else {
   //   mRobotDrive.DriveCartesian(0, 0, 0); // same as mRobotDrive.StopMotor(); ?
   // }
-  mVelocityController->DriveTrapezoid(mAHRS->GetAngle());
+  mAutoController->AutonomousPeriodic();
 }
 
 #ifndef RUNNING_FRC_TESTS
