@@ -6,3 +6,5 @@ Testing/unused/
 Testing/Samples-from-2022/Falcon/C++ General/VelocityClosedLoop/.gradle/
 Testing/Samples-from-2022/Falcon/C++ General/VelocityClosedLoop/build/exe/frcUserProgram/linuxathena/debug/frcUserProgram
 Testing/Samples-from-2022/Falcon/C++ General/VelocityClosedLoop/build/
+Celestial/TeleopAndAuto/doc
+MiniMec/Mecanum-sample/doc
