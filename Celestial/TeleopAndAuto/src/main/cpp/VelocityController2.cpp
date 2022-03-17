@@ -4,12 +4,12 @@
 
 static constexpr units::second_t kDt = 20_ms;
 
-const static double kPtunedGyro = 0.02;
+const static double kPtunedGyro = 0.009;
 const static double kItunedGyro = 0.0;
 const static double kDtunedGyro = 0.0;
 
 double VelocityController2::ForwardAtSpeed (units::feet_per_second_t feetPerSec, double gyroAngle) {
-    units::feet_per_second_t conversionFactor = (units::feet_per_second_t)2.2;
+    units::feet_per_second_t conversionFactor = (units::feet_per_second_t)4.0;
     double speedInFeetPerSec = feetPerSec/conversionFactor;
     mRobotDrive->DriveCartesian(-speedInFeetPerSec, 0, 0, gyroAngle);
 }
@@ -30,7 +30,7 @@ void VelocityController2::SetTrapezoidGoal (units::foot_t distance, units::feet_
 bool VelocityController2::DriveTrapezoid () {
   frc::TrapezoidProfile<units::length::feet>::State setpoint = mProfile->Calculate(mTimer.Get()); 
   ForwardAtSpeed(setpoint.velocity, mAHRS->GetAngle());
-  std::cout << "v:" << (double)setpoint.velocity << "  x" << (double)setpoint.position << std::endl;
+  //std::cout << "v:" << (double)setpoint.velocity << "  x" << (double)setpoint.position << std::endl;
   return mProfile->IsFinished(mTimer.Get());
 }
 
