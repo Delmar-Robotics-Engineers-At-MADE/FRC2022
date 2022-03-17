@@ -11,3 +11,5 @@ MiniMec/Mecanum-sample/doc
 Celestial/Mecanum-sample/.gradle/
 *.json
 Celestial/Mecanum-sample/build/
+Protobot/PositionClosedLoop/.gradle/
+Protobot/PositionClosedLoop/build/
