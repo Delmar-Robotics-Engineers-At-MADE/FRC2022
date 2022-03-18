@@ -1,4 +1,5 @@
 #include <Climber.h>
+#include <iostream>
 
 enum Constants {
   kTimeoutMs = 30
@@ -27,6 +28,8 @@ void Climber::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
       mClimberStar.Set(ControlMode::PercentOutput, 0);
       break;
   }
+  
+  std::cout << "pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
 
   // bool middleBarButtonPressed = copilot->GetRawButton(16);
   // bool lowBarButtonPressed = copilot->GetRawButton(13);
@@ -74,3 +77,6 @@ void Climber::RobotInit(){
 
 }
 
+void Climber::DoOnceInit() {
+  mClimberStar.SetSelectedSensorPosition (0.0 , 0);
+}

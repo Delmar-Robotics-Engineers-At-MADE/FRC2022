@@ -6,6 +6,7 @@ public:
 
   void TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot);
   void RobotInit();
+  void DoOnceInit();
 
 private:
   // WPI_TalonSRX mClimberPort{3};
