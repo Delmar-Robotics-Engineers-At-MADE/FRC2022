@@ -7,7 +7,7 @@
 #include <frc/trajectory/TrapezoidProfile.h>
 #include "AHRS.h"
 #include <frc/controller/PIDController.h>
-
+#include <frc/Joystick.h>
 
 class VelocityController2 {
 
@@ -33,6 +33,7 @@ public:
   void StopDriving();
   bool TurnRight (double degrees);
   bool TurnStraight ();
+  void TelopPeriodic (frc::Joystick pilot, frc::Joystick copilot);
 
 };
 

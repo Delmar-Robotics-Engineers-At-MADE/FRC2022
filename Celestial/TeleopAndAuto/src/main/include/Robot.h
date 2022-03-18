@@ -6,8 +6,8 @@
 #include <frc/Joystick.h>
 #include "AHRS.h"
 #include <PixyBallTracker.h>
-#include <VelocityController.h>
 #include <AutonomousController.h>
+#include <Climber.h>
 
 class Robot : public frc::TimedRobot {
 public:
@@ -24,7 +24,8 @@ private:
   frc::Talon mRearRight{2};
   frc::MecanumDrive mRobotDrive{mFrontLeft, mRearLeft, mFrontRight, mRearRight};
 
-  frc::Joystick mStick{0};
+  frc::Joystick mPilot{0};
+  frc::Joystick mCopilot{1};
 
   AHRS *mAHRS;
 
@@ -32,6 +33,7 @@ private:
 
   VelocityController2 *mVelocityController;
   AutonomousController *mAutoController;
+  Climber mClimber;
 
   // frc::Timer mAutonomousTimer;
 

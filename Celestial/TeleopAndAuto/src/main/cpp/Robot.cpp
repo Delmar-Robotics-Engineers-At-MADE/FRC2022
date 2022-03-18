@@ -23,6 +23,7 @@ void Robot::RobotInit() {
   mTracker = new PixyBallTracker (kP, kI, kD);
   mVelocityController = new VelocityController2(&mRobotDrive, mAHRS);
   mAutoController = new AutonomousController(mVelocityController);
+  mClimber.RobotInit();
 }
 
 void Robot::DoOnceInit()  {
@@ -44,8 +45,8 @@ void Robot::TeleopInit() {
 
 void Robot::TeleopPeriodic() {
 
-  bool reset_yaw_button_pressed = mStick.GetRawButton(1);
-  bool track_ball_button_pressed = mStick.GetRawButton(2);
+  bool reset_yaw_button_pressed = mPilot.GetRawButton(1);
+  bool track_ball_button_pressed = mPilot.GetRawButton(2);
 
   if (track_ball_button_pressed && mTracker->BallSeen()) { 
       double rotateSpeed = mTracker->CalculateResponse();
@@ -58,9 +59,11 @@ void Robot::TeleopPeriodic() {
     /* Use the joystick X axis for lateral movement, Y axis for forward
     * movement, and Z axis for rotation.
     */
-    mRobotDrive.DriveCartesian(mStick.GetY(), -mStick.GetX(), -mStick.GetZ(), mAHRS->GetAngle());
+    mRobotDrive.DriveCartesian(mPilot.GetY(), -mPilot.GetX(), -mPilot.GetZ(), mAHRS->GetAngle());
 
   }
+
+  mClimber.TelopPeriodic(&mPilot, &mCopilot);
 
 }
 
