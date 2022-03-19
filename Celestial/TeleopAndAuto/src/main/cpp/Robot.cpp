@@ -29,7 +29,7 @@ void Robot::RobotInit() {
 void Robot::DoOnceInit()  {
   if (!mDoOnceInited) {
     mDoOnceInited = true;
-
+    mClimber.DoOnceInit();
     mAHRS->ZeroYaw();   // use current robot orientation as field forward
     }  
 }

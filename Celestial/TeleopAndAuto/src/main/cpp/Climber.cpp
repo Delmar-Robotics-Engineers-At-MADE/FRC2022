@@ -10,26 +10,36 @@ const double kClimberPosRetracted = 20;
 
 void Climber::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
 
+
   int povPad = copilot->GetPOV();
 
-  switch(povPad) {
-    case 0:
-      mClimberStar.Set(ControlMode::Position, kClimberPosMiddle);
-      break;
-    case 90:
-    case 270:
-      mClimberStar.Set(ControlMode::Position, kClimberPosLow);
-      break;
-    case 180:
-      mClimberStar.Set(ControlMode::Position, kClimberPosRetracted);
-      break;
-    default:
-      // nothing pressed, stop motors
-      mClimberStar.Set(ControlMode::PercentOutput, 0);
-      break;
+  // TODO: untested
+  if (true == smartClimber) {
+    switch(povPad) {
+      case 0:
+        mClimberStar.Set(ControlMode::Position, kClimberPosMiddle);
+        break;
+      case 90:
+      case 270:
+        mClimberStar.Set(ControlMode::Position, kClimberPosLow);
+        break;
+      case 180:
+        mClimberStar.Set(ControlMode::Position, kClimberPosRetracted);
+        break;
+      default:
+        // nothing pressed, stop motors
+        mClimberStar.Set(ControlMode::PercentOutput, 0);
+        break;
+    }
+  } else {
+
   }
+
+  // TODO: add code to check home sensor position and re-enable smart
+  // control if moved manually back to home.
   
-  std::cout << "pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
+  //std::cout << "pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
+  
 
   // bool middleBarButtonPressed = copilot->GetRawButton(16);
   // bool lowBarButtonPressed = copilot->GetRawButton(13);
@@ -79,4 +89,12 @@ void Climber::RobotInit(){
 
 void Climber::DoOnceInit() {
   mClimberStar.SetSelectedSensorPosition (0.0 , 0);
+
+  // TODO: This does not work correctly yet
+  if (portLimit.Get()) {
+    frc::SmartDashboard::PutBoolean("Port Homed", false);
+  } else {
+    frc::SmartDashboard::PutBoolean("Port Homed", true);
+    smartClimber = true;
+  }
 }
