@@ -4,14 +4,16 @@
 enum Constants {
   kTimeoutMs = 30
 };
-const double kClimberPosMiddle = 500;
-const double kClimberPosLow = 200;
+const double kClimberPosMiddle = 100000;
+const double kClimberPosLow = 50000;
 const double kClimberPosRetracted = 20;
 
 void Climber::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
 
 
   int povPad = copilot->GetPOV();
+  double target = 0;
+  std::string msg;
 
   // TODO: untested
   if (true == smartClimber) {
@@ -38,8 +40,9 @@ void Climber::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
   // TODO: add code to check home sensor position and re-enable smart
   // control if moved manually back to home.
   
-  //std::cout << "pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
-  
+  if (mClimberStar.GetControlMode() == ControlMode::Position) { std::cout << "Position "; }
+  std::cout << "target: " << target << " -- ";
+  std::cout << "pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
 
   // bool middleBarButtonPressed = copilot->GetRawButton(16);
   // bool lowBarButtonPressed = copilot->GetRawButton(13);
@@ -79,16 +82,19 @@ void Climber::RobotInit(){
 
   /* set closed loop gains in slot0 */
   mClimberStar.Config_kF(0, 0.0, kTimeoutMs);
-  mClimberStar.Config_kP(0, 0.1, kTimeoutMs);
+  mClimberStar.Config_kP(0, 0.5, kTimeoutMs);
   mClimberStar.Config_kI(0, 0.0, kTimeoutMs);
   mClimberStar.Config_kD(0, 0.0, kTimeoutMs);
 
   mClimberStar.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Coast);
+  
+  std::cout << "RobotInit pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
 
 }
 
 void Climber::DoOnceInit() {
   mClimberStar.SetSelectedSensorPosition (0.0 , 0);
+<<<<<<< HEAD
 
   // TODO: This does not work correctly yet
   if (portLimit.Get()) {
@@ -97,4 +103,8 @@ void Climber::DoOnceInit() {
     frc::SmartDashboard::PutBoolean("Port Homed", true);
     smartClimber = true;
   }
+=======
+  std::cout << "DoOnce pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
+
+>>>>>>> 9c3f26a5e41e602a666bdc9957268dcde290c0f5
 }
