@@ -4,31 +4,38 @@
 enum Constants {
   kTimeoutMs = 30
 };
-const double kClimberPosMiddle = 500;
-const double kClimberPosLow = 200;
+const double kClimberPosMiddle = 100000;
+const double kClimberPosLow = 50000;
 const double kClimberPosRetracted = 20;
 
 void Climber::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
 
   int povPad = copilot->GetPOV();
+  double target = 0;
+  std::string msg;
 
   switch(povPad) {
     case 0:
-      mClimberStar.Set(ControlMode::Position, kClimberPosMiddle);
+      target = kClimberPosMiddle;
+      mClimberStar.Set(ControlMode::Position, target);
       break;
     case 90:
     case 270:
-      mClimberStar.Set(ControlMode::Position, kClimberPosLow);
+      target = kClimberPosLow;
+      mClimberStar.Set(ControlMode::Position, target);
       break;
     case 180:
-      mClimberStar.Set(ControlMode::Position, kClimberPosRetracted);
+      target = kClimberPosRetracted;
+      mClimberStar.Set(ControlMode::Position, target);
       break;
     default:
       // nothing pressed, stop motors
       mClimberStar.Set(ControlMode::PercentOutput, 0);
       break;
   }
-  
+
+  if (mClimberStar.GetControlMode() == ControlMode::Position) { std::cout << "Position "; }
+  std::cout << "target: " << target << " -- ";
   std::cout << "pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
 
   // bool middleBarButtonPressed = copilot->GetRawButton(16);
@@ -69,14 +76,18 @@ void Climber::RobotInit(){
 
   /* set closed loop gains in slot0 */
   mClimberStar.Config_kF(0, 0.0, kTimeoutMs);
-  mClimberStar.Config_kP(0, 0.1, kTimeoutMs);
+  mClimberStar.Config_kP(0, 0.5, kTimeoutMs);
   mClimberStar.Config_kI(0, 0.0, kTimeoutMs);
   mClimberStar.Config_kD(0, 0.0, kTimeoutMs);
 
   mClimberStar.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Coast);
+  
+  std::cout << "RobotInit pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
 
 }
 
 void Climber::DoOnceInit() {
   mClimberStar.SetSelectedSensorPosition (0.0 , 0);
+  std::cout << "DoOnce pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
+
 }
