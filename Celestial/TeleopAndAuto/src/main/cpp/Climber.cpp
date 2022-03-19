@@ -94,7 +94,7 @@ void Climber::RobotInit(){
 
 void Climber::DoOnceInit() {
   mClimberStar.SetSelectedSensorPosition (0.0 , 0);
-<<<<<<< HEAD
+  std::cout << "DoOnce pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
 
   // TODO: This does not work correctly yet
   if (portLimit.Get()) {
@@ -103,8 +103,5 @@ void Climber::DoOnceInit() {
     frc::SmartDashboard::PutBoolean("Port Homed", true);
     smartClimber = true;
   }
-=======
-  std::cout << "DoOnce pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
 
->>>>>>> 9c3f26a5e41e602a666bdc9957268dcde290c0f5
 }
