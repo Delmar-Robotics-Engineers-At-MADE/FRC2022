@@ -14,6 +14,9 @@ private:
   // WPI_TalonSRX mClimberPort{3};
   // WPI_TalonSRX mClimberStar{12};
   WPI_TalonSRX mClimberStar{8};  // on pinoccio
-  frc::DigitalInput portLimit{2};
-  bool smartClimber {false};
+  frc::DigitalInput mPortLimitSwitch{2};
+  bool mSmartClimberEnabled {false};
+
+  void SmartClimber(int povPad);
+  void ManualClimber(frc::Joystick *copilot);
 };

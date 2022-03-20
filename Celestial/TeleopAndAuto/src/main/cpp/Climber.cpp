@@ -4,46 +4,69 @@
 enum Constants {
   kTimeoutMs = 30
 };
-const double kClimberPosMiddle = 100000;
-const double kClimberPosLow = 50000;
-const double kClimberPosRetracted = 20;
+
+// One rotation is 4096 encoder counts, and encoder is at the output of the gearbox
+const double kClimberPosMiddle = 10 * 4096;
+const double kClimberPosLow = 6 * 4096;
+const double kClimberPosRetracted = 1 * 4096;
+
+void Climber::SmartClimber(int povPad){
+  double target = 0.0;
+  switch(povPad) {
+    case 0:
+      target = kClimberPosMiddle;
+      mClimberStar.Set(ControlMode::Position, target);
+      break;
+    case 90:
+    case 270:
+      target = kClimberPosLow;
+      mClimberStar.Set(ControlMode::Position, target);
+      break;
+    case 180:
+      target = kClimberPosRetracted;
+      mClimberStar.Set(ControlMode::Position, target);
+      break;
+    default:
+      // nothing pressed, stop motors
+      mClimberStar.Set(ControlMode::PercentOutput, 0);
+      break;
+    }
+
+  std::cout << "target: " << target << " -- ";
+  std::cout << "pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
+}
+
+void Climber::ManualClimber(frc::Joystick *copilot){
+  mClimberStar.Set(ControlMode::PercentOutput, copilot->GetY());
+  std::cout << "output: " << mClimberStar.GetMotorOutputPercent()  << " -- ";
+  std::cout << "pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
+}
 
 void Climber::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
 
-
   int povPad = copilot->GetPOV();
-  double target = 0;
-  std::string msg;
-
-  // TODO: untested
-  if (true == smartClimber) {
-    switch(povPad) {
-      case 0:
-        mClimberStar.Set(ControlMode::Position, kClimberPosMiddle);
-        break;
-      case 90:
-      case 270:
-        mClimberStar.Set(ControlMode::Position, kClimberPosLow);
-        break;
-      case 180:
-        mClimberStar.Set(ControlMode::Position, kClimberPosRetracted);
-        break;
-      default:
-        // nothing pressed, stop motors
-        mClimberStar.Set(ControlMode::PercentOutput, 0);
-        break;
-    }
+  bool smartControl = false;
+  bool manualControl = false;
+  if (!mSmartClimberEnabled) {
+    // motor not homed, so cannot use smart climber positions
+    manualControl = true;
+  } else if (povPad == -1) {
+    // nothing pressed on POV, so manual control is ok
+    manualControl = true;
   } else {
+    // pov takes priority over manual control
+    smartControl = true;
+  }
 
+  if (smartControl) {
+    SmartClimber(povPad);
+  } else {
+    ManualClimber(copilot);
   }
 
   // TODO: add code to check home sensor position and re-enable smart
   // control if moved manually back to home.
   
-  if (mClimberStar.GetControlMode() == ControlMode::Position) { std::cout << "Position "; }
-  std::cout << "target: " << target << " -- ";
-  std::cout << "pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
-
   // bool middleBarButtonPressed = copilot->GetRawButton(16);
   // bool lowBarButtonPressed = copilot->GetRawButton(13);
   // bool retractButtonPressed = copilot->GetRawButton(14);
@@ -97,11 +120,11 @@ void Climber::DoOnceInit() {
   std::cout << "DoOnce pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
 
   // TODO: This does not work correctly yet
-  if (portLimit.Get()) {
+  if (mPortLimitSwitch.Get()) {
     frc::SmartDashboard::PutBoolean("Port Homed", false);
   } else {
     frc::SmartDashboard::PutBoolean("Port Homed", true);
-    smartClimber = true;
+    mSmartClimberEnabled = true;
   }
 
 }
