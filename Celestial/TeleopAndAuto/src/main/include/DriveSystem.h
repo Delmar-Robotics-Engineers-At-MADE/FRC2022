@@ -4,6 +4,7 @@
 #include <frc/drive/MecanumDrive.h>
 #include <frc/Joystick.h>
 #include "AHRS.h"
+#include "rev/ColorSensorV3.h" // install online: https://software-metadata.revrobotics.com/REVLib.json
 
 //namespace frc {
 
@@ -22,6 +23,9 @@ public:
 private:
   
   AHRS *mAHRS;
+
+  static constexpr auto i2cPort = frc::I2C::Port::kOnboard;
+  rev::ColorSensorV3 mColorSensor{i2cPort};
 
 };
 

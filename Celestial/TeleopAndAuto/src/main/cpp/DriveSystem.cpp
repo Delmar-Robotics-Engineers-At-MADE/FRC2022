@@ -1,6 +1,7 @@
 #include <DriveSystem.h>
 #include <frc/DriverStation.h>
 #include <frc/Errors.h>
+#include <frc/smartdashboard/SmartDashboard.h>
 
 // constructor
 DriveSystem::DriveSystem(frc::SpeedController& frontLeftMotor, frc::SpeedController& rearLeftMotor,
@@ -19,6 +20,8 @@ void DriveSystem::TelopPeriodic (frc::Joystick *pilot){
   } else {
     DriveCartesian(pilot->GetY(), -pilot->GetX(), -pilot->GetZ(), mAHRS->GetAngle());
   }
+  double IR = mColorSensor.GetIR();
+  frc::SmartDashboard::PutNumber("Rev Color IR", IR);
 }
 
 void DriveSystem::RobotInit() {
