@@ -1,3 +1,5 @@
+#pragma once
+
 #include <frc/Joystick.h>
 #include "ctre/Phoenix.h"
 #include "frc/DigitalInput.h"

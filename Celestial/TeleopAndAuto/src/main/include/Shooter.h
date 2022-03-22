@@ -1,3 +1,5 @@
+#pragma once
+
 #include <frc/Joystick.h>
 
 class Shooter {
