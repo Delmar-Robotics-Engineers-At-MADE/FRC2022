@@ -8,6 +8,7 @@
 #include <PixyBallTracker.h>
 #include <AutonomousController.h>
 #include <Climber.h>
+#include <Shooter.h>
 
 class Robot : public frc::TimedRobot {
 public:
@@ -34,6 +35,7 @@ private:
   VelocityController2 *mVelocityController;
   AutonomousController *mAutoController;
   Climber mClimber;
+  Shooter *mShooter;
 
   // frc::Timer mAutonomousTimer;
 

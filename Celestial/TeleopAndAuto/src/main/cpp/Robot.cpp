@@ -24,6 +24,8 @@ void Robot::RobotInit() {
   mVelocityController = new VelocityController2(&mRobotDrive, mAHRS);
   mAutoController = new AutonomousController(mVelocityController);
   mClimber.RobotInit();
+  mShooter = new Shooter();
+  mShooter->RobotInit();
 }
 
 void Robot::DoOnceInit()  {
@@ -50,6 +52,7 @@ void Robot::TeleopPeriodic() {
   }
 
   mClimber.TelopPeriodic(&mCopilot);
+  mShooter->TelopPeriodic(&mPilot, &mCopilot);
 
 }
 
