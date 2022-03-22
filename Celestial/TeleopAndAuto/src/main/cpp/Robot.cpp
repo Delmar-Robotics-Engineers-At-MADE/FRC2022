@@ -9,30 +9,20 @@ const double kD = 0.0005;
 void Robot::RobotInit() {
   mFrontRight.SetInverted(true);
   mRearRight.SetInverted(true);
-
-  try{
-      mAHRS = new AHRS(frc::SPI::Port::kMXP);
-
-    } catch (std::exception &ex) {
-      std::string what_string = ex.what();
-      std::string err_msg("Error instantiating navX MXP:  " + what_string);
-      const char *p_err_msg = err_msg.c_str();
-      FRC_ReportError(0, "{}", p_err_msg); // frc::DriverStation::ReportError(p_err_msg);
-    }
-
   mTracker = new PixyBallTracker (kP, kI, kD);
-  mVelocityController = new VelocityController2(&mRobotDrive, mAHRS);
-  mAutoController = new AutonomousController(mVelocityController);
+  // mVelocityController = new VelocityController2(&mRobotDrive, mAHRS);
+  // mAutoController = new AutonomousController(mVelocityController);
   mClimber.RobotInit();
   mShooter = new Shooter();
   mShooter->RobotInit();
+  mRobotDrive.RobotInit();
 }
 
 void Robot::DoOnceInit()  {
   if (!mDoOnceInited) {
     mDoOnceInited = true;
     mClimber.DoOnceInit();
-    mAHRS->ZeroYaw();   // use current robot orientation as field forward
+    mRobotDrive.DoOnceInit();
     }  
 }
 
@@ -47,13 +37,9 @@ void Robot::TeleopInit() {
 
 void Robot::TeleopPeriodic() {
 
-  if (mPilot.GetRawButton(6) && mPilot.GetRawButton(4)) {
-    mAHRS->ZeroYaw();   // use current robot orientation as field forward
-  }
-
   mClimber.TelopPeriodic(&mCopilot);
   mShooter->TelopPeriodic(&mPilot, &mCopilot);
-
+  mRobotDrive.TelopPeriodic(&mPilot);
 }
 
 void Robot::AutonomousInit() {
