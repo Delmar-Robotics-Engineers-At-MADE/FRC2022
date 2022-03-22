@@ -31,7 +31,6 @@ void Robot::DoOnceInit()  {
     mDoOnceInited = true;
     mClimber.DoOnceInit();
     mAHRS->ZeroYaw();   // use current robot orientation as field forward
-    mClimber.DoOnceInit();
     }  
 }
 
@@ -46,25 +45,11 @@ void Robot::TeleopInit() {
 
 void Robot::TeleopPeriodic() {
 
-  bool reset_yaw_button_pressed = mPilot.GetRawButton(1);
-  bool track_ball_button_pressed = mPilot.GetRawButton(2);
-
-  if (track_ball_button_pressed && mTracker->BallSeen()) { 
-      double rotateSpeed = mTracker->CalculateResponse();
-      // use cartesian drive as if we were driver controlled, but only rotate
-      mRobotDrive.DriveCartesian(0, 0, rotateSpeed);
-    
-
-  } else { // no buttons pressed
-
-    /* Use the joystick X axis for lateral movement, Y axis for forward
-    * movement, and Z axis for rotation.
-    */
-    mRobotDrive.DriveCartesian(mPilot.GetY(), -mPilot.GetX(), -mPilot.GetZ(), mAHRS->GetAngle());
-
+  if (mPilot.GetRawButton(6) && mPilot.GetRawButton(4)) {
+    mAHRS->ZeroYaw();   // use current robot orientation as field forward
   }
 
-  mClimber.TelopPeriodic(&mPilot, &mCopilot);
+  mClimber.TelopPeriodic(&mCopilot);
 
 }
 

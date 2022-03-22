@@ -59,3 +59,13 @@ bool VelocityController2::TurnStraight (){
 void VelocityController2::StopDriving() {
   mRobotDrive->DriveCartesian(0, 0, 0);
 }
+
+void VelocityController2::TrackBall (PixyBallTracker *tracker) {
+  double rotateSpeed = tracker->CalculateResponse();
+  // use cartesian drive as if we were driver controlled, but only rotate
+  mRobotDrive->DriveCartesian(0, 0, rotateSpeed);
+}
+
+void VelocityController2::TelopPeriodic (frc::Joystick *pilot){
+    mRobotDrive->DriveCartesian(pilot->GetY(), -pilot->GetX(), -pilot->GetZ(), mAHRS->GetAngle());
+}
