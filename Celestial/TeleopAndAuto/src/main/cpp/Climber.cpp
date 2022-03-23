@@ -42,10 +42,11 @@ void Climber::SmartClimber(int povPad){
 void Climber::ManualClimber(frc::Joystick *copilot){
   bool climberIsOnStopPort = !mLimitSwitchPort.Get();
   bool climberIsOnStopStar = !mLimitSwitchStar.Get();
+  bool climberIsAtTopSmartLimitPort = (mSmartClimberEnabled && mClimberPort.GetSelectedSensorPosition(0) >= kClimberPosMiddle);
   double powerPort = -copilot->GetRawAxis(0);
   double powerStar = -copilot->GetRawAxis(3);
 
-  // don't allow operator to lower climber if it's on the stop
+  // don't allow operator to lower climber if it's on the stop or beyond the smart setpoints
   if (!climberIsOnStopPort || powerPort > 0.0) {mClimberPort.Set(ControlMode::PercentOutput, powerPort);}
   if (!climberIsOnStopStar || powerStar > 0.0) {mClimberStar.Set(ControlMode::PercentOutput, powerStar);}
 
