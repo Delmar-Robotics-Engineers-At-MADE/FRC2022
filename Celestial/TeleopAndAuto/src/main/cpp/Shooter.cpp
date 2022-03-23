@@ -26,7 +26,7 @@ Shooter::Shooter () {  // constructor
 
 void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
   mPhi = frc::SmartDashboard::GetNumber("Phi", mPhi); // angle of limelight from vertical
-  mH2 = frc::SmartDashboard::GetNumber("Phi", mH2); // height of target above limelight
+  mH2 = frc::SmartDashboard::GetNumber("H2", mH2); // height of target above limelight
 
   double tv = mLimeTable->GetNumber("tv",0.0);  
   bool targetSeen = (tv != 0.0); // tv is non-zero if there is a target detected
@@ -54,7 +54,7 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
     if (targetArea > kMinTargetAreaPercent) {  
       targetAngleHorizontal = mLimeTable->GetNumber("tx",0.0);
       targetAngleVertical = mLimeTable->GetNumber("ty",0.0);   
-      targetDistance = mH2 / tan(ConvertDegreesToRads(targetAngleVertical));
+      targetDistance = mH2 / tan(ConvertDegreesToRads(targetAngleVertical + mPhi));
     }
   }
 
@@ -67,7 +67,7 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
 
 void Shooter::RobotInit() {
   frc::SmartDashboard::PutNumber("Phi", mPhi);
-  frc::SmartDashboard::PutNumber("kH2", mPhi);
+  frc::SmartDashboard::PutNumber("H2", mH2);
 
   mLimeTable->PutNumber("camMode",0.0); // camera in normal CV mode
   mLimeTable->PutNumber("ledMode",1.0); // LED off

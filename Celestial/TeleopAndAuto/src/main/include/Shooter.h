@@ -6,9 +6,9 @@
 
 class Shooter {
 private:
-  constexpr static double kPhi = 20.0;  // angle in degrees of limelight from vertical
-  constexpr static double kH1 = 3.0;  // height in feet of limelight from floor
-  constexpr static double kH2 = 8.0 - kH1; // height in feet of target ring from limelight
+  constexpr static double kPhi = 21.5;  // angle in degrees of limelight from vertical
+  constexpr static double kH1 = 2.5;  // height in feet of limelight from floor
+  constexpr static double kH2 = 8.4 - kH1; // height in feet of target ring from limelight
   double mPhi = kPhi;
   double mH2 = kH2;
 
