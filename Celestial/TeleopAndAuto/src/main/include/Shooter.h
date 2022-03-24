@@ -2,7 +2,17 @@
 
 #include <frc/Joystick.h>
 #include <networktables/NetworkTable.h>
+#include <frc/controller/PIDController.h>
 
+enum ShooterState {
+  unknownState = 0,
+  kRotatingToTarget,
+  kOnTarget,
+  kShooterReady,
+  kShooting,
+  kEmpty,
+  kIdle
+};
 
 class Shooter {
 private:
@@ -14,8 +24,28 @@ private:
 
   std::shared_ptr<nt::NetworkTable> mLimeTable; // for LimeLight
 
+  bool mTargetSeen = false; // tv is non-zero if there is a target detected
+  double mTargetArea = mLimeTable->GetNumber("ta",0.0);
+  double mTargetAngleHorizontal = 0.0;
+  double mTargetAngleVertical = 0.0;
+  double mTargetDistance = 0.0;
+  bool mLightOn = false;
+  ShooterState mState = unknownState;
+  frc2::PIDController *mPIDController;
+
+  void CheckLimelight(double direction);
+  void TurnLightOnOrOff (bool turnOn);
+  void Shoot (bool highTarget);
+  void Idle();
+  bool RotateToTarget();
+  bool ReadyShooter();
+  void FeedCargo();
+  bool CargoAvailable();
+
 public:
   Shooter (); // constructor
   void TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot);
   void RobotInit();
+  void DoOnceInit();
+  void TeleopInit();
 };

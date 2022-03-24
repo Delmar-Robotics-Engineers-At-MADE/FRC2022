@@ -19,50 +19,112 @@ double ConvertDegreesToRads (double degs) {
 // phi = angle of limelight from vertical; theta = vertical angle of target reported by limelight
 // distance to target = h2 / TAN (theta + phi)
 
+
 Shooter::Shooter () {  // constructor
   // get network table populated by LimeLight
   mLimeTable = nt::NetworkTableInstance::GetDefault().GetTable("limelight");
 }
 
+void Shooter::TurnLightOnOrOff (bool turnOn) {
+  bool turnOff = !turnOn;
+  if (mLightOn && turnOff) {
+    mLimeTable->PutNumber("ledMode",1.0); // LED off
+  } else if (!mLightOn && turnOn) {
+    mLimeTable->PutNumber("ledMode",3.0); // LED on bright
+  }
+}
+
+void Shooter::CheckLimelight(double direction) {
+  double tv = mLimeTable->GetNumber("tv",0.0); 
+  mTargetSeen = (tv != 0.0);
+  mTargetArea = mLimeTable->GetNumber("ta",0.0);
+  mTargetAngleHorizontal = 0.0;
+  mTargetAngleVertical = 0.0;
+  mTargetDistance = 0.0;
+  bool lightOn = false;
+
+  if (mTargetSeen) {
+    if (mTargetArea > kMinTargetAreaPercent) {  
+      mTargetAngleHorizontal = mLimeTable->GetNumber("tx",0.0);
+      mTargetAngleVertical = mLimeTable->GetNumber("ty",0.0);   
+      mTargetDistance = mH2 / tan(ConvertDegreesToRads(mTargetAngleVertical + mPhi));
+    }
+  }
+  
+  frc::SmartDashboard::PutBoolean("Target Seen", mTargetSeen);
+  frc::SmartDashboard::PutNumber("Target Area", mTargetArea);
+  frc::SmartDashboard::PutNumber("Angle Horiz", mTargetAngleHorizontal);
+  frc::SmartDashboard::PutNumber("Angle Vert", mTargetAngleVertical);
+  frc::SmartDashboard::PutNumber("Distance", mTargetDistance);
+}
+
+bool Shooter::CargoAvailable() {
+  // TODO: check photo eyes; if both are false, we're empty
+  return true;
+}
+
+bool Shooter::RotateToTarget() {
+
+}
+
+bool Shooter::ReadyShooter() {
+  return true;
+}
+
+void Shooter::FeedCargo() {
+
+}
+
+void Shooter::Shoot (bool highTarget) {
+  bool onTarget = false;
+  bool shooterReady = false;
+  switch (mState) {
+    default:
+    kIdle:
+      mState = kRotatingToTarget;
+      break; 
+    kRotatingToTarget:
+      onTarget = RotateToTarget();
+      shooterReady = ReadyShooter();
+      if (onTarget && shooterReady) {mState = kShooterReady;}
+      break;
+    kShooterReady:
+      if (CargoAvailable()) {
+        frc::SmartDashboard::PutBoolean("Feeding Cargo", true);
+        FeedCargo();
+      } else {
+        mState = kEmpty;
+      }
+      break;
+    kEmpty:
+      Idle();
+      break;
+  }
+
+}
+
+void Shooter::Idle(){
+  mState = kIdle;
+  // TODO: bring wheel up to idle speed
+}
+
 void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
   mPhi = frc::SmartDashboard::GetNumber("Phi", mPhi); // angle of limelight from vertical
   mH2 = frc::SmartDashboard::GetNumber("H2", mH2); // height of target above limelight
+  bool onTarget=false, shooterReady=false;
+  bool shootAtHighGoal = copilot->GetRawButton(4);
+  bool shootAtLowGoal = copilot->GetRawButton(2);
 
-  double tv = mLimeTable->GetNumber("tv",0.0);  
-  bool targetSeen = (tv != 0.0); // tv is non-zero if there is a target detected
-  double targetArea = mLimeTable->GetNumber("ta",0.0);
-  double targetAngleHorizontal = 0.0;
-  double targetAngleVertical = 0.0;
-  double targetDistance = 0.0;
-  bool lightOn = false;
-
-  if (copilot->GetRawButton(2)) { // shoot at high goal
-    lightOn = true;
-  } else if (copilot->GetRawButton(4)) { // shoot at low goal
-    lightOn = true;
+  if (shootAtHighGoal || shootAtLowGoal) {
+    TurnLightOnOrOff(true);
+    Shoot(shootAtHighGoal);
   } else { // no shooter buttons pressed
-    lightOn = false;
+    TurnLightOnOrOff(false);
+    Idle();
+    frc::SmartDashboard::PutBoolean("On Target", false);
+    frc::SmartDashboard::PutBoolean("Shooter Ready", false);
+    frc::SmartDashboard::PutBoolean("Feeding Cargo", false);
   }
-
-  if (lightOn) {
-    mLimeTable->PutNumber("ledMode",3.0); // LED on bright
-  } else {
-    mLimeTable->PutNumber("ledMode",1.0); // LED off
-  }
-
-  if (targetSeen) {
-    if (targetArea > kMinTargetAreaPercent) {  
-      targetAngleHorizontal = mLimeTable->GetNumber("tx",0.0);
-      targetAngleVertical = mLimeTable->GetNumber("ty",0.0);   
-      targetDistance = mH2 / tan(ConvertDegreesToRads(targetAngleVertical + mPhi));
-    }
-  }
-
-  frc::SmartDashboard::PutBoolean("Target Seen", targetSeen);
-  frc::SmartDashboard::PutNumber("Target Area", targetArea);
-  frc::SmartDashboard::PutNumber("Angle Horiz", targetAngleHorizontal);
-  frc::SmartDashboard::PutNumber("Angle Vert", targetAngleVertical);
-  frc::SmartDashboard::PutNumber("Distance", targetDistance);
 }
 
 void Shooter::RobotInit() {
@@ -74,3 +136,10 @@ void Shooter::RobotInit() {
   mLimeTable->PutNumber("stream",0.0);  // secondary camera side-by-side
 }
 
+void Shooter::DoOnceInit() {
+  Idle();
+}
+
+void Shooter::TeleopInit() {
+
+}
