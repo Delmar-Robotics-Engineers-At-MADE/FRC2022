@@ -1,5 +1,5 @@
 #include <Robot.h>
-#include <frc/smartdashboard/SmartDashboard.h>
+// #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/DriverStation.h>
 
 const double kP = 0.012;
@@ -15,7 +15,7 @@ void Robot::RobotInit() {
   mClimber.RobotInit();
   mShooter = new Shooter();
   mShooter->RobotInit();
-  mRobotDrive.RobotInit();
+  mRobotDrive.RobotInit(mShooter);
 }
 
 void Robot::DoOnceInit()  {
@@ -38,8 +38,8 @@ void Robot::TeleopInit() {
 void Robot::TeleopPeriodic() {
 
   mClimber.TelopPeriodic(&mCopilot);
-  mShooter->TelopPeriodic(&mPilot, &mCopilot);
-  mRobotDrive.TelopPeriodic(&mPilot);
+  mRobotDrive.TelopPeriodic(&mPilot, &mCopilot);
+  mShooter->TelopPeriodic(&mPilot, &mCopilot, mRobotDrive.mTargetingState);
 }
 
 void Robot::AutonomousInit() {

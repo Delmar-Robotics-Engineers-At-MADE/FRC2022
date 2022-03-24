@@ -1,5 +1,6 @@
 #include <Climber.h>
 #include <iostream>
+#include <frc/smartdashboard/SmartDashboard.h>
 
 enum Constants {
   kTimeoutMs = 30

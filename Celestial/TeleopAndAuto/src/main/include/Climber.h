@@ -3,8 +3,6 @@
 #include <frc/Joystick.h>
 #include "ctre/Phoenix.h"
 #include "frc/DigitalInput.h"
-#include <frc/smartdashboard/SendableChooser.h>
-#include <frc/smartdashboard/SmartDashboard.h>
 
 class Climber {
 public:

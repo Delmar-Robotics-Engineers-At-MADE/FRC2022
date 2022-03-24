@@ -2,6 +2,7 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <networktables/NetworkTableInstance.h>
 #include <networktables/NetworkTableEntry.h>
+#include <DriveSystem.h>
 
 static const double kMinTargetAreaPercent = 0.0;
 
@@ -63,10 +64,6 @@ bool Shooter::CargoAvailable() {
   return true;
 }
 
-bool Shooter::RotateToTarget() {
-
-}
-
 bool Shooter::ReadyShooter() {
   return true;
 }
@@ -75,7 +72,7 @@ void Shooter::FeedCargo() {
 
 }
 
-void Shooter::Shoot (bool highTarget) {
+void Shooter::Shoot (bool highTarget, DriveSysTargetingState driveState) {
   bool onTarget = false;
   bool shooterReady = false;
   switch (mState) {
@@ -84,8 +81,11 @@ void Shooter::Shoot (bool highTarget) {
       mState = kRotatingToTarget;
       break; 
     kRotatingToTarget:
-      onTarget = RotateToTarget();
+      // drive system has access to state info, and will know to rotate
+      onTarget = (driveState == kDriveOnTarget);
       shooterReady = ReadyShooter();
+      frc::SmartDashboard::PutBoolean("On Target", onTarget);
+      frc::SmartDashboard::PutBoolean("Shooter Ready", shooterReady);
       if (onTarget && shooterReady) {mState = kShooterReady;}
       break;
     kShooterReady:
@@ -108,7 +108,7 @@ void Shooter::Idle(){
   // TODO: bring wheel up to idle speed
 }
 
-void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
+void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, DriveSysTargetingState driveState){
   mPhi = frc::SmartDashboard::GetNumber("Phi", mPhi); // angle of limelight from vertical
   mH2 = frc::SmartDashboard::GetNumber("H2", mH2); // height of target above limelight
   bool onTarget=false, shooterReady=false;
@@ -117,7 +117,7 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
 
   if (shootAtHighGoal || shootAtLowGoal) {
     TurnLightOnOrOff(true);
-    Shoot(shootAtHighGoal);
+    Shoot(shootAtHighGoal, driveState);
   } else { // no shooter buttons pressed
     TurnLightOnOrOff(false);
     Idle();
