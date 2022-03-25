@@ -29,7 +29,7 @@ private:
   ShooterState mState = kShooterUnknownState;
   frc2::PIDController *mPIDController;
 
-  void CheckLimelight(double direction);
+  void CheckLimelight();
   void TurnLightOnOrOff (bool turnOn);
   void Shoot (bool highTarget, DriveSysTargetingState driveState);
   void Idle();
@@ -41,7 +41,7 @@ private:
 public:
 
   bool mTargetSeen = false; // tv is non-zero if there is a target detected
-  double mTargetArea = mLimeTable->GetNumber("ta",0.0);
+  double mTargetArea = 0.0;
   double mTargetAngleHorizontal = 0.0;
   double mTargetAngleVertical = 0.0;
   double mTargetDistance = 0.0;

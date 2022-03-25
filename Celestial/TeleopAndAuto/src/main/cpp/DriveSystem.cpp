@@ -8,12 +8,14 @@ const static double kPtunedGyro = 0.009;
 const static double kItunedGyro = 0.0;
 const static double kDtunedGyro = 0.0;
 
-const static double kPtunedLimelight= 0.009;
+const static double kPtunedLimelight= 0.02;
 const static double kItunedLimelight = 0.0;
 const static double kDtunedLimelight = 0.0;
+const static double kPIDToleranceLimeLight = 2.0;
 
 const static double kSlowSpeedMultiplier = 0.2;
 const static double kNormalSpeedMultiplier = 0.9;
+const static double kNormalYawMultiplier = 0.75;
 
 const static double kDefaultRotateToTargetRate = 0.5;
 
@@ -39,18 +41,18 @@ void DriveSystem::RotateToTarget (frc::Joystick *pilot, frc::Joystick *copilot) 
     }
   } else { // no target in sight, so rotate until we see it
     mTargetingState = kDriveRotatingToTarget;
-    rotateRate = pilot->GetZ();
-    if (rotateRate == 0.0) {
-      rotateRate = copilot->GetZ();
-    }
-    if (rotateRate == 0.0) {
-      rotateRate = copilot->GetX();
-    }
-    if (rotateRate == 0.0) {
-      rotateRate = kDefaultRotateToTargetRate;
-    }
+  //   rotateRate = -pilot->GetZ();
+  //   if (rotateRate == 0.0) {
+  //     rotateRate = -copilot->GetZ();
+  //   }
+  //   if (rotateRate == 0.0) {
+  //     rotateRate = copilot->GetX();
+  //   }
+  //   if (rotateRate == 0.0) {
+  //     rotateRate = kDefaultRotateToTargetRate;
+  //   }
   }
-  DriveCartesian(0, 0, -rotateRate);
+  DriveCartesian(0, 0, rotateRate);
 }
 
 void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
@@ -65,9 +67,9 @@ void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
     if (pilot->GetRawButton(6) && pilot->GetRawButton(4)) {
       mAHRS->ZeroYaw();   // use current robot orientation as field forward
     } else if (pilot->GetRawButton(5) || pilot->GetRawButton(6)) {
-      DriveCartesian(y*kSlowSpeedMultiplier, -x*kSlowSpeedMultiplier, z*kSlowSpeedMultiplier, mAHRS->GetAngle());
+      DriveCartesian(y*kSlowSpeedMultiplier, -x*kSlowSpeedMultiplier, -z*kSlowSpeedMultiplier, mAHRS->GetAngle());
     } else {
-      DriveCartesian(y*kNormalSpeedMultiplier, -x*kNormalSpeedMultiplier, z*0.8, mAHRS->GetAngle());
+      DriveCartesian(y*kNormalSpeedMultiplier, -x*kNormalSpeedMultiplier, -z*kNormalYawMultiplier, mAHRS->GetAngle());
     }
     double IR = mColorSensor.GetIR();
     frc::SmartDashboard::PutNumber("Rev Color IR", IR);
@@ -79,7 +81,7 @@ void DriveSystem::RobotInit(Shooter *shooter) {
   mShooter = shooter;
 
   mPIDControllerLimelight = new frc2::PIDController (kPtunedLimelight, kItunedLimelight, kDtunedLimelight);
-  mPIDControllerLimelight->SetTolerance(8, 8); // degrees
+  mPIDControllerLimelight->SetTolerance(kPIDToleranceLimeLight, kPIDToleranceLimeLight); // degrees
   mPIDControllerLimelight->SetSetpoint(0.0); // always centering target, so always zero
   frc::SmartDashboard::PutData("Rotate To Target PID", mPIDControllerLimelight);  // dashboard should be able to change values
 

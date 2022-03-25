@@ -3,6 +3,7 @@
 #include <networktables/NetworkTableInstance.h>
 #include <networktables/NetworkTableEntry.h>
 #include <DriveSystem.h>
+#include <iostream>
 
 static const double kMinTargetAreaPercent = 0.0;
 
@@ -35,10 +36,10 @@ void Shooter::TurnLightOnOrOff (bool turnOn) {
   }
 }
 
-void Shooter::CheckLimelight(double direction) {
+void Shooter::CheckLimelight() {
   double tv = mLimeTable->GetNumber("tv",0.0); 
   mTargetSeen = (tv != 0.0);
-  mTargetArea = mLimeTable->GetNumber("ta",0.0);
+  mTargetArea = mLimeTable->GetNumber("ta",0.0);  
   mTargetAngleHorizontal = 0.0;
   mTargetAngleVertical = 0.0;
   mTargetDistance = 0.0;
@@ -77,10 +78,10 @@ void Shooter::Shoot (bool highTarget, DriveSysTargetingState driveState) {
   bool shooterReady = false;
   switch (mState) {
     default:
-    kIdle:
+    case kIdle:
       mState = kRotatingToTarget;
       break; 
-    kRotatingToTarget:
+    case kRotatingToTarget:
       // drive system has access to state info, and will know to rotate
       onTarget = (driveState == kDriveOnTarget);
       shooterReady = ReadyShooter();
@@ -88,7 +89,7 @@ void Shooter::Shoot (bool highTarget, DriveSysTargetingState driveState) {
       frc::SmartDashboard::PutBoolean("Shooter Ready", shooterReady);
       if (onTarget && shooterReady) {mState = kShooterReady;}
       break;
-    kShooterReady:
+    case kShooterReady:
       if (CargoAvailable()) {
         frc::SmartDashboard::PutBoolean("Feeding Cargo", true);
         FeedCargo();
@@ -96,7 +97,7 @@ void Shooter::Shoot (bool highTarget, DriveSysTargetingState driveState) {
         mState = kEmpty;
       }
       break;
-    kEmpty:
+    case kEmpty:
       Idle();
       break;
   }
@@ -117,7 +118,9 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, Drive
 
   if (shootAtHighGoal || shootAtLowGoal) {
     TurnLightOnOrOff(true);
+    CheckLimelight();
     Shoot(shootAtHighGoal, driveState);
+    std::cout << "shooter state" << mState << std::endl;
   } else { // no shooter buttons pressed
     TurnLightOnOrOff(false);
     Idle();

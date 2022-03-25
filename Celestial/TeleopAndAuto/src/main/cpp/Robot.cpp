@@ -16,14 +16,15 @@ void Robot::RobotInit() {
   mShooter = new Shooter();
   mShooter->RobotInit();
   mRobotDrive.RobotInit(mShooter);
+  
 }
 
 void Robot::DoOnceInit()  {
-  if (!mDoOnceInited) {
-    mDoOnceInited = true;
-    mClimber.DoOnceInit();
-    mRobotDrive.DoOnceInit();
-    }  
+  // if (!mDoOnceInited) {
+  //   mDoOnceInited = true;
+  //   mClimber.DoOnceInit();
+  //   mRobotDrive.DoOnceInit();
+  //   }  
 }
 
 void Robot::RepeatableInit() {
@@ -38,8 +39,9 @@ void Robot::TeleopInit() {
 void Robot::TeleopPeriodic() {
 
   mClimber.TelopPeriodic(&mCopilot);
-  mRobotDrive.TelopPeriodic(&mPilot, &mCopilot);
   mShooter->TelopPeriodic(&mPilot, &mCopilot, mRobotDrive.mTargetingState);
+  mRobotDrive.TelopPeriodic(&mPilot, &mCopilot);
+ 
 }
 
 void Robot::AutonomousInit() {
