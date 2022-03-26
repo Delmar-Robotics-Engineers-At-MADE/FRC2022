@@ -49,7 +49,7 @@ class Robot : public frc::TimedRobot {
     //  on diff drive chassis with toughbox, gearbox is 14:50, and wheel is 6" diameter
     //  1 motor rev = 2 * pi * 3" * 1ft/12" * 1/10.71 = 0.1467 ft
     //  1 RPM = 0.1467 ft/min * 1min/60sec = .0024 FPS
-    //  celestial meccanum chassis 16:70 1/4.375
+    //  celestial meccanum chassis 11:70 1/4.375
     m_encoder.SetPositionConversionFactor(0.1467);
     m_encoder.SetVelocityConversionFactor(0.0024);
 
