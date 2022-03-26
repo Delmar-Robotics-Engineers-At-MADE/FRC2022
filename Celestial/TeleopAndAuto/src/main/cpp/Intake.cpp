@@ -1,22 +1,25 @@
 #include <Intake.h>
+#include <Constants.h>
 
-  void TeleopPeriodic() override {
-    /* The output of GetRawButton is true/false depending on whether the button
-     * is pressed; Set takes a boolean for for whether to use the default
-     * (false) channel or the other (true).
-     */
-    m_solenoid.Set(m_stick.GetRawButton(kSolenoidButton));
+static const double kIntakeSpeed = 1.0;
 
-    /* In order to set the double solenoid, we will say that if neither button
-     * is pressed, it is off, if just one button is pressed, set the solenoid to
-     * correspond to that button, and if both are pressed, set the solenoid to
-     * Forwards.
-     */
-    if (m_stick.GetRawButton(kDoubleSolenoidForward)) {
-      m_doubleSolenoid.Set(frc::DoubleSolenoid::kForward);
-    } else if (m_stick.GetRawButton(kDoubleSolenoidReverse)) {
-      m_doubleSolenoid.Set(frc::DoubleSolenoid::kReverse);
-    } else {
-      m_doubleSolenoid.Set(frc::DoubleSolenoid::kOff);
-    }
+void Intake::TeleopPeriodic (frc::Joystick *pilot) {
+  bool retract = pilot->GetRawButton(7);
+  bool deploy = pilot->GetRawButton(8);
+  if (retract && deploy) {
+    // don't do anything when they're both pressed (driver confusion)
+  } else if (retract) {
+    mRoller.Set(0.0);
+    mSolenoid.Set(frc::DoubleSolenoid::kForward);
+  } else if (deploy) {
+    mSolenoid.Set(frc::DoubleSolenoid::kReverse);
+    mRoller.Set(kIntakeSpeed);
   }
+}
+
+void Intake::RobotInit() {
+  
+		mRoller.ConfigFactoryDefault();
+		mRoller.ConfigNominalOutputForward(0, kTimeoutMs);
+		mRoller.ConfigNominalOutputReverse(0, kTimeoutMs);
+}

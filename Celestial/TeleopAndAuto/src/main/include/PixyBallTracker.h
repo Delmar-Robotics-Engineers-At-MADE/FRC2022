@@ -1,5 +1,4 @@
-#ifndef PIXYBALLTRACKER
-#define PIXYBALLTRACKER
+#pragma once
 
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableInstance.h>
@@ -20,4 +19,3 @@ private:
     double CalculateResponse();
 };
 
-#endif

@@ -6,3 +6,5 @@
     kDriveOnTarget,
     kDriveNotTargeting
   };
+
+  static const int kTimeoutMs = 30;

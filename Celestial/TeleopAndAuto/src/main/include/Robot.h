@@ -7,6 +7,7 @@
 #include <Climber.h>
 #include <Shooter.h>
 #include <DriveSystem.h>
+#include <Intake.h>
 
 class Robot : public frc::TimedRobot {
 public:
@@ -32,6 +33,7 @@ private:
   AutonomousController *mAutoController;
   Climber mClimber;
   Shooter *mShooter;
+  Intake mIntake;
 
   // frc::Timer mAutonomousTimer;
 

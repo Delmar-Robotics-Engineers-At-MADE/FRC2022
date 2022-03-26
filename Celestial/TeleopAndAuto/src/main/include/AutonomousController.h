@@ -1,5 +1,4 @@
-#ifndef AUTOCONTROLLER
-#define AUTOCONTROLLER
+#pragma once
 
 #include <frc/smartdashboard/SendableChooser.h>
 #include <VelocityController2.h>
@@ -51,4 +50,3 @@ private:
 
 };
 
-#endif
