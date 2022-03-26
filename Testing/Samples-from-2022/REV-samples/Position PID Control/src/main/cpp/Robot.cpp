@@ -12,7 +12,7 @@
 
 class Robot : public frc::TimedRobot {
   // initialize motor
-  static const int deviceID = 14;
+  static const int deviceID = 1;
   rev::CANSparkMax m_motor{deviceID, rev::CANSparkMax::MotorType::kBrushless};
 
   /**
@@ -45,6 +45,14 @@ class Robot : public frc::TimedRobot {
     m_pidController.SetIZone(kIz);
     m_pidController.SetFF(kFF);
     m_pidController.SetOutputRange(kMinOutput, kMaxOutput);
+    // conversion factor from RPM to FPS (feet per second):
+    //  on diff drive chassis with toughbox, gearbox is 14:50, and wheel is 6" diameter
+    //  1 motor rev = 2 * pi * 3" * 1ft/12" * 1/10.71 = 0.1467 ft
+    //  1 RPM = 0.1467 ft/min * 1min/60sec = .0024 FPS
+    //  celestial meccanum chassis 16:70 1/4.375
+    m_encoder.SetPositionConversionFactor(0.1467);
+    m_encoder.SetVelocityConversionFactor(0.0024);
+
 
     // display PID coefficients on SmartDashboard
     frc::SmartDashboard::PutNumber("P Gain", kP);
@@ -54,11 +62,13 @@ class Robot : public frc::TimedRobot {
     frc::SmartDashboard::PutNumber("Feed Forward", kFF);
     frc::SmartDashboard::PutNumber("Max Output", kMaxOutput);
     frc::SmartDashboard::PutNumber("Min Output", kMinOutput);
-    frc::SmartDashboard::PutNumber("Target Rotations", 0);
+    frc::SmartDashboard::PutNumber("Target Rotations 2", 0);
+
+
     
   }
   void TeleopInit() override{
-    //m_encoder.SetPosition(0.0);
+    m_encoder.SetPosition(0.0);
   }
   void TeleopPeriodic() {
     // read PID coefficients from SmartDashboard
@@ -66,17 +76,17 @@ class Robot : public frc::TimedRobot {
     double i = frc::SmartDashboard::GetNumber("I Gain", 0);
     double d = frc::SmartDashboard::GetNumber("D Gain", 0);
     double iz = frc::SmartDashboard::GetNumber("I Zone", 0);
-    double ff = frc::SmartDashboard::GetNumber("Feed Forward", 0);
+    // double ff = frc::SmartDashboard::GetNumber("Feed Forward", 0);
     double max = frc::SmartDashboard::GetNumber("Max Output", 0);
     double min = frc::SmartDashboard::GetNumber("Min Output", 0);
-    double rotations = frc::SmartDashboard::GetNumber("Target Rotations", 0);
+    double rotations = frc::SmartDashboard::GetNumber("Target Rotations 2", 0);
 
     // if PID coefficients on SmartDashboard have changed, write new values to controller
     if((p != kP)) { m_pidController.SetP(p); kP = p; }
     if((i != kI)) { m_pidController.SetI(i); kI = i; }
     if((d != kD)) { m_pidController.SetD(d); kD = d; }
     if((iz != kIz)) { m_pidController.SetIZone(iz); kIz = iz; }
-    if((ff != kFF)) { m_pidController.SetFF(ff); kFF = ff; }
+    // if((ff != kFF)) { m_pidController.SetFF(ff); kFF = ff; }
     if((max != kMaxOutput) || (min != kMinOutput)) { 
       m_pidController.SetOutputRange(min, max); 
       kMinOutput = min; kMaxOutput = max; 
@@ -96,12 +106,12 @@ class Robot : public frc::TimedRobot {
      *  rev::ControlType::kVelocity
      *  rev::ControlType::kVoltage
      */
-    if((rotations != kRotations)) {
-      m_motor.StopMotor();
-      m_pidController.SetReference(rotations, rev::ControlType::kPosition);
-      kRotations = rotations;
-    }
-    
+    // if((rotations != kRotations)) {
+    //   //m_motor.StopMotor();
+    //   m_pidController.SetReference(rotations, rev::ControlType::kPosition);
+    //   kRotations = rotations;
+    // }
+    m_pidController.SetReference(rotations, rev::ControlType::kPosition);
     frc::SmartDashboard::PutNumber("SetPoint", rotations);
     frc::SmartDashboard::PutNumber("ProcessVariable", m_encoder.GetPosition());
   }

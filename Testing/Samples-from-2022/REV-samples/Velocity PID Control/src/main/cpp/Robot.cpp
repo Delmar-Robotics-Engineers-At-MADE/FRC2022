@@ -9,10 +9,11 @@
 #include <frc/TimedRobot.h>
 #include <frc/SmartDashboard/SmartDashboard.h>
 #include "rev/CANSparkMax.h"
+#include "rev/SparkMaxRelativeEncoder.h"
 
 class Robot : public frc::TimedRobot {
   // initialize motor
-  static const int deviceID = 62;
+  static const int deviceID = 1;
   rev::CANSparkMax m_motor{deviceID, rev::CANSparkMax::MotorType::kBrushless};
 
   /**
@@ -42,6 +43,7 @@ class Robot : public frc::TimedRobot {
      */
     m_motor.RestoreFactoryDefaults();
     
+
     // set PID coefficients
     m_pidController.SetP(kP);
     m_pidController.SetI(kI);
@@ -49,6 +51,14 @@ class Robot : public frc::TimedRobot {
     m_pidController.SetIZone(kIz);
     m_pidController.SetFF(kFF);
     m_pidController.SetOutputRange(kMinOutput, kMaxOutput);
+    
+    // conversion factor from RPM to FPS (feet per second):
+    //  on diff drive chassis with toughbox, gearbox is 14:50, and wheel is 6" diameter
+    //  1 motor rev = 2 * pi * 3" * 1ft/12" * 14/50 = 0.4398 ft
+    //  1 RPM = .4398 ft/min * 1min/60sec = .0073 FPS
+    // std::unique_ptr<rev::SparkMaxRelativeEncoder> encoder = std::make_unique<rev::SparkMaxRelativeEncoder>(m_motor.GetEncoder());
+    m_encoder.SetPositionConversionFactor(0.4398);
+    m_encoder.SetVelocityConversionFactor(0.0073);
 
     // display PID coefficients on SmartDashboard
     frc::SmartDashboard::PutNumber("P Gain", kP);
@@ -84,13 +94,13 @@ class Robot : public frc::TimedRobot {
     double SetPoint = 0.0;// = MaxRPM*m_stick.GetY();
 
     if (m_stick.GetRawButton(1)) {
-      SetPoint = 100;
+      SetPoint = 4;
     } else if (m_stick.GetRawButton(2)) {
-      SetPoint = 500;
+      SetPoint = -4;
     } else if (m_stick.GetRawButton(3)) {
-      SetPoint = 750;
+      SetPoint = 200;
     } else if (m_stick.GetRawButton(4)) {
-      SetPoint = 2500;
+      SetPoint = 400;
     } else {
       SetPoint = 0;
     }
