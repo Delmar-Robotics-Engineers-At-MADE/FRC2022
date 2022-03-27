@@ -36,6 +36,7 @@ void Robot::RepeatableInit() {
 void Robot::TeleopInit() {
   DoOnceInit();
   RepeatableInit();
+  mShooter->TeleopInit();
 }
 
 void Robot::TeleopPeriodic() {

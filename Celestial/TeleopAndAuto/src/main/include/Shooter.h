@@ -4,6 +4,7 @@
 #include <networktables/NetworkTable.h>
 #include <frc/controller/PIDController.h>
 #include <Constants.h>
+#include "ctre/Phoenix.h"
 
 enum ShooterState {
   kShooterUnknownState = 0,
@@ -28,6 +29,11 @@ private:
   bool mLightOn = false;
   ShooterState mState = kShooterUnknownState;
   frc2::PIDController *mPIDController;
+
+  WPI_TalonFX mPortShooter{0};  // LEADER
+  WPI_TalonFX mStarShooter{15};
+
+  double mMotorOutVelocity = 0.0; // for collecting data for targeting
 
   void CheckLimelight();
   void TurnLightOnOrOff (bool turnOn);

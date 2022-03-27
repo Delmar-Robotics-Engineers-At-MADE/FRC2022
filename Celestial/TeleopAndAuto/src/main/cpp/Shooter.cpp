@@ -43,7 +43,6 @@ void Shooter::CheckLimelight() {
   mTargetAngleHorizontal = 0.0;
   mTargetAngleVertical = 0.0;
   mTargetDistance = 0.0;
-  bool lightOn = false;
 
   if (mTargetSeen) {
     if (mTargetArea > kMinTargetAreaPercent) {  
@@ -112,7 +111,6 @@ void Shooter::Idle(){
 void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, DriveSysTargetingState driveState){
   mPhi = frc::SmartDashboard::GetNumber("Phi", mPhi); // angle of limelight from vertical
   mH2 = frc::SmartDashboard::GetNumber("H2", mH2); // height of target above limelight
-  bool onTarget=false, shooterReady=false;
   bool shootAtHighGoal = copilot->GetRawButton(4);
   bool shootAtLowGoal = copilot->GetRawButton(2);
 
@@ -128,6 +126,8 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, Drive
     frc::SmartDashboard::PutBoolean("Shooter Ready", false);
     frc::SmartDashboard::PutBoolean("Feeding Cargo", false);
   }
+  mMotorOutVelocity = frc::SmartDashboard::GetNumber("motor output percentage", 0);
+  mPortShooter.Set(ControlMode::Velocity, mMotorOutVelocity);
 }
 
 void Shooter::RobotInit() {
@@ -137,6 +137,25 @@ void Shooter::RobotInit() {
   mLimeTable->PutNumber("camMode",0.0); // camera in normal CV mode
   mLimeTable->PutNumber("ledMode",1.0); // LED off
   mLimeTable->PutNumber("stream",0.0);  // secondary camera side-by-side
+
+  mStarShooter.ConfigFactoryDefault();
+  mPortShooter.ConfigFactoryDefault();
+
+  // one follower and one reversed
+  mStarShooter.Follow(mPortShooter);
+  mStarShooter.SetInverted(true);
+  mPortShooter.SetInverted(false);
+
+  mPortShooter.SetNeutralMode(NeutralMode::Coast);
+  mStarShooter.SetNeutralMode(NeutralMode::Coast);
+
+  // Port is the leader, so set its PID and sensor
+
+  mPortShooter.Config_kF(0, 0.045, 30);
+  mPortShooter.Config_kP(0, 0.009, 30);
+  mPortShooter.Config_kI(0, 0.00005, 30);
+  mPortShooter.Config_kD(0, 0.0, 30);
+  mPortShooter.ConfigSelectedFeedbackSensor(FeedbackDevice::IntegratedSensor, 0, 30);
 }
 
 void Shooter::DoOnceInit() {
@@ -144,5 +163,6 @@ void Shooter::DoOnceInit() {
 }
 
 void Shooter::TeleopInit() {
-
+  mMotorOutVelocity = 0.0;
+  frc::SmartDashboard::PutNumber("motor output percentage", mMotorOutVelocity);
 }

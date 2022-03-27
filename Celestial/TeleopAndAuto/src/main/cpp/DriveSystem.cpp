@@ -117,11 +117,17 @@ void DriveSystem::RobotInit(Shooter *shooter,
 
   mShooter = shooter;
 
-  // PID for rotating to target
+  // PID for limelight
   mPIDControllerLimelight = new frc2::PIDController (kPtunedLimelight, kItunedLimelight, kDtunedLimelight);
   mPIDControllerLimelight->SetTolerance(kPIDToleranceLimeLight, kPIDToleranceLimeLight); // degrees
   mPIDControllerLimelight->SetSetpoint(0.0); // always centering target, so always zero
+
+  // allow dashboard adjustment of PID
   frc::SmartDashboard::PutData("Rotate To Target PID", mPIDControllerLimelight);  // dashboard should be able to change values
+  // frc::SmartDashboard::PutData("Front Left", pidFL);  // dashboard should be able to change values
+  // frc::SmartDashboard::PutData("Rear Left", pidRL);  // dashboard should be able to change values
+  // frc::SmartDashboard::PutData("Front Right", pidFR);  // dashboard should be able to change values
+  // frc::SmartDashboard::PutData("Rear Right", pidRR);  // dashboard should be able to change values
 
   // Spark Max stuff
 

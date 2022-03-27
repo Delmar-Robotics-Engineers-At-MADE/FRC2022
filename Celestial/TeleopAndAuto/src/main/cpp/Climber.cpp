@@ -41,7 +41,7 @@ void Climber::SmartClimber(int povPad){
 }
 
 void Climber::ManualClimber(frc::Joystick *copilot){
-  bool Add_Dashboard_Displays = false;
+  bool TODO_Add_Dashboard_Displays = false;
   // positive power means raise climbers, so negative power means hang
   bool climberIsOnStopPort = !mLimitSwitchPort.Get();
   bool climberIsOnStopStar = !mLimitSwitchStar.Get();
@@ -72,13 +72,13 @@ void Climber::TelopPeriodic (frc::Joystick *copilot){
   bool endgameOverridePressed = copilot->GetRawButton(1);
   int povPad = copilot->GetPOV();
   bool smartControl = false;
-  bool manualControl = false;
+  // bool manualControl = false;
   if (!mSmartClimberEnabled) {
     // motor not homed, so cannot use smart climber positions
-    manualControl = true;
+    // manualControl = true;
   } else if (povPad == -1) {
     // nothing pressed on POV, so manual control is ok
-    manualControl = true;
+    // manualControl = true;
   } else {
     // pov takes priority over manual control
     smartControl = true;
