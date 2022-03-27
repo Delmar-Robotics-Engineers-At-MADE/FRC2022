@@ -8,12 +8,12 @@
 #include <frc/Joystick.h>
 #include <frc/TimedRobot.h>
 #include <frc/SmartDashboard/SmartDashboard.h>
-#include "rev/CANSparkMax.h"
+#include "rev/CANSparkMax.h" // install online: https://software-metadata.revrobotics.com/REVLib.json
 #include "rev/SparkMaxRelativeEncoder.h"
 
 class Robot : public frc::TimedRobot {
   // initialize motor
-  static const int deviceID = 1;
+  static const int deviceID = 13;
   rev::CANSparkMax m_motor{deviceID, rev::CANSparkMax::MotorType::kBrushless};
 
   /**
@@ -54,11 +54,14 @@ class Robot : public frc::TimedRobot {
     
     // conversion factor from RPM to FPS (feet per second):
     //  on diff drive chassis with toughbox, gearbox is 14:50, and wheel is 6" diameter
-    //  1 motor rev = 2 * pi * 3" * 1ft/12" * 14/50 = 0.4398 ft
-    //  1 RPM = .4398 ft/min * 1min/60sec = .0073 FPS
-    // std::unique_ptr<rev::SparkMaxRelativeEncoder> encoder = std::make_unique<rev::SparkMaxRelativeEncoder>(m_motor.GetEncoder());
-    m_encoder.SetPositionConversionFactor(0.4398);
-    m_encoder.SetVelocityConversionFactor(0.0073);
+    //  1 motor rev = 2 * pi * 3" * 1ft/12" * 1/10.71 = 0.1467 ft
+    //  1 RPM = 0.1467 ft/min * 1min/60sec = .0024 FPS
+    //
+    //  celestial meccanum chassis 11:70 1/4.375
+    //  1 motor rev = 2 * pi * 3" * 1ft/12" * 1/4.375 = 0.3590 ft
+    //  1 RPM = 0.3590 ft/min * 1min/60sec = .006 FPS
+    m_encoder.SetPositionConversionFactor(0.3590);
+    m_encoder.SetVelocityConversionFactor(0.006);
 
     // display PID coefficients on SmartDashboard
     frc::SmartDashboard::PutNumber("P Gain", kP);
@@ -98,9 +101,9 @@ class Robot : public frc::TimedRobot {
     } else if (m_stick.GetRawButton(2)) {
       SetPoint = -4;
     } else if (m_stick.GetRawButton(3)) {
-      SetPoint = 200;
+      SetPoint = 0;
     } else if (m_stick.GetRawButton(4)) {
-      SetPoint = 400;
+      SetPoint = 0;
     } else {
       SetPoint = 0;
     }
