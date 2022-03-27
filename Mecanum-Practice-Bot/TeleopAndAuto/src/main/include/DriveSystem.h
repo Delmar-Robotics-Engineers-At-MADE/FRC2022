@@ -8,7 +8,6 @@
 #include <Shooter.h>
 #include <frc/controller/PIDController.h>
 #include <Constants.h>
-#include "rev/CANSparkMax.h"
 
 class DriveSystem : public frc::MecanumDrive {
 public:

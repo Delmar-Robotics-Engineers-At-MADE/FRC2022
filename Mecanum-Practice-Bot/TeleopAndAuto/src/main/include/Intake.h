@@ -1,7 +1,5 @@
 #pragma once
 
-// #include <frc/PneumaticsControlModule.h>
-// #include <frc/Solenoid.h>
 #include <frc/DoubleSolenoid.h>
 #include <frc/Joystick.h>
 #include "ctre/Phoenix.h"

@@ -8,7 +8,6 @@
 #include <Shooter.h>
 #include <DriveSystem.h>
 #include <Intake.h>
-// #include <frc/PneumaticsControlModule.h> // trigger compressor to come on
 
 class Robot : public frc::TimedRobot {
 public:
@@ -19,10 +18,10 @@ public:
   void AutonomousPeriodic() override;
 
 private:
-  rev::CANSparkMax mFrontLeft{1, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax mRearLeft{2, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax mFrontRight{14, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax mRearRight{13, rev::CANSparkMax::MotorType::kBrushless};
+  frc::Talon mFrontLeft{1};
+  frc::Talon mRearLeft{0};
+  frc::Talon mFrontRight{3};
+  frc::Talon mRearRight{2};
   DriveSystem mRobotDrive{mFrontLeft, mRearLeft, mFrontRight, mRearRight};
 
   frc::Joystick mPilot{0};
@@ -36,7 +35,7 @@ private:
   Shooter *mShooter;
   Intake mIntake;
 
-  //frc::DoubleSolenoid mTempSolenoid{frc::PneumaticsModuleType::CTREPCM, 4, 5};
+  // frc::Timer mAutonomousTimer;
 
   bool mDoOnceInited = false;
 
