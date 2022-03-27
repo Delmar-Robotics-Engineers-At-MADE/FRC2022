@@ -41,15 +41,22 @@ void Climber::SmartClimber(int povPad){
 }
 
 void Climber::ManualClimber(frc::Joystick *copilot){
+  bool Add_Dashboard_Displays = false;
+  // positive power means raise climbers, so negative power means hang
   bool climberIsOnStopPort = !mLimitSwitchPort.Get();
   bool climberIsOnStopStar = !mLimitSwitchStar.Get();
   bool climberIsAtTopSmartLimitPort = (mSmartClimberEnabled && mClimberPort.GetSelectedSensorPosition(0) >= kClimberPosMiddle);
+  bool climberIsAtTopSmartLimitStar = (mSmartClimberEnabled && mClimberStar.GetSelectedSensorPosition(0) >= kClimberPosMiddle);
   double powerPort = -copilot->GetRawAxis(0);
   double powerStar = -copilot->GetRawAxis(3);
 
   // don't allow operator to lower climber if it's on the stop or beyond the smart setpoints
-  if (!climberIsOnStopPort || powerPort > 0.0) {mClimberPort.Set(ControlMode::PercentOutput, powerPort);}
-  if (!climberIsOnStopStar || powerStar > 0.0) {mClimberStar.Set(ControlMode::PercentOutput, powerStar);}
+  if (climberIsOnStopPort && powerPort < 0.0) {powerPort = 0.0;}
+  if (climberIsOnStopStar && powerStar < 0.0) {powerStar = 0.0;}
+  if (climberIsAtTopSmartLimitPort && powerPort > 0.0) {powerPort = 0.0;}
+  if (climberIsAtTopSmartLimitStar && powerStar > 0.0) {powerStar = 0.0;}
+  mClimberPort.Set(ControlMode::PercentOutput, powerPort);
+  mClimberStar.Set(ControlMode::PercentOutput, powerStar);
 
   std::cout << "output: " << mClimberStar.GetMotorOutputPercent()  << " -- ";
   std::cout << "pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;

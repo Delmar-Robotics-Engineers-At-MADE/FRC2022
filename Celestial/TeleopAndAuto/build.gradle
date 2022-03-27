@@ -64,6 +64,11 @@ model {
                 }
             }
 
+            binaries.all {
+                if (!(toolChain instanceof VisualCpp))
+                    cppCompiler.args << '-Wno-deprecated-declarations'
+            }
+
             // Set deploy task to deploy this component
             deployArtifact.component = it
 

@@ -15,7 +15,9 @@ void Robot::RobotInit() {
   mClimber.RobotInit();
   mShooter = new Shooter();
   mShooter->RobotInit();
-  mRobotDrive.RobotInit(mShooter);
+
+  mRobotDrive.RobotInit(mShooter, &mPIDFrontLeft, &mPIDRearLeft, &mPIDFrontRight, &mPIDRearRight,
+                    &mEncoderFrontLeft, &mEncoderRearLeft, &mEncoderFrontRight, &mEncoderRearRight);
   
 }
 

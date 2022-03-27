@@ -23,6 +23,17 @@ private:
   rev::CANSparkMax mRearLeft{2, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax mFrontRight{14, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax mRearRight{13, rev::CANSparkMax::MotorType::kBrushless};
+
+  rev::SparkMaxPIDController mPIDFrontLeft  = mFrontLeft .GetPIDController();
+  rev::SparkMaxPIDController mPIDRearLeft   = mRearLeft  .GetPIDController();
+  rev::SparkMaxPIDController mPIDFrontRight = mFrontRight.GetPIDController();
+  rev::SparkMaxPIDController mPIDRearRight  = mRearRight .GetPIDController();
+
+  rev::SparkMaxRelativeEncoder mEncoderFrontLeft  = mFrontLeft .GetEncoder();
+  rev::SparkMaxRelativeEncoder mEncoderRearLeft   = mRearLeft  .GetEncoder();
+  rev::SparkMaxRelativeEncoder mEncoderFrontRight = mFrontRight.GetEncoder();
+  rev::SparkMaxRelativeEncoder mEncoderRearRight  = mRearRight .GetEncoder();
+  
   DriveSystem mRobotDrive{mFrontLeft, mRearLeft, mFrontRight, mRearRight};
 
   frc::Joystick mPilot{0};

@@ -14,6 +14,14 @@ const static double kItunedLimelight = 0.0;
 const static double kDtunedLimelight = 0.0;
 const static double kPIDToleranceLimeLight = 2.0;
 
+const static double kPtunedDrive = 0.1;
+const static double kItunedDrive = 0.0; 
+const static double kDtunedDrive = 0.001;
+const static double kIZtunedDrive = 0.0;
+const static double kFFtunedDrive =  0.0;
+const static double kMaxOutputDrive = 1.0;
+const static double kMinOutputDrive = -1.0;
+
 const static double kSlowSpeedMultiplier = 0.2;
 const static double kNormalSpeedMultiplier = 0.9;
 const static double kNormalYawMultiplier = 0.75;
@@ -26,7 +34,7 @@ DriveSystem::DriveSystem(frc::SpeedController& frontLeftMotor, frc::SpeedControl
 
   MecanumDrive(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor) {
                 
-    // merely call parent class constructor
+    // call parent class constructor automatically
 
   }
 
@@ -79,14 +87,53 @@ void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
   }
 }
 
-void DriveSystem::RobotInit(Shooter *shooter) {
+void SetPIDValues (rev::SparkMaxPIDController *pidController) {
+    pidController->SetP     (kPtunedDrive );
+    pidController->SetI     (kItunedDrive );
+    pidController->SetD     (kDtunedDrive );
+    pidController->SetIZone (kIZtunedDrive);
+    pidController->SetFF    (kFFtunedDrive);
+    pidController->SetOutputRange(kMinOutputDrive, kMaxOutputDrive);
+}
+
+void SetEncoderConversion (rev::SparkMaxRelativeEncoder *encoder) {
+  // conversion factor from RPM to FPS (feet per second):
+  //  on diff drive chassis with toughbox, gearbox is 14:50, and wheel is 6" diameter
+  //  1 motor rev = 2 * pi * 3" * 1ft/12" * 1/10.71 = 0.1467 ft
+  //  1 RPM = 0.1467 ft/min * 1min/60sec = .0024 FPS
+  //
+  //  celestial meccanum chassis 11:70 1/4.375
+  //  1 motor rev = 2 * pi * 3" * 1ft/12" * 1/4.375 = 0.3590 ft
+  //  1 RPM = 0.3590 ft/min * 1min/60sec = .006 FPS
+  encoder->SetPositionConversionFactor(0.3590);
+  encoder->SetVelocityConversionFactor(0.006);
+}
+
+void DriveSystem::RobotInit(Shooter *shooter, 
+                rev::SparkMaxPIDController *pidFL, rev::SparkMaxPIDController *pidRL, 
+                rev::SparkMaxPIDController *pidFR, rev::SparkMaxPIDController *pidRR,
+                rev::SparkMaxRelativeEncoder *encoderFL, rev::SparkMaxRelativeEncoder *encoderRL,
+                rev::SparkMaxRelativeEncoder *encoderFR, rev::SparkMaxRelativeEncoder *encoderRR) {
 
   mShooter = shooter;
 
+  // PID for rotating to target
   mPIDControllerLimelight = new frc2::PIDController (kPtunedLimelight, kItunedLimelight, kDtunedLimelight);
   mPIDControllerLimelight->SetTolerance(kPIDToleranceLimeLight, kPIDToleranceLimeLight); // degrees
   mPIDControllerLimelight->SetSetpoint(0.0); // always centering target, so always zero
   frc::SmartDashboard::PutData("Rotate To Target PID", mPIDControllerLimelight);  // dashboard should be able to change values
+
+  // Spark Max stuff
+
+  SetPIDValues (pidFL);
+  SetPIDValues (pidRL);
+  SetPIDValues (pidFR);
+  SetPIDValues (pidRR);
+
+  SetEncoderConversion(encoderFL);
+  SetEncoderConversion(encoderRL);
+  SetEncoderConversion(encoderFR);
+  SetEncoderConversion(encoderRR);
 
   try{
       mAHRS = new AHRS(frc::SPI::Port::kMXP);
