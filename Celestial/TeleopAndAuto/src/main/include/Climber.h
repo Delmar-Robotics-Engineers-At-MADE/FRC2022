@@ -3,6 +3,7 @@
 #include <frc/Joystick.h>
 #include "ctre/Phoenix.h"
 #include "frc/DigitalInput.h"
+#include <frc/DoubleSolenoid.h>
 
 class Climber {
 public:
@@ -20,10 +21,12 @@ private:
   frc::DigitalInput mLimitSwitchPort{4};
   frc::DigitalInput mLimitSwitchStar{5};
   bool mSmartClimberEnabled {false};
+  frc::DoubleSolenoid mSolenoid{frc::PneumaticsModuleType::CTREPCM, 2, 3};
 
   frc::Timer mTimer;
 
   void SmartClimber(int povPad);
   void ManualClimber(frc::Joystick *copilot);
   void CheckHomePositions();
+  void OpenRatchetIfExtending (double powerPort, double powerStar);
 };

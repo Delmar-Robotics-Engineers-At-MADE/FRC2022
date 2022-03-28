@@ -44,6 +44,15 @@ void Climber::SmartClimber(int povPad){
   std::cout << "pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
 }
 
+void Climber::OpenRatchetIfExtending (double powerPort, double powerStar) {
+  if (powerPort > 0.0 || powerStar > 0.0) {
+    // positive means climbers extending, which is when ratchet needs to be open
+    mSolenoid.Set(frc::DoubleSolenoid::kForward);
+  } else { // not extending, so let ratchet close
+    mSolenoid.Set(frc::DoubleSolenoid::kReverse);
+  }
+}
+
 void Climber::ManualClimber(frc::Joystick *copilot){
   bool TODO_Add_Dashboard_Displays = false;
   double powerPort = 0.0;
@@ -71,6 +80,9 @@ void Climber::ManualClimber(frc::Joystick *copilot){
   if (climberIsOnStopStar && powerStar < 0.0) {powerStar = 0.0;}
   if (climberIsAtTopSmartLimitPort && powerPort > 0.0) {powerPort = 0.0;}
   if (climberIsAtTopSmartLimitStar && powerStar > 0.0) {powerStar = 0.0;}
+
+  OpenRatchetIfExtending (powerPort, powerStar);
+
   mClimberPort.Set(ControlMode::PercentOutput, powerPort);
   mClimberStar.Set(ControlMode::PercentOutput, powerStar);
 
@@ -115,7 +127,7 @@ void Climber::TelopPeriodic (frc::Joystick *copilot){
 }
 
 void Climber::RobotInit(){
-  
+
   mClimberStar.ConfigFactoryDefault();
   mClimberPort.ConfigFactoryDefault();
 
