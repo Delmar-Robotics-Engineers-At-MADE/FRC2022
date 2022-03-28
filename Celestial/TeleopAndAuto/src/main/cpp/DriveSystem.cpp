@@ -66,7 +66,7 @@ void DriveSystem::RotateToTarget (frc::Joystick *pilot, frc::Joystick *copilot) 
 
 void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
   bool shooting = (copilot->GetRawButton(4) || copilot->GetRawButton(2));
-  std::cout << "driving" << std::endl;
+  // std::cout << "driving" << std::endl;
   if (shooting) {
     RotateToTarget(pilot, copilot);
   } else {
@@ -79,7 +79,7 @@ void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
     } else if (pilot->GetRawButton(5) || pilot->GetRawButton(6)) {
       DriveCartesian(y*kSlowSpeedMultiplier, -x*kSlowSpeedMultiplier, -z*kSlowSpeedMultiplier, mAHRS->GetAngle());
     } else {
-      std::cout << "normal: " << y << ", " << x << std::endl;
+      // std::cout << "normal: " << y << ", " << x << std::endl;
       DriveCartesian(y*kNormalSpeedMultiplier, -x*kNormalSpeedMultiplier, -z*kNormalYawMultiplier, mAHRS->GetAngle());
     }
     double IR = mColorSensor.GetIR();

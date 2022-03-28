@@ -22,11 +22,11 @@ void Robot::RobotInit() {
 }
 
 void Robot::DoOnceInit()  {
-  // if (!mDoOnceInited) {
-  //   mDoOnceInited = true;
-  //   mClimber.DoOnceInit();
-  //   mRobotDrive.DoOnceInit();
-  //   }  
+  if (!mDoOnceInited) {
+    mDoOnceInited = true;
+    mClimber.DoOnceInit();
+    mRobotDrive.DoOnceInit();
+    }  
 }
 
 void Robot::RepeatableInit() {

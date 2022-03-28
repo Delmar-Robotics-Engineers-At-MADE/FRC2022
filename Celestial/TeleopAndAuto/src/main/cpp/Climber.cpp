@@ -1,10 +1,14 @@
 #include <Climber.h>
 #include <iostream>
 #include <frc/smartdashboard/SmartDashboard.h>
+#include <Constants.h>
 
-enum Constants {
-  kTimeoutMs = 30
-};
+static const double kPowerUp = 1.0;
+static const double kPowerDown = -1.0;
+
+// enum Constants {
+//   kTimeoutMs = 30
+// };
 
 // One rotation is 4096 encoder counts, and encoder is at the output of the gearbox
 const double kClimberPosMiddle = 10 * 4096;
@@ -42,13 +46,25 @@ void Climber::SmartClimber(int povPad){
 
 void Climber::ManualClimber(frc::Joystick *copilot){
   bool TODO_Add_Dashboard_Displays = false;
-  // positive power means raise climbers, so negative power means hang
-  bool climberIsOnStopPort = !mLimitSwitchPort.Get();
-  bool climberIsOnStopStar = !mLimitSwitchStar.Get();
+  double powerPort = 0.0;
+  double powerStar = 0.0;
+
+  bool climberIsOnStopPort = false; // !mLimitSwitchPort.Get();
+  bool climberIsOnStopStar = false; // !mLimitSwitchStar.Get();
   bool climberIsAtTopSmartLimitPort = (mSmartClimberEnabled && mClimberPort.GetSelectedSensorPosition(0) >= kClimberPosMiddle);
   bool climberIsAtTopSmartLimitStar = (mSmartClimberEnabled && mClimberStar.GetSelectedSensorPosition(0) >= kClimberPosMiddle);
-  double powerPort = -copilot->GetRawAxis(0);
-  double powerStar = -copilot->GetRawAxis(3);
+
+  // check controls
+  if (copilot->GetRawButton(5)) {
+    powerPort = kPowerUp;
+  } else if (copilot->GetRawButton(7)) {
+    powerPort = kPowerDown;
+  }
+  if (copilot->GetRawButton(6)) {
+    powerStar = kPowerUp;
+  } else if (copilot->GetRawButton(8)) {
+    powerStar = kPowerDown;
+  }
 
   // don't allow operator to lower climber if it's on the stop or beyond the smart setpoints
   if (climberIsOnStopPort && powerPort < 0.0) {powerPort = 0.0;}
@@ -58,6 +74,9 @@ void Climber::ManualClimber(frc::Joystick *copilot){
   mClimberPort.Set(ControlMode::PercentOutput, powerPort);
   mClimberStar.Set(ControlMode::PercentOutput, powerStar);
 
+  std::cout << "power port: " << powerPort << std::endl;
+  std::cout << "power star: " << powerStar << std::endl;
+  std::cout << "smart climber " << mSmartClimberEnabled << std::endl;
   std::cout << "output: " << mClimberStar.GetMotorOutputPercent()  << " -- ";
   std::cout << "pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
 }
@@ -96,7 +115,11 @@ void Climber::TelopPeriodic (frc::Joystick *copilot){
 }
 
 void Climber::RobotInit(){
+  
   mClimberStar.ConfigFactoryDefault();
+  mClimberPort.ConfigFactoryDefault();
+
+  mClimberStar.SetInverted(true);
 
   /**
    * Grab the 360 degree position of the MagEncoder's absolute
