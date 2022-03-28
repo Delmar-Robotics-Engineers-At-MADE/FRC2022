@@ -194,6 +194,6 @@ void Shooter::DoOnceInit() {
 }
 
 void Shooter::TeleopInit() {
-  mMotorOutVelocity = 0.0;
+  mMotorOutVelocity = 1000.0;
   frc::SmartDashboard::PutNumber("motor output percentage", mMotorOutVelocity);
 }
