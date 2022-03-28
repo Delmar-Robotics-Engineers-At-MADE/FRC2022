@@ -5,6 +5,7 @@
 #include <frc/controller/PIDController.h>
 #include <Constants.h>
 #include "ctre/Phoenix.h"
+#include <Elevator.h>
 
 enum ShooterState {
   kShooterUnknownState = 0,
@@ -18,6 +19,9 @@ enum ShooterState {
 
 class Shooter {
 private:
+
+  // shooter proper and Limelight
+
   constexpr static double kPhi = 21.5;  // angle in degrees of limelight from vertical
   constexpr static double kH1 = 2.5;  // height in feet of limelight from floor
   constexpr static double kH2 = 8.4 - kH1; // height in feet of target ring from limelight
@@ -39,10 +43,17 @@ private:
   void TurnLightOnOrOff (bool turnOn);
   void Shoot (bool highTarget, DriveSysTargetingState driveState);
   void Idle();
-  // bool RotateToTarget();
   bool ReadyShooter();
+
+  // feeder
+  WPI_TalonSRX mFeeder{7};
   void FeedCargo();
+  void StopFeeder();
+  void ManualFeed (frc::Joystick *copilot);
   bool CargoAvailable();
+
+  // elevator
+  Elevator mElevator;
 
 public:
 

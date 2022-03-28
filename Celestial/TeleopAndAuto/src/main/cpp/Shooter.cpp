@@ -6,6 +6,8 @@
 #include <iostream>
 
 static const double kMinTargetAreaPercent = 0.0;
+static const double kRollerIdleSpeed = 1000.0;
+static const double kFeederSpeed = 100.0;
 
 double ConvertRadsToDegrees (double rads) {
     const static double conversion_factor = 180.0/3.141592653589793238463;
@@ -65,11 +67,13 @@ bool Shooter::CargoAvailable() {
 }
 
 bool Shooter::ReadyShooter() {
+  bool TODO_Set_Speed_Function_Of_Distance = false;
+  bool elevationReady = mElevator.Elevate(mTargetDistance);
   return true;
 }
 
 void Shooter::FeedCargo() {
-
+  mFeeder.Set(kFeederSpeed);
 }
 
 void Shooter::Shoot (bool highTarget, DriveSysTargetingState driveState) {
@@ -79,8 +83,10 @@ void Shooter::Shoot (bool highTarget, DriveSysTargetingState driveState) {
     default:
     case kIdle:
       mState = kRotatingToTarget;
+      StopFeeder();
       break; 
     case kRotatingToTarget:
+      StopFeeder();
       // drive system has access to state info, and will know to rotate
       onTarget = (driveState == kDriveOnTarget);
       shooterReady = ReadyShooter();
@@ -97,6 +103,7 @@ void Shooter::Shoot (bool highTarget, DriveSysTargetingState driveState) {
       }
       break;
     case kEmpty:
+      StopFeeder();
       Idle();
       break;
   }
@@ -105,7 +112,19 @@ void Shooter::Shoot (bool highTarget, DriveSysTargetingState driveState) {
 
 void Shooter::Idle(){
   mState = kIdle;
-  // TODO: bring wheel up to idle speed
+  mPortShooter.Set(ControlMode::Velocity, kRollerIdleSpeed);
+}
+
+void Shooter::StopFeeder() {
+  mFeeder.Set(0.0);
+}
+
+void Shooter::ManualFeed (frc::Joystick *copilot) {
+  if (copilot->GetRawButton(3) && copilot->GetRawButton(4)) {
+    FeedCargo();
+  } else if (copilot->GetRawButton(3) && copilot->GetRawButton(2)) {
+    mFeeder.Set(kFeederSpeed);
+  }
 }
 
 void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, DriveSysTargetingState driveState){
@@ -128,6 +147,11 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, Drive
   }
   mMotorOutVelocity = frc::SmartDashboard::GetNumber("motor output percentage", 0);
   mPortShooter.Set(ControlMode::Velocity, mMotorOutVelocity);
+  ManualFeed(copilot);  // alowed at any time
+
+  // we own the elevator, so run it
+  mElevator.TelopPeriodic(copilot);
+
 }
 
 void Shooter::RobotInit() {
@@ -156,6 +180,13 @@ void Shooter::RobotInit() {
   mPortShooter.Config_kI(0, 0.00005, 30);
   mPortShooter.Config_kD(0, 0.0, 30);
   mPortShooter.ConfigSelectedFeedbackSensor(FeedbackDevice::IntegratedSensor, 0, 30);
+
+  // Other motors
+
+  mFeeder.ConfigFactoryDefault();
+  mFeeder.ConfigNominalOutputForward(0, kTimeoutMs);
+  mFeeder.ConfigNominalOutputReverse(0, kTimeoutMs);
+
 }
 
 void Shooter::DoOnceInit() {

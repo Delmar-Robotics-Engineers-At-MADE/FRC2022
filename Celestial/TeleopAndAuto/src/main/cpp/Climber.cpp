@@ -150,6 +150,11 @@ void Climber::CheckHomePositions() {
       mSmartClimberEnabled = true;
     }
   }
+  bool TODO_Set_Smart_Climber_Positions = false;
+  mSmartClimberEnabled = false;  // until we have numbers and limit switches
+  frc::SmartDashboard::PutNumber("Port Climber", mClimberPort.GetSelectedSensorPosition());
+  frc::SmartDashboard::PutNumber("Star Climber", mClimberStar.GetSelectedSensorPosition());
+
 }
 
 void Climber::DoOnceInit() {
