@@ -1,3 +1,5 @@
+#ifdef DELETEME
+
 #include <VelocityController2.h>
 #include <algorithm>
 #include <iostream>
@@ -69,3 +71,5 @@ void VelocityController2::TrackBall (PixyBallTracker *tracker) {
 void VelocityController2::TelopPeriodic (frc::Joystick *pilot){
     mRobotDrive->DriveCartesian(pilot->GetY(), -pilot->GetX(), -pilot->GetZ(), mAHRS->GetAngle());
 }
+
+#endif

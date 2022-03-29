@@ -1,7 +1,7 @@
 #pragma once
 
 #include <frc/smartdashboard/SendableChooser.h>
-#include <VelocityController2.h>
+// #include <VelocityController2.h>
 
 enum DriveTurnStates {
 		kdtsUnknownState = 0,
@@ -21,7 +21,7 @@ enum TurnOnlyStates {
 class AutonomousController {
 
 public:
-  AutonomousController (VelocityController2 *vcontroller); // constructor
+  AutonomousController (/*VelocityController2 *vcontroller*/); // constructor
   void AutonomousInit();
   void AutonomousPeriodic();
 
@@ -41,7 +41,7 @@ private:
   std::string mAutoSelectedOptionsDistance;
   std::string mAutoSelectedOptionsWait;
 
-  VelocityController2 *mVelocityController;
+  // VelocityController2 *mVelocityController;
   DriveTurnStates mdtsAutoState = kdtsUnknownState; 
   TurnOnlyStates mtosAutoState = ktosUnknownState; 
 

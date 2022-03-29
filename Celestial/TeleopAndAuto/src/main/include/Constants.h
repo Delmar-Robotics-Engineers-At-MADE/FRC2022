@@ -2,6 +2,7 @@
 
   enum DriveSysTargetingState {
     kDriveUnknownState = 0,
+    kDriveWaitingForTarget,
     kDriveRotatingToTarget,
     kDriveOnTarget,
     kDriveNotTargeting

@@ -2,9 +2,9 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <iostream>
 
-AutonomousController::AutonomousController (VelocityController2 *vcontroller) { // constructor
+AutonomousController::AutonomousController (/*VelocityController2 *vcontroller*/) { // constructor
 
-  mVelocityController = vcontroller;
+  // mVelocityController = vcontroller;
 
   mChooser.SetDefaultOption(kAutoNameDriveTurnAround, kAutoNameDriveTurnAround);
   mChooser.AddOption(kAutoNameDriveTurnAround, kAutoNameDriveTurnAround);
@@ -33,8 +33,8 @@ void AutonomousController::AutonomousInit() {
   mAutoSelectedOptionsWait = mChooserOptionsWait.GetSelected();
   if (mAutoSelected == kAutoNameDriveTurnAround) {
       frc::SmartDashboard::PutBoolean("Auto Does Something", true);
-      mVelocityController->SetTrapezoidGoal(5.0_ft, 0_fps);
-      mVelocityController->StartMotionTimer();
+      // mVelocityController->SetTrapezoidGoal(5.0_ft, 0_fps);
+      // mVelocityController->StartMotionTimer();
   } else if (mAutoSelected == kAutoNameTurnOnly) {
       frc::SmartDashboard::PutBoolean("Auto Does Something", true);
   } else if (mAutoSelected == kAutoNameJustInit) {
@@ -54,22 +54,22 @@ void AutonomousController::DriveTurnAround() {
       mdtsAutoState = kdtsDriving;
       break;
     case kdtsDriving:
-      drivingDone = mVelocityController->DriveTrapezoid();
+      // drivingDone = mVelocityController->DriveTrapezoid();
       if (drivingDone) {mdtsAutoState = kdtsStraightening;}
       break;
     case kdtsStraightening:
-      turningDone = mVelocityController->TurnRight(0);
+      // turningDone = mVelocityController->TurnRight(0);
       if (turningDone) { mdtsAutoState = kdtsTurning; }
       break;
     case kdtsTurning:
-      turningDone = mVelocityController->TurnRight(180);
+      // turningDone = mVelocityController->TurnRight(180);
       if (turningDone) {
         frc::SmartDashboard::PutBoolean("Auto Complete", true);
         mdtsAutoState = kdtsCompleted;
         }
       break;
     case kdtsCompleted:
-      mVelocityController->StopDriving();
+      // mVelocityController->StopDriving();
       break;    
     case kdtsUnknownState:
     default:
@@ -85,14 +85,14 @@ void AutonomousController::TurnOnly() {
       mtosAutoState = ktosTurning;
       break;
     case ktosTurning:
-      turningDone = mVelocityController->TurnRight(90);
+      // turningDone = mVelocityController->TurnRight(90);
       if (turningDone) {
         frc::SmartDashboard::PutBoolean("Auto Complete", true);
         mtosAutoState = ktosCompleted;
         }
       break;
     case ktosCompleted:
-      mVelocityController->StopDriving();
+      // mVelocityController->StopDriving();
       break;
     case ktosUnknownState:
     default:
@@ -107,6 +107,6 @@ void AutonomousController::AutonomousPeriodic() {
   } else if (mAutoSelected == kAutoNameTurnOnly) {
     TurnOnly();
   } else {
-    mVelocityController->StopDriving();
+    // mVelocityController->StopDriving();
   }
 }

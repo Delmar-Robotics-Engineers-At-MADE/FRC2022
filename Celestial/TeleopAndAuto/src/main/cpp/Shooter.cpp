@@ -42,12 +42,15 @@ void Shooter::TurnLightOnOrOff (bool turnOn) {
 void Shooter::CheckLimelight() {
   double tv = mLimeTable->GetNumber("tv",0.0); 
   mTargetSeen = (tv != 0.0);
-  mTargetArea = mLimeTable->GetNumber("ta",0.0);  
-  mTargetAngleHorizontal = 0.0;
-  mTargetAngleVertical = 0.0;
-  mTargetDistance = 0.0;
+
+  // do NOT set these to zero if target not seen, because target flickers in and out;
+  // let the numbers reflect the last time it was seen
+  // mTargetAngleHorizontal = 0.0;
+  // mTargetAngleVertical = 0.0;
+  // mTargetDistance = 0.0;
 
   if (mTargetSeen) {
+    mTargetArea = mLimeTable->GetNumber("ta",0.0);  
     if (mTargetArea > kMinTargetAreaPercent) {  
       mTargetAngleHorizontal = mLimeTable->GetNumber("tx",0.0);
       mTargetAngleVertical = mLimeTable->GetNumber("ty",0.0);   
