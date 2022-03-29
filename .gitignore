@@ -9,7 +9,6 @@ Testing/Samples-from-2022/Falcon/C++ General/VelocityClosedLoop/build/
 Celestial/TeleopAndAuto/doc
 MiniMec/Mecanum-sample/doc
 Celestial/Mecanum-sample/.gradle/
-*.json
 Celestial/Mecanum-sample/build/
 Protobot/PositionClosedLoop/.gradle/
 Protobot/PositionClosedLoop/build/

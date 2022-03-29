@@ -3,10 +3,14 @@
 #include <frc/Encoder.h>
 #include "ctre/Phoenix.h"
 #include <frc/Joystick.h>
+#include <frc/DigitalInput.h>
 
 class Elevator {
 public:
   void TelopPeriodic (frc::Joystick *copilot);
+  void DoOnceInit();
+  void RobotInit();
+  void RobotPeriodic();
   bool Elevate (double distance);
   // bool Elevate(double distance);
 
@@ -31,10 +35,9 @@ private:
    * precision but more noise in the rate.
    */
   frc::Encoder mEncoder{0, 1, false, frc::Encoder::k4X};
-
+  frc::DigitalInput mLimitSwitch{4};
+  
   void ManualElevate (frc::Joystick *copilot);
   void CheckHomePosition();
-  void DoOnceInit();
-  void RobotInit();
 
 };

@@ -196,4 +196,5 @@ void Climber::DoOnceInit() {
   mClimberStar.SetSelectedSensorPosition (0.0 , 0);
   std::cout << "DoOnce pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
   CheckHomePositions();
+  OpenRatchetIfExtending(0,0); // put ratchet solenoid in position to hold (not extending)
 }

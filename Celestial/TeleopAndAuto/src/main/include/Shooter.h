@@ -68,4 +68,5 @@ public:
   void RobotInit();
   void DoOnceInit();
   void TeleopInit();
+  void RobotPeriodic();
 };

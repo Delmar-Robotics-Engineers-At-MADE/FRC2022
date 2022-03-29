@@ -17,6 +17,7 @@ public:
   void TeleopPeriodic() override;
   void AutonomousInit() override;
   void AutonomousPeriodic() override;
+  void RobotPeriodic() override;
 
 private:
   rev::CANSparkMax mFrontLeft{1, rev::CANSparkMax::MotorType::kBrushless};

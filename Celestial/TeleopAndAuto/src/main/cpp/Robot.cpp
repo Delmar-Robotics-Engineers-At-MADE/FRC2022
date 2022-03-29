@@ -21,6 +21,11 @@ void Robot::RobotInit() {
   
 }
 
+void Robot::RobotPeriodic() {
+  // for testing
+  mShooter->RobotPeriodic();  // display limit switch
+}
+
 void Robot::DoOnceInit()  {
   if (!mDoOnceInited) {
     mDoOnceInited = true;

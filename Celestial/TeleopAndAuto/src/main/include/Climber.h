@@ -18,8 +18,8 @@ private:
   // WPI_TalonSRX mClimberStar{12};
   WPI_TalonSRX mClimberPort{3};  
   WPI_TalonSRX mClimberStar{12}; 
-  frc::DigitalInput mLimitSwitchPort{4};
-  frc::DigitalInput mLimitSwitchStar{5};
+  frc::DigitalInput mLimitSwitchPort{2};
+  frc::DigitalInput mLimitSwitchStar{3};
   bool mSmartClimberEnabled {false};
   frc::DoubleSolenoid mSolenoid{frc::PneumaticsModuleType::CTREPCM, 2, 3};
 

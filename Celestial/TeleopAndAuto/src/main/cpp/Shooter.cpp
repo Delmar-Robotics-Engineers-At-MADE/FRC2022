@@ -187,6 +187,9 @@ void Shooter::RobotInit() {
   mFeeder.ConfigNominalOutputForward(0, kTimeoutMs);
   mFeeder.ConfigNominalOutputReverse(0, kTimeoutMs);
 
+  // Shooter
+  mElevator.RobotInit();
+
 }
 
 void Shooter::DoOnceInit() {
@@ -196,4 +199,9 @@ void Shooter::DoOnceInit() {
 void Shooter::TeleopInit() {
   mMotorOutVelocity = 1000.0;
   frc::SmartDashboard::PutNumber("motor output percentage", mMotorOutVelocity);
+}
+
+void Shooter::RobotPeriodic() {
+  // for testing
+  mElevator.RobotPeriodic();
 }
