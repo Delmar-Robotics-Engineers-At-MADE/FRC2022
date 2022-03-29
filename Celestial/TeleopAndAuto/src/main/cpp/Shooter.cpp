@@ -6,8 +6,9 @@
 #include <iostream>
 
 static const double kMinTargetAreaPercent = 0.0;
-static const double kRollerIdleSpeed = 1000.0;
+static const double kRollerIdleSpeed = 1500.0;
 static const double kFeederSpeed = 100.0;
+static const double kVelocityTolerance = 100;
 
 double ConvertRadsToDegrees (double rads) {
     const static double conversion_factor = 180.0/3.141592653589793238463;
@@ -66,10 +67,27 @@ bool Shooter::CargoAvailable() {
   return true;
 }
 
-bool Shooter::ReadyShooter() {
-  bool TODO_Set_Speed_Function_Of_Distance = false;
-  bool elevationReady = mElevator.Elevate(mTargetDistance);
-  return true;
+double CalcHighTargetSpeed(double d){
+  double result = 59.0 * d * d - 1303.0/180.0 * d + 1081.0/10.0;
+  std::cout << "speed target: " << result << std::endl;
+  return result;
+}
+
+bool Shooter::ReadyShooter(bool hightTarget) {
+  bool result = false;
+  if (hightTarget) {
+    double speed = CalcHighTargetSpeed(mTargetDistance);
+    mPortShooter.Set(ControlMode::Velocity, speed);
+  } else { // low target
+    // for now permit dashboard widget to control speed
+    mMotorOutVelocity = frc::SmartDashboard::GetNumber("motor output percentage", 0);
+    mPortShooter.Set(ControlMode::Velocity, mMotorOutVelocity);
+  }
+  bool TODO_Speed_for_Low_Target = false;
+  bool elevationReady = mElevator.Elevate(hightTarget, mTargetDistance);
+  // shooter is ready when elevation is achieved and shooter speed is achieved
+  result = elevationReady && mPortShooter.GetClosedLoopError() < kVelocityTolerance;
+  return result;
 }
 
 void Shooter::FeedCargo() {
@@ -89,7 +107,7 @@ void Shooter::Shoot (bool highTarget, DriveSysTargetingState driveState) {
       StopFeeder();
       // drive system has access to state info, and will know to rotate
       onTarget = (driveState == kDriveOnTarget);
-      shooterReady = ReadyShooter();
+      shooterReady = ReadyShooter(highTarget);
       frc::SmartDashboard::PutBoolean("On Target", onTarget);
       frc::SmartDashboard::PutBoolean("Shooter Ready", shooterReady);
       if (onTarget && shooterReady) {mState = kShooterReady;}
@@ -144,10 +162,8 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, Drive
     frc::SmartDashboard::PutBoolean("On Target", false);
     frc::SmartDashboard::PutBoolean("Shooter Ready", false);
     frc::SmartDashboard::PutBoolean("Feeding Cargo", false);
-  }
-  mMotorOutVelocity = frc::SmartDashboard::GetNumber("motor output percentage", 0);
-  mPortShooter.Set(ControlMode::Velocity, mMotorOutVelocity);
-  ManualFeed(copilot);  // alowed at any time
+    ManualFeed(copilot);  // alowed if not shooting
+ }
 
   // we own the elevator, so run it
   mElevator.TelopPeriodic(copilot);

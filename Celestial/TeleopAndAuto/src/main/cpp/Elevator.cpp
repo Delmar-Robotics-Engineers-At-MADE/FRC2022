@@ -6,6 +6,10 @@
 static const double kEncoderLimitTop = 300.0;
 static const double kEncoderLimitBottom = 20.0;
 
+const static double kPtuned = 0.1;
+const static double kItuned = 0.0;
+const static double kDtuned = 0.0;
+
 void Elevator::ManualElevate (frc::Joystick *copilot) {
   // positive power moves nut up, lowering elevation, flattening trajectory, for farther away
   // negative power moves nut down, increasing elevation, for steeper trajectory
@@ -31,7 +35,6 @@ void Elevator::ManualElevate (frc::Joystick *copilot) {
 // }
 
 void Elevator::CheckHomePosition() {
-  bool TODO_Elevator_Limit = false;
   if (mHomed) {
     // no need to check any more
   } else {
@@ -53,12 +56,32 @@ void Elevator::DoOnceInit() {
 
 void Elevator::TelopPeriodic (frc::Joystick *copilot) {
   CheckHomePosition();
-  ManualElevate(copilot);
+  if (mHomed && copilot->GetRawButton(4)) { // shooting at high goal
+   // Elevate method is called from Shoot in Shooter, so do nothing here
+  } else {
+    ManualElevate(copilot);
+  }
 }
 
-bool Elevator::Elevate (double distance) {
-  bool TODO_Elevate_Per_Target_Distance = false;
-  return true;
+double CalcHighTargetElevation(double d){
+  double result = 59.0 * d * d - 1303.0/180.0 * d + 1081.0/10.0;
+  std::cout << "elevation target: " << result << std::endl;
+  return result;
+}
+
+bool Elevator::Elevate (bool hightTarget, double distance) {
+  bool result = false;
+  if (mHomed && hightTarget) {
+    double target = CalcHighTargetElevation(distance);
+    mPIDController->SetSetpoint(target);
+    double speed = mPIDController->Calculate(mEncoder.Get());
+    mMotor.Set(speed);
+    result = mPIDController->AtSetpoint();
+  } else { // low target
+    // for now, allow manual position
+  }
+  bool TODO_Low_Target_Elevation = false;
+  return result;
 }
 
 void Elevator::RobotInit() {
@@ -66,6 +89,9 @@ void Elevator::RobotInit() {
   mMotor.ConfigNominalOutputForward(0, kTimeoutMs);
   mMotor.ConfigNominalOutputReverse(0, kTimeoutMs);
   mMotor.SetInverted(true);
+
+  mPIDController = new frc2::PIDController (kPtuned, kItuned, kDtuned);
+  frc::SmartDashboard::PutData("Elevator", mPIDController);  // dashboard should be able to change values
 }
 
 void Elevator::RobotPeriodic() {

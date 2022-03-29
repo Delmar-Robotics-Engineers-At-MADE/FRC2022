@@ -4,6 +4,7 @@
 #include "ctre/Phoenix.h"
 #include <frc/Joystick.h>
 #include <frc/DigitalInput.h>
+#include <frc/controller/PIDController.h>
 
 class Elevator {
 public:
@@ -11,7 +12,7 @@ public:
   void DoOnceInit();
   void RobotInit();
   void RobotPeriodic();
-  bool Elevate (double distance);
+  bool Elevate (bool hightTarget, double distance);
   // bool Elevate(double distance);
 
 private:
@@ -36,6 +37,7 @@ private:
    */
   frc::Encoder mEncoder{0, 1, false, frc::Encoder::k4X};
   frc::DigitalInput mLimitSwitch{4};
+  frc2::PIDController *mPIDController;
   
   void ManualElevate (frc::Joystick *copilot);
   void CheckHomePosition();

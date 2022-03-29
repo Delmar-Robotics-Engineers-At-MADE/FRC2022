@@ -24,7 +24,7 @@ private:
 
   constexpr static double kPhi = 21.5;  // angle in degrees of limelight from vertical
   constexpr static double kH1 = 2.5;  // height in feet of limelight from floor
-  constexpr static double kH2 = 8.4 - kH1; // height in feet of target ring from limelight
+  constexpr static double kH2 = 8.6 - kH1; // height in feet of target ring from limelight
   double mPhi = kPhi;
   double mH2 = kH2;
 
@@ -43,7 +43,7 @@ private:
   void TurnLightOnOrOff (bool turnOn);
   void Shoot (bool highTarget, DriveSysTargetingState driveState);
   void Idle();
-  bool ReadyShooter();
+  bool ReadyShooter(bool hightTarget);
 
   // feeder
   WPI_TalonSRX mFeeder{7};
