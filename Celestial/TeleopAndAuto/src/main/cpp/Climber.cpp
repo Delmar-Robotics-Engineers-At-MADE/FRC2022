@@ -177,6 +177,7 @@ void Climber::RobotInit(){
 }
 
 void Climber::CheckHomePositions() {
+  bool TODO_Set_Smart_Climber_Positions = false;
   if (!mSmartClimberEnabled) { // no need to do this check if this is already set true
     bool climberIsOnStopPort = !mLimitSwitchPort.Get();
     bool climberIsOnStopStar = !mLimitSwitchStar.Get();
@@ -186,7 +187,6 @@ void Climber::CheckHomePositions() {
       mSmartClimberEnabled = true;
     }
   }
-  bool TODO_Set_Smart_Climber_Positions = false;
   mSmartClimberEnabled = false;  // until we have numbers and limit switches
   frc::SmartDashboard::PutNumber("Port Climber", mClimberPort.GetSelectedSensorPosition());
   frc::SmartDashboard::PutNumber("Star Climber", mClimberStar.GetSelectedSensorPosition());

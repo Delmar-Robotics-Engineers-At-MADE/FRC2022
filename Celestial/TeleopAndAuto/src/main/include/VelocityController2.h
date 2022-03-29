@@ -1,5 +1,4 @@
-#ifndef VELOCITYCONTROLLER
-#define VELOCITYCONTROLLER
+#ifdef DELETEME
 
 #include <frc/drive/MecanumDrive.h>
 #include <units/velocity.h>

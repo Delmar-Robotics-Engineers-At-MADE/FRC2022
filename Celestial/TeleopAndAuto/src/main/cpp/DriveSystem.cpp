@@ -40,26 +40,31 @@ DriveSystem::DriveSystem(frc::SpeedController& frontLeftMotor, frc::SpeedControl
 
 void DriveSystem::RotateToTarget (frc::Joystick *pilot, frc::Joystick *copilot) { 
   double rotateRate = 0.0;
-  if (mShooter->mTargetSeen) {
-    double angleToTarget = mShooter->mTargetAngleHorizontal;
-    rotateRate = mPIDControllerLimelight->Calculate(angleToTarget);
-    if (mPIDControllerLimelight->AtSetpoint()) {
-      mTargetingState = kDriveOnTarget;
-    } else {
-      mTargetingState = kDriveRotatingToTarget;
-    }
-  } else { // no target in sight, so rotate until we see it
-    mTargetingState = kDriveRotatingToTarget;
-  //   rotateRate = -pilot->GetZ();
-  //   if (rotateRate == 0.0) {
-  //     rotateRate = -copilot->GetZ();
-  //   }
-  //   if (rotateRate == 0.0) {
-  //     rotateRate = copilot->GetX();
-  //   }
-  //   if (rotateRate == 0.0) {
-  //     rotateRate = kDefaultRotateToTargetRate;
-  //   }
+  double angleToTarget = mShooter->mTargetAngleHorizontal;
+  switch (mTargetingState) {
+    default:
+      if (mShooter->mTargetSeen) {
+        mTargetingState = kDriveRotatingToTarget;
+      } else { // no target in sight; allow copilot to rotate
+        mTargetingState = kDriveWaitingForTarget;
+      }
+      break;
+    case kDriveRotatingToTarget: // target has been seen, so no more driver control
+      rotateRate = mPIDControllerLimelight->Calculate(angleToTarget);
+      if (mPIDControllerLimelight->AtSetpoint()) {
+        mTargetingState = kDriveOnTarget;
+      } else {
+        mTargetingState = kDriveRotatingToTarget;
+      }
+      break;
+    case kDriveOnTarget:
+      // settle; don't keep moving
+      rotateRate = 0.0;
+      break;
+    case kDriveWaitingForTarget:
+      // let copilot rotate robot toward target until it locks on
+      rotateRate = copilot->GetX();
+      break;
   }
   DriveCartesian(0, 0, rotateRate);
 }
