@@ -4,6 +4,8 @@
 #include "ctre/Phoenix.h"
 #include "frc/DigitalInput.h"
 #include <frc/DoubleSolenoid.h>
+#include <frc/PneumaticsControlModule.h>
+#include <frc/Solenoid.h>
 
 class Climber {
 public:
@@ -21,7 +23,7 @@ private:
   frc::DigitalInput mLimitSwitchPort{2};
   frc::DigitalInput mLimitSwitchStar{3};
   bool mSmartClimberEnabled {false};
-  frc::DoubleSolenoid mSolenoid{frc::PneumaticsModuleType::CTREPCM, 2, 3};
+  frc::DoubleSolenoid mSolenoid{frc::PneumaticsModuleType::CTREPCM, 0, 1};
 
   frc::Timer mTimer;
 

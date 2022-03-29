@@ -45,6 +45,7 @@ void Climber::SmartClimber(int povPad){
 }
 
 void Climber::OpenRatchetIfExtending (double powerPort, double powerStar) {
+  std::cout << "climber power port: " << powerPort << ", power star: " << powerStar << std::endl;
   if (powerPort > 0.0 || powerStar > 0.0) {
     // positive means climbers extending, which is when ratchet needs to be open
     mSolenoid.Set(frc::DoubleSolenoid::kForward);

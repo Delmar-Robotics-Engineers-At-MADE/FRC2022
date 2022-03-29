@@ -11,7 +11,7 @@ public:
   void TeleopPeriodic (frc::Joystick *pilot);
   void RobotInit();
 private:
-  frc::DoubleSolenoid mSolenoid{frc::PneumaticsModuleType::CTREPCM, 0, 1};
+  frc::DoubleSolenoid mSolenoid{frc::PneumaticsModuleType::CTREPCM, 2, 3};
   WPI_TalonSRX mRoller{8};
 
 };
