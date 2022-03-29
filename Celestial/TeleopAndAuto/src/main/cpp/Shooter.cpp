@@ -68,7 +68,7 @@ bool Shooter::CargoAvailable() {
 }
 
 double CalcHighTargetSpeed(double d){
-  double result = 59.0 * d * d - 1303.0/180.0 * d + 1081.0/10.0;
+  double result = (173.0/18.0) * d * d - (11845.0/18.0) * d + 5057;
   std::cout << "speed target: " << result << std::endl;
   return result;
 }
