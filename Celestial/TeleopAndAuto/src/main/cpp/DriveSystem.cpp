@@ -12,7 +12,7 @@ const static double kDtunedGyro = 0.0;
 const static double kPtunedLimelight= 0.02;
 const static double kItunedLimelight = 0.0;
 const static double kDtunedLimelight = 0.0;
-const static double kPIDToleranceLimeLight = 2.0;
+const static double kPIDToleranceLimeLight = 5.0;
 
 const static double kPtunedDrive = 0.1;
 const static double kItunedDrive = 0.0; 
@@ -41,6 +41,7 @@ DriveSystem::DriveSystem(frc::SpeedController& frontLeftMotor, frc::SpeedControl
 void DriveSystem::RotateToTarget (frc::Joystick *pilot, frc::Joystick *copilot) { 
   double rotateRate = 0.0;
   double angleToTarget = mShooter->mTargetAngleHorizontal;
+  std::cout << "rotating, target seen: " << mShooter->mTargetSeen << std::endl;
   switch (mTargetingState) {
     default:
       if (mShooter->mTargetSeen) {
@@ -63,7 +64,11 @@ void DriveSystem::RotateToTarget (frc::Joystick *pilot, frc::Joystick *copilot) 
       break;
     case kDriveWaitingForTarget:
       // let copilot rotate robot toward target until it locks on
-      rotateRate = copilot->GetX();
+      if (mShooter->mTargetSeen) {
+        mTargetingState = kDriveRotatingToTarget;
+      } else {
+        rotateRate = copilot->GetX();
+      }
       break;
   }
   DriveCartesian(0, 0, rotateRate);
@@ -73,6 +78,7 @@ void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
   bool shooting = (copilot->GetRawButton(4) || copilot->GetRawButton(2));
   // std::cout << "driving" << std::endl;
   if (shooting) {
+    std::cout << "drivesys: shooting" << std::endl;
     RotateToTarget(pilot, copilot);
   } else {
     mTargetingState = kDriveNotTargeting;
@@ -128,7 +134,7 @@ void DriveSystem::RobotInit(Shooter *shooter,
   mPIDControllerLimelight->SetSetpoint(0.0); // always centering target, so always zero
 
   // allow dashboard adjustment of PID
-  frc::SmartDashboard::PutData("Rotate To Target PID", mPIDControllerLimelight);  // dashboard should be able to change values
+  frc::SmartDashboard::PutData("Rotate PID", mPIDControllerLimelight);  // dashboard should be able to change values
   // frc::SmartDashboard::PutData("Front Left", pidFL);  // dashboard should be able to change values
   // frc::SmartDashboard::PutData("Rear Left", pidRL);  // dashboard should be able to change values
   // frc::SmartDashboard::PutData("Front Right", pidFR);  // dashboard should be able to change values

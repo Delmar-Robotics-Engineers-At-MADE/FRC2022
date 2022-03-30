@@ -7,7 +7,7 @@
 
 static const double kMinTargetAreaPercent = 0.0;
 static const double kRollerIdleSpeed = 1500.0;
-static const double kVelocityTolerance = 100;
+static const double kVelocityTolerance = 500;
 static const double kFeederSpeed = 0.5;
 
 double ConvertRadsToDegrees (double rads) {
@@ -32,10 +32,13 @@ Shooter::Shooter () {  // constructor
 
 void Shooter::TurnLightOnOrOff (bool turnOn) {
   bool turnOff = !turnOn;
+  bool lightIsOff = !mLightOn;
   if (mLightOn && turnOff) {
     mLimeTable->PutNumber("ledMode",1.0); // LED off
-  } else if (!mLightOn && turnOn) {
+    mLightOn = false;
+  } else if (lightIsOff && turnOn) {
     mLimeTable->PutNumber("ledMode",3.0); // LED on bright
+    mLightOn = true;
   }
 }
 
@@ -72,7 +75,7 @@ bool Shooter::CargoAvailable() {
 
 double CalcHighTargetSpeed(double d){
   double result = (173.0/18.0) * d * d - (11845.0/18.0) * d + 5057;
-  std::cout << "speed target: " << result << std::endl;
+  // std::cout << "speed target: " << result << std::endl;
   return result;
 }
 
@@ -80,6 +83,7 @@ bool Shooter::ReadyShooter(bool hightTarget) {
   bool result = false;
   if (hightTarget) {
     double speed = CalcHighTargetSpeed(mTargetDistance);
+    frc::SmartDashboard::PutNumber("Shooter V target", speed);
     mPortShooter.Set(ControlMode::Velocity, speed);
   } else { // low target
     // for now permit dashboard widget to control speed
@@ -89,6 +93,7 @@ bool Shooter::ReadyShooter(bool hightTarget) {
   }
   bool TODO_Speed_for_Low_Target = false;
   bool elevationReady = mElevator.Elevate(hightTarget, mTargetDistance);
+  frc::SmartDashboard::PutBoolean("Elevator Ready", elevationReady);
   // shooter is ready when elevation is achieved and shooter speed is achieved
   result = elevationReady && mPortShooter.GetClosedLoopError() < kVelocityTolerance;
   return result;
@@ -101,6 +106,8 @@ void Shooter::FeedCargo() {
 void Shooter::Shoot (bool highTarget, DriveSysTargetingState driveState) {
   bool onTarget = false;
   bool shooterReady = false;
+  frc::SmartDashboard::PutNumber("Shooter State", mState);
+  frc::SmartDashboard::PutNumber("Drive State", driveState);
   switch (mState) {
     default:
     case kIdle:
@@ -162,7 +169,7 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, Drive
     TurnLightOnOrOff(true);
     CheckLimelight();
     Shoot(shootAtHighGoal, driveState);
-    std::cout << "shooter state" << mState << std::endl;
+    // std::cout << "shooter state" << mState << std::endl;
   } else { // no shooter buttons pressed
     TurnLightOnOrOff(false);
     Idle();
@@ -200,10 +207,10 @@ void Shooter::RobotInit() {
 
   // Port is the leader, so set its PID and sensor
 
-  mPortShooter.Config_kF(0, 0.045, 30);
+  mPortShooter.Config_kF(0, 0.045, 30); // was .045 in 2020
   mPortShooter.Config_kP(0, 0.009, 30);
-  mPortShooter.Config_kI(0, 0.00005, 30);
-  mPortShooter.Config_kD(0, 0.0, 30);
+  mPortShooter.Config_kI(0, 0.000005, 30); // was .00005 in 2020
+  mPortShooter.Config_kD(0, 0.0009, 30); // was 0 in 2020
   mPortShooter.ConfigSelectedFeedbackSensor(FeedbackDevice::IntegratedSensor, 0, 30);
 
   // Other motors
@@ -227,7 +234,7 @@ void Shooter::RepeatableInit() {
 }
 
 void Shooter::TeleopInit() {
-  mMotorOutVelocity = 1000.0;
+  mMotorOutVelocity = kRollerIdleSpeed;
   frc::SmartDashboard::PutNumber("motor output percentage", mMotorOutVelocity);
 }
 

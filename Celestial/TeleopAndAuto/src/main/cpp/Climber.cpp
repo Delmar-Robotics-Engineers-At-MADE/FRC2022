@@ -124,14 +124,14 @@ void Climber::ManualClimber(frc::Joystick *copilot){
     // std::cout << "powering climbers" << std::endl;
     mClimberPort.Set(ControlMode::PercentOutput, powerPort);
     mClimberStar.Set(ControlMode::PercentOutput, powerStar);
-    if (powerPort == 0.0) {
-      // std::cout << "stopping port" << std::endl;
-      mClimberPort.StopMotor(); // above power set should be same but isn't
-    }
-    if (powerStar == 0.0) {
-      // std::cout << "stopping star" << std::endl;
-      mClimberStar.StopMotor(); // above power set should be same but isn't
-    }
+    // if (powerPort == 0.0) {
+    //   // std::cout << "stopping port" << std::endl;
+    //   mClimberPort.StopMotor(); // above power set should be same but isn't
+    // }
+    // if (powerStar == 0.0) {
+    //   // std::cout << "stopping star" << std::endl;
+    //   mClimberStar.StopMotor(); // above power set should be same but isn't
+    // }
   }
 
   // std::cout << "power port: " << powerPort << std::endl;

@@ -8,13 +8,14 @@ static const double kEncoderLimitBottom = 20.0;
 
 const static double kPtuned = 0.1;
 const static double kItuned = 0.0;
-const static double kDtuned = 0.0;
+const static double kDtuned = 0.001;
+const static double kPIDTolerance = 5;
 
 void Elevator::ManualElevate (frc::Joystick *copilot) {
   // positive power moves nut up, lowering elevation, flattening trajectory, for farther away
   // negative power moves nut down, increasing elevation, for steeper trajectory
   double speed = -copilot->GetY();
-  double position = -mEncoder.GetDistance();
+  double position = -mEncoder.GetDistance();  // IMPORTANT: invert encoder!
   bool onLimitSwitch = !mLimitSwitch.Get();
   frc::SmartDashboard::PutNumber("elevator speed", speed);
   frc::SmartDashboard::PutNumber("elevator pos", position);
@@ -22,7 +23,7 @@ void Elevator::ManualElevate (frc::Joystick *copilot) {
   if (speed > 0.0) {
     // don't go past top encoder limit
     if (mHomed && position >= kEncoderLimitTop) {speed = 0.0; std::cout << "elevator at encoder top"<< std::endl;}
-  } else { // speed < 0
+  } else if (speed < 0.0) {
     if (mHomed && position <= kEncoderLimitBottom) {speed = 0.0; std::cout << "elevator at encoder bottom" << std::endl;}
     if (onLimitSwitch) {speed = 0.0; std::cout << "elevator on limit" << std::endl;}
   }
@@ -45,7 +46,6 @@ void Elevator::CheckHomePosition() {
     }
     frc::SmartDashboard::PutBoolean("Elevator Homed", mHomed);
   }
-  frc::SmartDashboard::PutBoolean("Elevator", mEncoder.GetDistance());
 }
 
 void Elevator::DoOnceInit() {
@@ -65,11 +65,11 @@ void Elevator::TelopPeriodic (frc::Joystick *copilot) {
 
 double CalcHighTargetElevation(double d){
   double result = (59.0/180.0) * d * d - (1303.0/180.0) * d + 1081.0/10.0;
-  std::cout << "elevation target: " << result << std::endl;
-  std::cout << "distance: " << d << std::endl;
-  std::cout << "intermediate: " << (59.0/180.0) * d * d  << std::endl;
-  std::cout << "intermediate: " << (1303.0/180.0) * d << std::endl;
-  std::cout << "intermediate: " << 1081.0/10.0 << std::endl;
+  // std::cout << "elevation target: " << result << std::endl;
+  // std::cout << "distance: " << d << std::endl;
+  // std::cout << "intermediate: " << (59.0/180.0) * d * d  << std::endl;
+  // std::cout << "intermediate: " << (1303.0/180.0) * d << std::endl;
+  // std::cout << "intermediate: " << 1081.0/10.0 << std::endl;
   return result;
 }
 
@@ -77,9 +77,11 @@ bool Elevator::Elevate (bool hightTarget, double distance) {
   bool result = false;
   if (mHomed && hightTarget) {
     double target = CalcHighTargetElevation(distance);
+    double position = -mEncoder.GetDistance(); // invert encoder, as in ManualElevate
     mPIDController->SetSetpoint(target);
-    double speed = mPIDController->Calculate(mEncoder.Get());
-    mMotor.Set(speed);
+    double speed = mPIDController->Calculate(position);  
+    if (target > kEncoderLimitTop || target < kEncoderLimitBottom) {std::cout << "elevator target beyond limit"<< std::endl;}
+    else {mMotor.Set(speed);}
     result = mPIDController->AtSetpoint();
   } else { // low target
     // for now, allow manual position
@@ -95,7 +97,8 @@ void Elevator::RobotInit() {
   mMotor.SetInverted(true);
 
   mPIDController = new frc2::PIDController (kPtuned, kItuned, kDtuned);
-  frc::SmartDashboard::PutData("Elevator", mPIDController);  // dashboard should be able to change values
+  mPIDController->SetTolerance(kPIDTolerance);
+  frc::SmartDashboard::PutData("Elevator PID", mPIDController);  // dashboard should be able to change values
 }
 
 void Elevator::RobotPeriodic() {
