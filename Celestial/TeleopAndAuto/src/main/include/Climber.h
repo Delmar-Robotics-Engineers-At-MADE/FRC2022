@@ -28,8 +28,8 @@ private:
   // WPI_TalonSRX mClimberStar{12};
   WPI_TalonSRX mClimberPort{3};  
   WPI_TalonSRX mClimberStar{12}; 
-  frc::DigitalInput mLimitSwitchPort{2};
-  frc::DigitalInput mLimitSwitchStar{3};
+  frc::DigitalInput mLimitSwitchPort{3};
+  frc::DigitalInput mLimitSwitchStar{2};
   bool mSmartClimberEnabled {false};
   frc::DoubleSolenoid mSolenoid{frc::PneumaticsModuleType::CTREPCM, 0, 1};
 
@@ -38,7 +38,7 @@ private:
   RatchetState mRatchetState = kRatchetUnknown;
 
   void SmartClimber(int povPad);
-  void ManualClimber(frc::Joystick *copilot);
+  void ManualClimber(frc::Joystick *copilot, bool slowspeed);
   void CheckHomePositions();
   void OpenRatchetIfExtending (double powerPort, double powerStar);
   void StopClimbers();

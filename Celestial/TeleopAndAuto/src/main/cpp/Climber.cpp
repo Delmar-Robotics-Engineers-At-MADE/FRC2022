@@ -3,8 +3,8 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <Constants.h>
 
-static const double kPowerUp = 0.3;//1.0;
-static const double kPowerDown = -0.3;//-1.0;
+static const double kPowerUp = 1.0;
+static const double kPowerDown = -1.0; 
 constexpr units::time::second_t kRatchetTimeDelay = 1.0_s; // seconds
 
 // enum Constants {
@@ -12,11 +12,12 @@ constexpr units::time::second_t kRatchetTimeDelay = 1.0_s; // seconds
 // };
 
 // One rotation is 4096 encoder counts, and encoder is at the output of the gearbox
-const double kClimberPosMiddle = 10 * 4096;
-const double kClimberPosLow = 6 * 4096;
+const double kClimberPosMiddle = 26000.0; // was 10 * 4096;
+const double kClimberPosLow = 18000.0; 
 const double kClimberPosRetracted = 1 * 4096;
 
 void Climber::SmartClimber(int povPad){
+#ifdef FIX_PORT_SIDE_CLOSED_LOOP_BEHAVIOR
   double target = 0.0;
   switch(povPad) {
     case 0:
@@ -36,13 +37,21 @@ void Climber::SmartClimber(int povPad){
       mClimberStar.Set(ControlMode::PercentOutput, 0);
       break;
     }
+  frc::SmartDashboard::PutNumber("Smart Climb target", target);
   if (target > 0.0) {
+    OpenRatchetIfExtending (target, target);
     mClimberPort.Set(ControlMode::Position, target);
     mClimberStar.Set(ControlMode::Position, target);
   }
 
-  std::cout << "target: " << target << " -- ";
-  std::cout << "pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
+  std::cout << "target: " << target <<  std::endl;
+  std::cout << "port pos: " << mClimberPort.GetSelectedSensorPosition(0) ;
+  std::cout << ", power: " << mClimberPort.GetMotorOutputPercent() ;
+  std::cout << ", target: " << mClimberPort.GetClosedLoopTarget() << std::endl;
+  std::cout << "star pos: " << mClimberStar.GetSelectedSensorPosition(0);
+  std::cout << ", power: " << mClimberStar.GetMotorOutputPercent() ;
+  std::cout << ", target: " << mClimberStar.GetClosedLoopTarget() << std::endl;
+#endif
 }
 
 void Climber::StopClimbers() {
@@ -89,15 +98,17 @@ void Climber::OpenRatchetIfExtending (double powerPort, double powerStar) {
   }
 }
 
-void Climber::ManualClimber(frc::Joystick *copilot){
+void Climber::ManualClimber(frc::Joystick *copilot, bool slowspeed){
   bool TODO_Add_Dashboard_Displays = false;
   double powerPort = 0.0;
   double powerStar = 0.0;
 
-  bool climberIsOnStopPort = false; // !mLimitSwitchPort.Get();
-  bool climberIsOnStopStar = false; // !mLimitSwitchStar.Get();
+  bool climberIsOnStopPort = !mLimitSwitchPort.Get();  
+  bool climberIsOnStopStar = !mLimitSwitchStar.Get();  
   bool climberIsAtTopSmartLimitPort = (mSmartClimberEnabled && mClimberPort.GetSelectedSensorPosition(0) >= kClimberPosMiddle);
   bool climberIsAtTopSmartLimitStar = (mSmartClimberEnabled && mClimberStar.GetSelectedSensorPosition(0) >= kClimberPosMiddle);
+  bool climberIsAtBottSmartLimitPort = (mSmartClimberEnabled && mClimberPort.GetSelectedSensorPosition(0) <= kClimberPosRetracted);
+  bool climberIsAtBottSmartLimitStar = (mSmartClimberEnabled && mClimberStar.GetSelectedSensorPosition(0) <= kClimberPosRetracted);
 
   // check controls
   if (copilot->GetRawButton(5)) {
@@ -111,11 +122,22 @@ void Climber::ManualClimber(frc::Joystick *copilot){
     powerStar = kPowerDown;
   }
 
+  // lower power if pre-endgame, because we're probably just homing
+  if (slowspeed) {
+    powerPort *= 0.3;
+    powerStar *= 0.3;
+  }
+
+  // std::cout << "on port limit: " << climberIsOnStopPort << ", power: " << powerPort << std::endl;
+  // std::cout << "on star limit: " << climberIsOnStopStar << ", power: " << powerStar << std::endl;
+
   // don't allow operator to lower climber if it's on the stop or beyond the smart setpoints
   if (climberIsOnStopPort && powerPort < 0.0) {powerPort = 0.0;}
   if (climberIsOnStopStar && powerStar < 0.0) {powerStar = 0.0;}
   if (climberIsAtTopSmartLimitPort && powerPort > 0.0) {powerPort = 0.0;}
   if (climberIsAtTopSmartLimitStar && powerStar > 0.0) {powerStar = 0.0;}
+  if (climberIsAtBottSmartLimitPort && powerPort < 0.0) {powerPort = 0.0;}
+  if (climberIsAtBottSmartLimitStar && powerStar < 0.0) {powerStar = 0.0;}
 
   OpenRatchetIfExtending (powerPort, powerStar);
 
@@ -168,7 +190,7 @@ void Climber::TelopPeriodic (frc::Joystick *copilot){
     if (smartControl) {
       SmartClimber(povPad);
     } else {
-      ManualClimber(copilot);
+      ManualClimber(copilot, endgameOverridePressed);
       CheckHomePositions();  // if operator needs to home a climber to enable smart-climber, check here
     }
   } else {
@@ -231,19 +253,24 @@ void Climber::RobotInit(){
 }
 
 void Climber::CheckHomePositions() {
-  bool TODO_Set_Smart_Climber_Positions = false;
   if (!mSmartClimberEnabled) { // no need to do this check if this is already set true
     bool climberIsOnStopPort = !mLimitSwitchPort.Get();
     bool climberIsOnStopStar = !mLimitSwitchStar.Get();
+    if (climberIsOnStopPort && climberIsOnStopStar) {
+      // Do not use; position closed loop not working with port motor
+      mSmartClimberEnabled = true;
+      mClimberPort.SetSelectedSensorPosition(0); // set encoder positions to zero now
+      mClimberStar.SetSelectedSensorPosition(0);
+    }
     frc::SmartDashboard::PutBoolean("Port Homed", climberIsOnStopPort);
     frc::SmartDashboard::PutBoolean("Starboard Homed", climberIsOnStopStar);
-    if (climberIsOnStopPort && climberIsOnStopStar) {
-      mSmartClimberEnabled = true;
-    }
+    frc::SmartDashboard::PutBoolean("Smart Climber", mSmartClimberEnabled);
   }
-  mSmartClimberEnabled = false;  // until we have numbers and limit switches
+  // mSmartClimberEnabled = false;  // until we have numbers and limit switches
   frc::SmartDashboard::PutNumber("Port Climber", mClimberPort.GetSelectedSensorPosition());
   frc::SmartDashboard::PutNumber("Star Climber", mClimberStar.GetSelectedSensorPosition());
+  // frc::SmartDashboard::PutNumber("Port Climb Speed", mClimberPort.GetMotorOutputPercent());
+  // frc::SmartDashboard::PutNumber("Star Climb Speed", mClimberStar.GetMotorOutputPercent());
 
 }
 
