@@ -3,9 +3,8 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <Constants.h>
 
-static const double kPowerUp = 0.3;//1.0;
-static const double kPowerDown = -0.3;//-1.0;
-constexpr units::time::second_t kRatchetTimeDelay = 1.0_s; // seconds
+static const double kPowerUp = 1.0;
+static const double kPowerDown = -1.0;
 
 // enum Constants {
 //   kTimeoutMs = 30
@@ -45,47 +44,13 @@ void Climber::SmartClimber(int povPad){
   std::cout << "pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
 }
 
-void Climber::StopClimbers() {
-  mClimberPort.StopMotor();
-  mClimberStar.StopMotor();
-  mRatchetState = kRatchetIdle;
-  mSolenoid.Set(frc::DoubleSolenoid::kReverse); // reverse releases wire, allowing ratchet to engage
-}
-
 void Climber::OpenRatchetIfExtending (double powerPort, double powerStar) {
-  // actually open ratchet if moving in either direction
-
-  // std::cout << "climber power port: " << powerPort << ", power star: " << powerStar << std::endl;
-
-  // if (powerPort > 0.0 || powerStar > 0.0) {
-  //   // positive means climbers extending, which is when ratchet needs to be open
-  //   mSolenoid.Set(frc::DoubleSolenoid::kForward);
-  // } else { // not extending, so let ratchet close
-  //   mSolenoid.Set(frc::DoubleSolenoid::kReverse);
-  // }
-  if (powerPort == 0.0 && powerStar == 0.0) {
-    // no delay needed when stopping
-    mRatchetState = kRatchetIdle;
-    mSolenoid.Set(frc::DoubleSolenoid::kReverse); // reverse releases wire, allowing ratchet to engage
-  } else { // wanting to move climbers
-    switch (mRatchetState) {
-      default:
-      case kRatchetIdle:
-        // need to move ratchet and delay a bit before moving climber
-        mSolenoid.Set(frc::DoubleSolenoid::kForward); // forward pulls wire to open ratchet
-        mRatchetState = kRatchetMoving;
-        mRatchetTimer.Reset();
-        mRatchetTimer.Start();
-        break;
-      case kRatchetMoving:
-        if (mRatchetTimer.Get() > kRatchetTimeDelay) {
-          mRatchetState = kRatchetMoved;
-        }
-        break;
-      case kRatchetMoved:
-        // now ok to move motor
-        break;
-    }
+  std::cout << "climber power port: " << powerPort << ", power star: " << powerStar << std::endl;
+  if (powerPort > 0.0 || powerStar > 0.0) {
+    // positive means climbers extending, which is when ratchet needs to be open
+    mSolenoid.Set(frc::DoubleSolenoid::kForward);
+  } else { // not extending, so let ratchet close
+    mSolenoid.Set(frc::DoubleSolenoid::kReverse);
   }
 }
 
@@ -119,31 +84,19 @@ void Climber::ManualClimber(frc::Joystick *copilot){
 
   OpenRatchetIfExtending (powerPort, powerStar);
 
-  // std::cout << "ratchet state: " << mRatchetState << std::endl;
-  if (mRatchetState != kRatchetMoving) {
-    // std::cout << "powering climbers" << std::endl;
-    mClimberPort.Set(ControlMode::PercentOutput, powerPort);
-    mClimberStar.Set(ControlMode::PercentOutput, powerStar);
-    if (powerPort == 0.0) {
-      // std::cout << "stopping port" << std::endl;
-      mClimberPort.StopMotor(); // above power set should be same but isn't
-    }
-    if (powerStar == 0.0) {
-      // std::cout << "stopping star" << std::endl;
-      mClimberStar.StopMotor(); // above power set should be same but isn't
-    }
-  }
+  mClimberPort.Set(ControlMode::PercentOutput, powerPort);
+  mClimberStar.Set(ControlMode::PercentOutput, powerStar);
 
-  // std::cout << "power port: " << powerPort << std::endl;
-  // std::cout << "power star: " << powerStar << std::endl;
-  // std::cout << "smart climber " << mSmartClimberEnabled << std::endl;
-  // std::cout << "output: " << mClimberStar.GetMotorOutputPercent()  << " -- ";
-  // std::cout << "pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
+  std::cout << "power port: " << powerPort << std::endl;
+  std::cout << "power star: " << powerStar << std::endl;
+  std::cout << "smart climber " << mSmartClimberEnabled << std::endl;
+  std::cout << "output: " << mClimberStar.GetMotorOutputPercent()  << " -- ";
+  std::cout << "pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
 }
 
 void Climber::TeleopInit(){
-  mEndgameTimer.Reset();
-  mEndgameTimer.Start();
+  mTimer.Reset();
+  mTimer.Start();
 }
 
 void Climber::TelopPeriodic (frc::Joystick *copilot){
@@ -163,29 +116,25 @@ void Climber::TelopPeriodic (frc::Joystick *copilot){
     smartControl = true;
   }
 
-  if (endgameOverridePressed || mEndgameTimer.Get() > 2.0_min) { // don't let any controls work until endgame, unless override button pressed
-    //std::cout << "endgame timer: " << (mEndgameTimer.Get() > 2_min) << std::endl;
+  if (endgameOverridePressed || mTimer.Get() > 2.5_s) { // don't let any controls work until endgame, unless override button pressed
     if (smartControl) {
       SmartClimber(povPad);
     } else {
       ManualClimber(copilot);
       CheckHomePositions();  // if operator needs to home a climber to enable smart-climber, check here
     }
-  } else {
-    // possibly just let up on blue button
-    StopClimbers();
   }
 
 }
 
 void Climber::RobotInit(){
 
-  // std::cout << "RobotInit of climber" << std::endl;
+  std::cout << "RobotInit of climber" << std::endl;
 
   mClimberStar.ConfigFactoryDefault();
   mClimberPort.ConfigFactoryDefault();
 
-  mClimberStar.SetInverted(true);
+  mClimberStar.SetInverted(false);
   mClimberPort.SetInverted(false);
 
   /**
@@ -226,7 +175,7 @@ void Climber::RobotInit(){
   mClimberStar.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
   mClimberPort.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
   
-  // std::cout << "RobotInit pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
+  std::cout << "RobotInit pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
 
 }
 
@@ -250,13 +199,9 @@ void Climber::CheckHomePositions() {
 void Climber::DoOnceInit() {
   mClimberPort.SetSelectedSensorPosition (0.0 , 0);
   mClimberStar.SetSelectedSensorPosition (0.0 , 0);
-  // std::cout << "DoOnce pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
+  std::cout << "DoOnce pos: " << mClimberStar.GetSelectedSensorPosition(0) << std::endl;
   CheckHomePositions();
-}
-
-void Climber::RepeatableInit() {
-  // OpenRatchetIfExtending(0,0); // release ratchet to engage
-  // mClimberPort.StopMotor();
-  // mClimberStar.StopMotor();
-  StopClimbers();
+  OpenRatchetIfExtending(0,0); // put ratchet solenoid in position to hold (not extending)
+  mClimberPort.Set(ControlMode::PercentOutput, 0);
+  mClimberStar.Set(ControlMode::PercentOutput, 0);
 }

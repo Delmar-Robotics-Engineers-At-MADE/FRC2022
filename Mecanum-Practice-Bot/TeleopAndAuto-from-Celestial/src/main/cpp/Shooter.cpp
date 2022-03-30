@@ -221,7 +221,7 @@ void Shooter::RobotInit() {
 
 }
 
-void Shooter::RepeatableInit() {
+void Shooter::DoOnceInit() {
   Idle();
   StopFeeder();
 }

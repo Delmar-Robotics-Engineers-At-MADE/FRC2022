@@ -10,12 +10,8 @@ void Robot::RobotInit() {
   mFrontRight.SetInverted(true);
   mRearRight.SetInverted(true);
   mTracker = new PixyBallTracker (kP, kI, kD);
-  // mVelocityController = new VelocityController2(&mRobotDrive, mAHRS);
-  // mAutoController = new AutonomousController(mVelocityController);
-  mClimber.RobotInit();
-  mShooter = new Shooter();
-  mShooter->RobotInit();
-  mRobotDrive.RobotInit(mShooter);
+
+  mRobotDrive.RobotInit();
   
 }
 
@@ -38,17 +34,15 @@ void Robot::TeleopInit() {
 
 void Robot::TeleopPeriodic() {
 
-  mClimber.TelopPeriodic(&mCopilot);
-  mShooter->TelopPeriodic(&mPilot, &mCopilot, mRobotDrive.mTargetingState);
   mRobotDrive.TelopPeriodic(&mPilot, &mCopilot);
-  mIntake.TeleopPeriodic(&mPilot);
+
  
 }
 
 void Robot::AutonomousInit() {
   DoOnceInit();
   RepeatableInit();
-  mAutoController->AutonomousInit();
+
 }
 
 void Robot::AutonomousPeriodic() {
@@ -58,7 +52,7 @@ void Robot::AutonomousPeriodic() {
   // } else {
   //   mRobotDrive.DriveCartesian(0, 0, 0); // same as mRobotDrive.StopMotor(); ?
   // }
-  mAutoController->AutonomousPeriodic();
+
 }
 
 #ifndef RUNNING_FRC_TESTS

@@ -66,7 +66,7 @@ public:
   Shooter (); // constructor
   void TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, DriveSysTargetingState driveState);
   void RobotInit();
-  void RepeatableInit();
+  void DoOnceInit();
   void TeleopInit();
   void RobotPeriodic();
 };

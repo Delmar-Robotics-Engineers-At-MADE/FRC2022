@@ -30,10 +30,7 @@ private:
   PixyBallTracker *mTracker;
 
   // VelocityController2 *mVelocityController;
-  AutonomousController *mAutoController;
-  Climber mClimber;
-  Shooter *mShooter;
-  Intake mIntake;
+
 
   // frc::Timer mAutonomousTimer;
 

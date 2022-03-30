@@ -20,8 +20,8 @@ public:
   void RobotPeriodic() override;
 
 private:
-  rev::CANSparkMax mFrontLeft{2, rev::CANSparkMax::MotorType::kBrushless};
-  rev::CANSparkMax mRearLeft{1, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax mFrontLeft{1, rev::CANSparkMax::MotorType::kBrushless};
+  rev::CANSparkMax mRearLeft{2, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax mFrontRight{14, rev::CANSparkMax::MotorType::kBrushless};
   rev::CANSparkMax mRearRight{13, rev::CANSparkMax::MotorType::kBrushless};
 

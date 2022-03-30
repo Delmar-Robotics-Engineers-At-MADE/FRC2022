@@ -7,19 +7,11 @@
 #include <frc/PneumaticsControlModule.h>
 #include <frc/Solenoid.h>
 
-enum RatchetState {
-  kRatchetUnknown = 0,
-  kRatchetMoving,
-  kRatchetMoved,
-  kRatchetIdle
-};
-
 class Climber {
 public:
   void TelopPeriodic (frc::Joystick *copilot);
   void RobotInit();
   void DoOnceInit();
-  void RepeatableInit();
   void TeleopPeriodic();
   void TeleopInit();
 
@@ -33,13 +25,10 @@ private:
   bool mSmartClimberEnabled {false};
   frc::DoubleSolenoid mSolenoid{frc::PneumaticsModuleType::CTREPCM, 0, 1};
 
-  frc::Timer mEndgameTimer;
-  frc::Timer mRatchetTimer;
-  RatchetState mRatchetState = kRatchetUnknown;
+  frc::Timer mTimer;
 
   void SmartClimber(int povPad);
   void ManualClimber(frc::Joystick *copilot);
   void CheckHomePositions();
   void OpenRatchetIfExtending (double powerPort, double powerStar);
-  void StopClimbers();
 };

@@ -36,16 +36,13 @@ void Robot::DoOnceInit()  {
 }
 
 void Robot::RepeatableInit() {
-  mRobotDrive.RepeatableInit();
-  mClimber.RepeatableInit();
-  mShooter->RepeatableInit();
+  
 }
 
 void Robot::TeleopInit() {
   DoOnceInit();
   RepeatableInit();
   mShooter->TeleopInit();
-  mClimber.TeleopInit();
 }
 
 void Robot::TeleopPeriodic() {

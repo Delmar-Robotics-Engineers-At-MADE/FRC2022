@@ -23,5 +23,5 @@ void Intake::RobotInit() {
 
 void Intake::DoOnceInit() {
     mRoller.Set(0.0);
-    mSolenoid.Set(frc::DoubleSolenoid::kForward);  // retract intake
+    mSolenoid.Set(frc::DoubleSolenoid::kForward);
 }

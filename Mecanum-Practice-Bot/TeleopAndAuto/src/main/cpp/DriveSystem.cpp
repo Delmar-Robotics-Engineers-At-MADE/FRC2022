@@ -30,29 +30,6 @@ DriveSystem::DriveSystem(frc::SpeedController& frontLeftMotor, frc::SpeedControl
   }
 
 void DriveSystem::RotateToTarget (frc::Joystick *pilot, frc::Joystick *copilot) { 
-  double rotateRate = 0.0;
-  if (mShooter->mTargetSeen) {
-    double angleToTarget = mShooter->mTargetAngleHorizontal;
-    rotateRate = mPIDControllerLimelight->Calculate(angleToTarget);
-    if (mPIDControllerLimelight->AtSetpoint()) {
-      mTargetingState = kDriveOnTarget;
-    } else {
-      mTargetingState = kDriveRotatingToTarget;
-    }
-  } else { // no target in sight, so rotate until we see it
-    mTargetingState = kDriveRotatingToTarget;
-  //   rotateRate = -pilot->GetZ();
-  //   if (rotateRate == 0.0) {
-  //     rotateRate = -copilot->GetZ();
-  //   }
-  //   if (rotateRate == 0.0) {
-  //     rotateRate = copilot->GetX();
-  //   }
-  //   if (rotateRate == 0.0) {
-  //     rotateRate = kDefaultRotateToTargetRate;
-  //   }
-  }
-  DriveCartesian(0, 0, rotateRate);
 }
 
 void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
@@ -71,14 +48,12 @@ void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
     } else {
       DriveCartesian(y*kNormalSpeedMultiplier, -x*kNormalSpeedMultiplier, -z*kNormalYawMultiplier, mAHRS->GetAngle());
     }
-    double IR = mColorSensor.GetIR();
-    frc::SmartDashboard::PutNumber("Rev Color IR", IR);
+    // frc::SmartDashboard::PutNumber("Rev Color IR", IR);
   }
 }
 
-void DriveSystem::RobotInit(Shooter *shooter) {
+void DriveSystem::RobotInit() {
 
-  mShooter = shooter;
 
   mPIDControllerLimelight = new frc2::PIDController (kPtunedLimelight, kItunedLimelight, kDtunedLimelight);
   mPIDControllerLimelight->SetTolerance(kPIDToleranceLimeLight, kPIDToleranceLimeLight); // degrees
