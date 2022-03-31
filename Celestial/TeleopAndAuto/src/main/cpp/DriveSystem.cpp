@@ -174,5 +174,5 @@ void DriveSystem::RepeatableInit() {
 
 void DriveSystem::RobotPeriodic() {
   // for debugging
-  frc::SmartDashboard::PutNumber("Heading", mAHRS->GetAngle());
+  // frc::SmartDashboard::PutNumber("Heading", mAHRS->GetAngle());
 }

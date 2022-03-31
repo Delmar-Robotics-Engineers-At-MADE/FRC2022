@@ -34,6 +34,7 @@ void Shooter::TurnLightOnOrOff (bool turnOn) {
   bool turnOff = !turnOn;
   bool lightIsOff = !mLightOn;
   if (mLightOn && turnOff) {
+    std::cout << "sending command to turn off light " << std::endl;
     mLimeTable->PutNumber("ledMode",1.0); // LED off
     mLightOn = false;
   } else if (lightIsOff && turnOn) {
@@ -82,20 +83,24 @@ double CalcHighTargetSpeed(double d){
 bool Shooter::ReadyShooter(bool hightTarget) {
   bool result = false;
   if (hightTarget) {
-    double speed = CalcHighTargetSpeed(mTargetDistance);
-    frc::SmartDashboard::PutNumber("Shooter V target", speed);
-    mPortShooter.Set(ControlMode::Velocity, speed);
+    if (mTargetSeen) {
+      double speed = CalcHighTargetSpeed(mTargetDistance);
+      frc::SmartDashboard::PutNumber("Shooter V target", speed);
+      mPortShooter.Set(ControlMode::Velocity, speed);
+      bool elevationReady = mElevator.Elevate(hightTarget, mTargetDistance);
+      result = elevationReady && mPortShooter.GetClosedLoopError() < kVelocityTolerance;  // shooter is ready when elevation is achieved and shooter speed is achieved
+      frc::SmartDashboard::PutBoolean("Elevator Ready", elevationReady);
+    }
   } else { // low target
     // for now permit dashboard widget to control speed
     mMotorOutVelocity = frc::SmartDashboard::GetNumber("motor output percentage", 0);
     mPortShooter.Set(ControlMode::Velocity, mMotorOutVelocity);
-    FeedCargo();
+    double actualVelocity = mPortShooter.GetSelectedSensorVelocity();
+    if (abs(actualVelocity - mMotorOutVelocity) < kVelocityTolerance) {
+      result = true; // up to speed, so ok to feed;
+    }
   }
   bool TODO_Speed_for_Low_Target = false;
-  bool elevationReady = mElevator.Elevate(hightTarget, mTargetDistance);
-  frc::SmartDashboard::PutBoolean("Elevator Ready", elevationReady);
-  // shooter is ready when elevation is achieved and shooter speed is achieved
-  result = elevationReady && mPortShooter.GetClosedLoopError() < kVelocityTolerance;
   return result;
 }
 
@@ -175,6 +180,7 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, Drive
     Idle();
     frc::SmartDashboard::PutBoolean("On Target", false);
     frc::SmartDashboard::PutBoolean("Shooter Ready", false);
+    frc::SmartDashboard::PutBoolean("Elevator Ready", false);
     frc::SmartDashboard::PutBoolean("Feeding Cargo", false);
     ManualFeed(copilot);  // alowed if not shooting
  }
@@ -224,6 +230,7 @@ void Shooter::RobotInit() {
   mElevator.RobotInit();
 
   // Limelight
+  std::cout << "calling TurnLightOff " <<  std::endl;
   TurnLightOnOrOff(false);
 
 }

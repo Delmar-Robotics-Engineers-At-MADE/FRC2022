@@ -103,5 +103,5 @@ void Elevator::RobotInit() {
 
 void Elevator::RobotPeriodic() {
   // for testing
-  frc::SmartDashboard::PutNumber("elevator limit", mLimitSwitch.Get());
+  // frc::SmartDashboard::PutNumber("elevator limit", mLimitSwitch.Get());
 }
