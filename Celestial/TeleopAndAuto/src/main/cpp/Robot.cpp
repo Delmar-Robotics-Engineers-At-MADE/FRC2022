@@ -24,6 +24,7 @@ void Robot::RobotInit() {
 void Robot::RobotPeriodic() {
   // for testing
   mShooter->RobotPeriodic();  // display limit switch
+  mRobotDrive.RobotPeriodic(); // display heading
 }
 
 void Robot::DoOnceInit()  {

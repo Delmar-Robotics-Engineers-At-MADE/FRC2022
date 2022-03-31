@@ -25,6 +25,7 @@ public:
   void TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot);
   void DoOnceInit();
   void RepeatableInit();
+  void RobotPeriodic();
   void RotateToTarget(frc::Joystick *pilot, frc::Joystick *copilot); // angle in degrees
 
   void RobotInit(Shooter *shooter, 

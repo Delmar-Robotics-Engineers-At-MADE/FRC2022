@@ -171,3 +171,8 @@ void DriveSystem::RepeatableInit() {
   // do this whenever we start either auto or teleop
   mAHRS->ZeroYaw();   // use current robot orientation as field forward
 }
+
+void DriveSystem::RobotPeriodic() {
+  // for debugging
+  frc::SmartDashboard::PutNumber("Heading", mAHRS->GetAngle());
+}
