@@ -10,6 +10,9 @@
 #include "rev/ColorSensorV3.h" // install online: https://software-metadata.revrobotics.com/REVLib.json
 #include "rev/CANSparkMax.h"
 #include "rev/SparkMaxPIDController.h"
+#include <frc/trajectory/TrapezoidProfile.h>
+#include <units/velocity.h>
+#include <units/acceleration.h>
 
 class DriveSystem : public frc::MecanumDrive {
 public:
@@ -27,6 +30,8 @@ public:
   void RepeatableInit();
   void RobotPeriodic();
   void RotateToTarget(frc::Joystick *pilot, frc::Joystick *copilot); // angle in degrees
+  void DriveTrapezoid();
+  void DriveSlowForAuto(double x, double y);
 
   void RobotInit(Shooter *shooter, 
                 rev::SparkMaxPIDController *pidFL, rev::SparkMaxPIDController *pidRL, 
@@ -42,5 +47,11 @@ private:
   static constexpr auto i2cPort = frc::I2C::Port::kOnboard;
   rev::ColorSensorV3 mColorSensor{i2cPort};
   frc2::PIDController *mPIDControllerLimelight; // for orienting robot with limelight
+
+  frc::TrapezoidProfile<units::feet>::Constraints mConstraints{5_fps, 5_fps_sq};
+  frc::TrapezoidProfile<units::feet>::State mGoal;
+  frc::TrapezoidProfile<units::feet>::State mInitialState;
+  frc::TrapezoidProfile<units::feet> *mProfile;
+  frc::Timer mTimer;  
 
 };

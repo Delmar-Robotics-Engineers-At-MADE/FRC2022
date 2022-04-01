@@ -51,6 +51,7 @@ private:
   void StopFeeder();
   void ManualFeed (frc::Joystick *copilot);
   bool CargoAvailable();
+  bool mManualFeeding = false;
 
   // elevator
   Elevator mElevator;

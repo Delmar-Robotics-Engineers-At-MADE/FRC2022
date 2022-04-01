@@ -1,52 +1,60 @@
 #pragma once
 
 #include <frc/smartdashboard/SendableChooser.h>
-// #include <VelocityController2.h>
+#include <DriveSystem.h>
 
-enum DriveTurnStates {
-		kdtsUnknownState = 0,
-    kdtsBegin,
-		kdtsDriving,
-    kdtsStraightening,
-		kdtsTurning,
-		kdtsCompleted
+// enum DriveTurnStates {
+// 		kdtsUnknownState = 0,
+//     kdtsBegin,
+// 		kdtsDriving,
+//     kdtsStraightening,
+// 		kdtsTurning,
+// 		kdtsCompleted
+// 	};
+
+enum DriveOnlyStates {
+		kDOSUnknownState = 0,
+    kDOSBegin,
+    kDOSDriving,
+		kDOSCompleted
 	};
 
-enum TurnOnlyStates {
-		ktosUnknownState = 0,
-    ktosBegin,
-    ktosTurning,
-		ktosCompleted
-	};
 class AutonomousController {
 
 public:
-  AutonomousController (/*VelocityController2 *vcontroller*/); // constructor
+  AutonomousController (DriveSystem *drive); // constructor
   void AutonomousInit();
   void AutonomousPeriodic();
 
 private:
+  DriveSystem *mDrive;
   frc::SendableChooser<std::string> mChooser;
-  frc::SendableChooser<std::string> mChooserOptionsDistance;
+  frc::SendableChooser<std::string> mChooserOptionsDirection;
   frc::SendableChooser<std::string> mChooserOptionsWait;
-  const std::string kAutoNameDriveTurnAround = "Drive, Stop, Turn Around";
+  const std::string kAutoNameDriveAndShoot = "Drive And Shoot";
   const std::string kAutoNameDriveOnly = "Drive Only";
-  const std::string kAutoNameTurnOnly = "Turn Only";
   const std::string kAutoNameJustInit = "Just Init";
-  const std::string kAutoOption2Feet = "2 Feet";
-  const std::string kAutoOption4Feet = "4 Feet";
+  const std::string kAutoOptionDirStraight = "Straight";
+  const std::string kAutoOptionDirLeft = "To Left";
+  const std::string kAutoOptionDirRight = "To Right";
   const std::string kAutoOptionWait = "Wait";
   const std::string kAutoOptionNoWait = "No wait";
   std::string mAutoSelected;
-  std::string mAutoSelectedOptionsDistance;
+  std::string mAutoSelectedOptionsDirection;
   std::string mAutoSelectedOptionsWait;
 
   // VelocityController2 *mVelocityController;
-  DriveTurnStates mdtsAutoState = kdtsUnknownState; 
-  TurnOnlyStates mtosAutoState = ktosUnknownState; 
+  // DriveTurnStates mdtsAutoState = kdtsUnknownState; 
+  // TurnOnlyStates mtosAutoState = ktosUnknownState; 
+  DriveOnlyStates mDOSAutoState = kDOSUnknownState;
 
-  void DriveTurnAround();
-  void TurnOnly();
+  frc::Timer mTimer; 
+
+  // void DriveTurnAround();
+  // void TurnOnly();
+  void DriveOnly();
+
+
 
 };
 

@@ -1,7 +1,7 @@
 #include <Intake.h>
 #include <Constants.h>
 
-static const double kIntakeSpeed = 0.9;
+static const double kIntakeSpeed = 1.0;
 
 void Intake::TeleopPeriodic (frc::Joystick *pilot) {
   bool deploy = pilot->GetRawButton(8) || pilot->GetRawButton(7);

@@ -6,13 +6,14 @@
 static const double kPowerUp = 1.0;
 static const double kPowerDown = -1.0; 
 constexpr units::time::second_t kRatchetTimeDelay = 1.0_s; // seconds
+constexpr units::time::minute_t kEndGameTime = 1.0_min;
 
 // enum Constants {
 //   kTimeoutMs = 30
 // };
 
 // One rotation is 4096 encoder counts, and encoder is at the output of the gearbox
-const double kClimberPosMiddle = 26000.0; // was 10 * 4096;
+const double kClimberPosMiddle = 32500.0; // was 10 * 4096;
 const double kClimberPosLow = 18000.0; 
 const double kClimberPosRetracted = 1 * 4096;
 
@@ -185,7 +186,7 @@ void Climber::TelopPeriodic (frc::Joystick *copilot){
     smartControl = true;
   }
 
-  if (endgameOverridePressed || mEndgameTimer.Get() > 2.0_min) { // don't let any controls work until endgame, unless override button pressed
+  if (endgameOverridePressed || mEndgameTimer.Get() > kEndGameTime) { // don't let any controls work until endgame, unless override button pressed
     //std::cout << "endgame timer: " << (mEndgameTimer.Get() > 2_min) << std::endl;
     if (smartControl) {
       SmartClimber(povPad);

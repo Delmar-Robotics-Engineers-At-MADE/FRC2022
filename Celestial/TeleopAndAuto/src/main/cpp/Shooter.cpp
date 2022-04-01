@@ -6,9 +6,9 @@
 #include <iostream>
 
 static const double kMinTargetAreaPercent = 0.0;
-static const double kRollerIdleSpeed = 1500.0;
+static const double kRollerIdleSpeed = 1800.0;
 static const double kVelocityTolerance = 500;
-static const double kFeederSpeed = 0.5;
+static const double kFeederSpeed = 0.9;
 
 double ConvertRadsToDegrees (double rads) {
     const static double conversion_factor = 180.0/3.141592653589793238463;
@@ -80,13 +80,22 @@ double CalcHighTargetSpeed(double d){
   return result;
 }
 
+bool FalconSpeedInRange(double speed) {
+  bool result = true;
+  if (abs(speed) > 30000) {
+    std::cout << "Falcon speed out of range: " << speed << std::endl;
+    result = false;
+  }
+  return result;
+}
+
 bool Shooter::ReadyShooter(bool hightTarget) {
   bool result = false;
   if (hightTarget) {
     if (mTargetSeen) {
       double speed = CalcHighTargetSpeed(mTargetDistance);
       frc::SmartDashboard::PutNumber("Shooter V target", speed);
-      mPortShooter.Set(ControlMode::Velocity, speed);
+      if (FalconSpeedInRange(speed)) { mPortShooter.Set(ControlMode::Velocity, speed); }
       bool elevationReady = mElevator.Elevate(hightTarget, mTargetDistance);
       result = elevationReady && mPortShooter.GetClosedLoopError() < kVelocityTolerance;  // shooter is ready when elevation is achieved and shooter speed is achieved
       frc::SmartDashboard::PutBoolean("Elevator Ready", elevationReady);
@@ -105,7 +114,11 @@ bool Shooter::ReadyShooter(bool hightTarget) {
 }
 
 void Shooter::FeedCargo() {
-  mFeeder.Set(kFeederSpeed);
+  if (mManualFeeding) {
+    // let driver control feeder
+  } else {
+    mFeeder.Set(kFeederSpeed);
+  }
 }
 
 void Shooter::Shoot (bool highTarget, DriveSysTargetingState driveState) {
@@ -153,14 +166,23 @@ void Shooter::StopFeeder() {
   mFeeder.Set(0.0);
 }
 
-void Shooter::ManualFeed (frc::Joystick *copilot) {
-  if (copilot->GetRawButton(3) && copilot->GetRawButton(4)) {
-    FeedCargo();
-  } else if (copilot->GetRawButton(3) && copilot->GetRawButton(2)) {
-    mFeeder.Set(-kFeederSpeed);
-  } else {
+void Shooter::ManualFeed (frc::Joystick *pilot) {
+  if (pilot->GetRawButton(3)) {
+    mManualFeeding = true;
     StopFeeder();
+  } else if (pilot->GetRawButton(2)) {
+    mManualFeeding = true;
+    mFeeder.Set(1.0);
+  } else if (pilot->GetRawButton(1)) {
+    mManualFeeding = true;
+    mFeeder.Set(0.7);
+  } else if (pilot->GetRawButton(4)) {
+    mManualFeeding = true;
+    mFeeder.Set(0.3);
+  } else {
+    mManualFeeding = false;
   }
+  frc::SmartDashboard::PutBoolean("Manual Feed", mManualFeeding);
   bool TODO_Finish_Manual_Feed = false;
 }
 
@@ -182,7 +204,7 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, Drive
     frc::SmartDashboard::PutBoolean("Shooter Ready", false);
     frc::SmartDashboard::PutBoolean("Elevator Ready", false);
     frc::SmartDashboard::PutBoolean("Feeding Cargo", false);
-    ManualFeed(copilot);  // alowed if not shooting
+    ManualFeed(pilot);  // alowed if not shooting
  }
   // }
   // mMotorOutVelocity = frc::SmartDashboard::GetNumber("motor output percentage", 0);

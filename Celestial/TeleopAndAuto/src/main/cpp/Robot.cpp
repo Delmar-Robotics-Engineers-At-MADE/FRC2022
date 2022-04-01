@@ -10,15 +10,20 @@ void Robot::RobotInit() {
   mFrontRight.SetInverted(true);
   mRearRight.SetInverted(true);
   mTracker = new PixyBallTracker (kP, kI, kD);
-  // mVelocityController = new VelocityController2(&mRobotDrive, mAHRS);
-  // mAutoController = new AutonomousController(mVelocityController);
   mClimber.RobotInit();
   mShooter = new Shooter();
   mShooter->RobotInit();
 
   mRobotDrive.RobotInit(mShooter, &mPIDFrontLeft, &mPIDRearLeft, &mPIDFrontRight, &mPIDRearRight,
                     &mEncoderFrontLeft, &mEncoderRearLeft, &mEncoderFrontRight, &mEncoderRearRight);
-  
+
+  mFrontLeft .SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+  mRearLeft  .SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+  mFrontRight.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+  mRearRight .SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+
+  mAutoController = new AutonomousController(&mRobotDrive);
+
 }
 
 void Robot::RobotPeriodic() {

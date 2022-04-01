@@ -34,7 +34,7 @@ DriveSystem::DriveSystem(frc::SpeedController& frontLeftMotor, frc::SpeedControl
 
   MecanumDrive(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor) {
                 
-    // call parent class constructor automatically
+  // call parent class constructor automatically
 
   }
 
@@ -175,4 +175,12 @@ void DriveSystem::RepeatableInit() {
 void DriveSystem::RobotPeriodic() {
   // for debugging
   // frc::SmartDashboard::PutNumber("Heading", mAHRS->GetAngle());
+}
+
+void DriveSystem::DriveTrapezoid() {
+  // future TODO
+}
+
+void DriveSystem::DriveSlowForAuto(double x, double y) {
+  DriveCartesian(y*kSlowSpeedMultiplier, x*kSlowSpeedMultiplier, 0.0, mAHRS->GetAngle());
 }
