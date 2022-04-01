@@ -3,7 +3,7 @@
 #include <iostream>
 
 constexpr units::time::second_t kAutoDriveTime = 2.0_s; // seconds
-constexpr units::time::second_t kAutoShootTime = 8.0_s; // seconds
+constexpr units::time::second_t kAutoShootTime = 5.0_s; // seconds
 
 AutonomousController::AutonomousController (DriveSystem *drive, Shooter *shooter) { // constructor
 
@@ -97,6 +97,8 @@ void AutonomousController::DriveAndShoot() {
       break;
     case kDASShooting:
       mDrive->StopMotor();
+      mShooter->TurnLightOnOrOff(true);
+      mShooter->CheckLimelight();
       mShooter->Shoot(true, kDriveOnTarget);
       if (mTimer.Get() > kAutoShootTime) {
         mDASAutoState = kDASCompleted;

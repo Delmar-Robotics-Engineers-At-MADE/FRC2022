@@ -40,8 +40,6 @@ private:
   double mMotorOutVelocity = 0.0; // for collecting data for targeting
 
   bool ReadyShooter(bool hightTarget);
-  void CheckLimelight();
-  void TurnLightOnOrOff (bool turnOn);
 
   // feeder
   WPI_TalonSRX mFeeder{7};
@@ -70,5 +68,8 @@ public:
   void StopFeeder();
   void Shoot (bool highTarget, DriveSysTargetingState driveState);
   void Idle();
+  void CheckLimelight();
+  void TurnLightOnOrOff (bool turnOn);
+  void DoOnceInit();
 
 };

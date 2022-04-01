@@ -38,6 +38,7 @@ void Robot::DoOnceInit()  {
     mClimber.DoOnceInit();
     mRobotDrive.DoOnceInit();
     mIntake.DoOnceInit();
+    mShooter->DoOnceInit();
     }  
 }
 

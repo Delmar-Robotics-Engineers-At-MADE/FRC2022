@@ -31,16 +31,17 @@ Shooter::Shooter () {  // constructor
 }
 
 void Shooter::TurnLightOnOrOff (bool turnOn) {
-  bool turnOff = !turnOn;
-  bool lightIsOff = !mLightOn;
-  if (mLightOn && turnOff) {
-    std::cout << "sending command to turn off light " << std::endl;
-    mLimeTable->PutNumber("ledMode",1.0); // LED off
-    mLightOn = false;
-  } else if (lightIsOff && turnOn) {
-    mLimeTable->PutNumber("ledMode",3.0); // LED on bright
-    mLightOn = true;
-  }
+  mLimeTable->PutNumber("ledMode",3.0); // LED on bright
+  // bool turnOff = !turnOn;
+  // bool lightIsOff = !mLightOn;
+  // if (mLightOn && turnOff) {
+  //   std::cout << "sending command to turn off light " << std::endl;
+  //   mLimeTable->PutNumber("ledMode",1.0); // LED off
+  //   mLightOn = false;
+  // } else if (lightIsOff && turnOn) {
+  //   mLimeTable->PutNumber("ledMode",3.0); // LED on bright
+  //   mLightOn = true;
+  // }
 }
 
 void Shooter::CheckLimelight() {
@@ -117,6 +118,7 @@ void Shooter::FeedCargo() {
   if (mManualFeeding) {
     // let driver control feeder
   } else {
+    std::cout << "feeding from FeedCargo: " << kFeederSpeed << std::endl;
     mFeeder.Set(kFeederSpeed);
   }
 }
@@ -163,27 +165,30 @@ void Shooter::Idle(){
 }
 
 void Shooter::StopFeeder() {
+  std::cout << "stopping feeder" << std::endl;
   mFeeder.Set(0.0);
 }
 
 void Shooter::ManualFeed (frc::Joystick *pilot) {
-  if (pilot->GetRawButton(3)) {
-    mManualFeeding = true;
-    StopFeeder();
-  // } else if (pilot->GetRawButton(2)) {
+  // if (pilot->GetRawButton(3)) {
   //   mManualFeeding = true;
-  //   mFeeder.Set(1.0);
-  // } else if (pilot->GetRawButton(1)) {
+  //   std::cout << "stopping feed from ManualFeed" << std::endl;
+  //   StopFeeder();
+  // // } else if (pilot->GetRawButton(2)) {
+  // //   mManualFeeding = true;
+  // //   mFeeder.Set(1.0);
+  // // } else if (pilot->GetRawButton(1)) {
+  // //   mManualFeeding = true;
+  // //   mFeeder.Set(0.7);
+  // } else if (pilot->GetRawButton(4)) {
   //   mManualFeeding = true;
-  //   mFeeder.Set(0.7);
-  } else if (pilot->GetRawButton(4)) {
-    mManualFeeding = true;
-    mFeeder.Set(0.3);
-  } else {
-    mManualFeeding = false;
-  }
-  frc::SmartDashboard::PutBoolean("Manual Feed", mManualFeeding);
-  bool TODO_Finish_Manual_Feed = false;
+  //   std::cout << "feeding from ManualFeed: " << 0.3 << std::endl;
+  //   mFeeder.Set(0.3);
+  // } else {
+  //   mManualFeeding = false;
+  // }
+  // frc::SmartDashboard::PutBoolean("Manual Feed", mManualFeeding);
+  // bool TODO_Finish_Manual_Feed = false;
 }
 
 void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, DriveSysTargetingState driveState){
@@ -270,4 +275,8 @@ void Shooter::TeleopInit() {
 void Shooter::RobotPeriodic() {
   // for testing
   mElevator.RobotPeriodic();
+}
+
+void Shooter::DoOnceInit() {
+  mLimeTable->PutNumber("ledMode",3.0); // LED on bright
 }

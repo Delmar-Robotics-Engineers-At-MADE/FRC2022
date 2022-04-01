@@ -105,8 +105,8 @@ void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
       // std::cout << "normal: " << y << ", " << x << std::endl;
       DriveCartesian(y*kNormalSpeedMultiplier, -x*kNormalSpeedMultiplier, -z*kNormalYawMultiplier, mAHRS->GetAngle());
     }
-    double IR = mColorSensor.GetIR();
-    frc::SmartDashboard::PutNumber("Rev Color IR", IR);
+    // double IR = mColorSensor.GetIR();
+    // frc::SmartDashboard::PutNumber("Rev Color IR", IR);
   }
 }
 

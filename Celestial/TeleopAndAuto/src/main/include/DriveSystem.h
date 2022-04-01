@@ -46,7 +46,7 @@ private:
   Shooter *mShooter;
 
   static constexpr auto i2cPort = frc::I2C::Port::kOnboard;
-  rev::ColorSensorV3 mColorSensor{i2cPort};
+  // rev::ColorSensorV3 mColorSensor{i2cPort};
   frc2::PIDController *mPIDControllerLimelight; // for orienting robot with limelight
   frc2::PIDController *mPIDControllerGyro; // for orienting robot with gyro
 
