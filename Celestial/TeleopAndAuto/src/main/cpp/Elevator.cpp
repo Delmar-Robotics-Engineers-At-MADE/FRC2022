@@ -5,6 +5,7 @@
 
 static const double kEncoderLimitTop = 300.0;
 static const double kEncoderLimitBottom = 20.0;
+static const double kElevationForAuto = 55.75;
 
 const static double kPtuned = 0.1;
 const static double kItuned = 0.0;
@@ -87,6 +88,20 @@ bool Elevator::Elevate (bool hightTarget, double distance) {
     // for now, allow manual position
   }
   bool TODO_Low_Target_Elevation = false;
+  return result;
+}
+
+bool Elevator::FixedElevationForAuto() {   
+  bool result = false;
+  if (mHomed) { 
+    double position = -mEncoder.GetDistance(); // invert encoder, as in ManualElevate
+    mPIDController->SetSetpoint(kElevationForAuto);
+    double speed = mPIDController->Calculate(position);  
+    mMotor.Set(speed);
+    result = mPIDController->AtSetpoint();
+  } else {
+    result = true; // just assume elevator is set at right elevation at start of match
+  }
   return result;
 }
 

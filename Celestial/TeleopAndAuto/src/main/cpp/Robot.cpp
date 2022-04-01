@@ -29,7 +29,7 @@ void Robot::RobotInit() {
 void Robot::RobotPeriodic() {
   // for testing
   mShooter->RobotPeriodic();  // display limit switch
-  mRobotDrive.RobotPeriodic(); // display heading
+  // mRobotDrive.RobotPeriodic(); // display heading
 }
 
 void Robot::DoOnceInit()  {
@@ -68,6 +68,7 @@ void Robot::AutonomousInit() {
   DoOnceInit();
   RepeatableInit();
   mAutoController->AutonomousInit();
+  mShooter->AutonomousInit();
 }
 
 void Robot::AutonomousPeriodic() {

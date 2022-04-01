@@ -24,6 +24,7 @@ enum DriveAndShootStates {
 		kDASUnknownState = 0,
     kDASBegin,
     kDASDriving,
+    kDASReadying,
     kDASShooting,
 		kDASCompleted
 	};

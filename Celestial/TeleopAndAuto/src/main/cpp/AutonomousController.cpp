@@ -4,6 +4,7 @@
 
 constexpr units::time::second_t kAutoDriveTime = 2.0_s; // seconds
 constexpr units::time::second_t kAutoShootTime = 5.0_s; // seconds
+constexpr units::time::second_t kAutoShootTimeEnd = 8.0_s; // seconds
 
 AutonomousController::AutonomousController (DriveSystem *drive, Shooter *shooter) { // constructor
 
@@ -51,6 +52,7 @@ void AutonomousController::AutonomousInit() {
   mTimer.Start();
 }
 
+
 void AutonomousController::DriveOnly() {
   bool drivingDone = false;
   switch (mDOSAutoState) {
@@ -78,6 +80,7 @@ void AutonomousController::DriveOnly() {
 
 void AutonomousController::DriveAndShoot() {
   bool drivingDone = false;
+  bool dontCare = false;
   switch (mDASAutoState) {
     default:
     case kDASBegin:
@@ -92,21 +95,30 @@ void AutonomousController::DriveAndShoot() {
         mDrive->DriveSlowForAuto(0.7071, -0.7071); // drive at 45 degrees
       }
       if (mTimer.Get() > kAutoDriveTime) {
+        mDASAutoState = kDASReadying;
+      }
+      break;
+    case kDASReadying:
+      mDrive->StopMotor();
+      mShooter->FixedSpeedForAuto();
+      dontCare = mShooter->FixedElevationForAuto();
+      // mShooter->CheckLimelight();
+      // mShooter->Shoot(true, kDriveOnTarget);
+      if (mTimer.Get() > kAutoShootTime) {
         mDASAutoState = kDASShooting;
       }
       break;
     case kDASShooting:
       mDrive->StopMotor();
-      mShooter->TurnLightOnOrOff(true);
-      mShooter->CheckLimelight();
-      mShooter->Shoot(true, kDriveOnTarget);
-      if (mTimer.Get() > kAutoShootTime) {
+      mShooter->ShootForAuto();
+      if (mTimer.Get() > kAutoShootTimeEnd) {
         mDASAutoState = kDASCompleted;
       }
       break;
     case kDASCompleted:
       mDrive->StopMotor();
       mShooter->Idle();
+      mShooter->StopFeeder();
       break;    
   }
 }

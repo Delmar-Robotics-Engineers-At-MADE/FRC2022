@@ -13,6 +13,7 @@ public:
   void RobotInit();
   void RobotPeriodic();
   bool Elevate (bool hightTarget, double distance);
+  bool FixedElevationForAuto();
   // bool Elevate(double distance);
 
 private:

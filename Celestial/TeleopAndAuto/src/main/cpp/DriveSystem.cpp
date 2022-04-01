@@ -22,7 +22,8 @@ const static double kFFtunedDrive =  0.0;
 const static double kMaxOutputDrive = 1.0;
 const static double kMinOutputDrive = -1.0;
 
-const static double kSlowSpeedMultiplier = 0.2;
+const static double kSlowSpeedMultiplier = 0.3;
+const static double kAutoSpeedMultiplier = 0.2;
 const static double kNormalSpeedMultiplier = 0.9;
 const static double kNormalYawMultiplier = 0.75;
 
@@ -193,7 +194,7 @@ void DriveSystem::RepeatableInit() {
 
 void DriveSystem::RobotPeriodic() {
   // for debugging
-  // frc::SmartDashboard::PutNumber("Heading", mAHRS->GetAngle());
+  frc::SmartDashboard::PutNumber("Heading", mAHRS->GetAngle());
 }
 
 void DriveSystem::DriveTrapezoid() {
@@ -201,5 +202,8 @@ void DriveSystem::DriveTrapezoid() {
 }
 
 void DriveSystem::DriveSlowForAuto(double x, double y) {
-  DriveCartesian(-y*kSlowSpeedMultiplier, x*kSlowSpeedMultiplier, 0.0, mAHRS->GetAngle());
+  double currHeading = mAHRS->GetAngle();
+  double rotateRate = mPIDControllerGyro->Calculate(currHeading + 180.0);  // offset by 180 to avoid discontinuity
+  // DriveCartesian(y*kSlowSpeedMultiplier, -x*kSlowSpeedMultiplier, -rotateRate, currHeading);
+  DriveCartesian(-y*kAutoSpeedMultiplier, x*kAutoSpeedMultiplier, -rotateRate, currHeading);
 }

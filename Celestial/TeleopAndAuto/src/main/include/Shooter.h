@@ -7,6 +7,8 @@
 #include "ctre/Phoenix.h"
 #include <Elevator.h>
 
+static const double kShooterSpeedForAuto = 14000;
+
 enum ShooterState {
   kShooterUnknownState = 0,
   kRotatingToTarget,
@@ -46,6 +48,8 @@ private:
   void ManualFeed (frc::Joystick *copilot);
   bool CargoAvailable();
   bool mManualFeeding = false;
+  double mAutoShootSpeed= kShooterSpeedForAuto;
+  
 
   // elevator
   Elevator mElevator;
@@ -71,5 +75,9 @@ public:
   void CheckLimelight();
   void TurnLightOnOrOff (bool turnOn);
   void DoOnceInit();
+  void FixedSpeedForAuto();
+  bool FixedElevationForAuto();
+  void ShootForAuto();
+  void AutonomousInit();
 
 };

@@ -123,6 +123,15 @@ void Shooter::FeedCargo() {
   }
 }
 
+void Shooter::ShootForAuto() {
+  mFeeder.Set(kFeederSpeed);  // change to FeedCargo() eventually
+}
+
+bool Shooter::FixedElevationForAuto() {
+  bool result = mElevator.FixedElevationForAuto();
+  return result;
+}
+
 void Shooter::Shoot (bool highTarget, DriveSysTargetingState driveState) {
   bool onTarget = false;
   bool shooterReady = false;
@@ -165,7 +174,7 @@ void Shooter::Idle(){
 }
 
 void Shooter::StopFeeder() {
-  std::cout << "stopping feeder" << std::endl;
+  // std::cout << "stopping feeder" << std::endl;
   mFeeder.Set(0.0);
 }
 
@@ -260,6 +269,7 @@ void Shooter::RobotInit() {
   std::cout << "calling TurnLightOff " <<  std::endl;
   TurnLightOnOrOff(false);
 
+  frc::SmartDashboard::PutNumber("Auto Shoot V", mAutoShootSpeed);
 }
 
 void Shooter::RepeatableInit() {
@@ -279,4 +289,14 @@ void Shooter::RobotPeriodic() {
 
 void Shooter::DoOnceInit() {
   mLimeTable->PutNumber("ledMode",3.0); // LED on bright
+}
+
+void Shooter::FixedSpeedForAuto(){
+  mPortShooter.Set(ControlMode::Velocity, mAutoShootSpeed); // was kShooterSpeedForAuto
+}
+
+void Shooter::AutonomousInit() {
+  // frc::SmartDashboard::PutNumber("Distance", mTargetDistance);
+  mAutoShootSpeed = frc::SmartDashboard::GetNumber("Auto Shoot V", mAutoShootSpeed);
+
 }
