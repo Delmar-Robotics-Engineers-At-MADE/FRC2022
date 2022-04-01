@@ -39,16 +39,12 @@ private:
 
   double mMotorOutVelocity = 0.0; // for collecting data for targeting
 
+  bool ReadyShooter(bool hightTarget);
   void CheckLimelight();
   void TurnLightOnOrOff (bool turnOn);
-  void Shoot (bool highTarget, DriveSysTargetingState driveState);
-  void Idle();
-  bool ReadyShooter(bool hightTarget);
 
   // feeder
   WPI_TalonSRX mFeeder{7};
-  void FeedCargo();
-  void StopFeeder();
   void ManualFeed (frc::Joystick *copilot);
   bool CargoAvailable();
   bool mManualFeeding = false;
@@ -70,4 +66,9 @@ public:
   void RepeatableInit();
   void TeleopInit();
   void RobotPeriodic();
+  void FeedCargo();
+  void StopFeeder();
+  void Shoot (bool highTarget, DriveSysTargetingState driveState);
+  void Idle();
+
 };

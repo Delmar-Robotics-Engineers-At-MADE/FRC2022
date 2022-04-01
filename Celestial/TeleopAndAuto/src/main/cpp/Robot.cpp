@@ -22,7 +22,7 @@ void Robot::RobotInit() {
   mFrontRight.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
   mRearRight .SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
 
-  mAutoController = new AutonomousController(&mRobotDrive);
+  mAutoController = new AutonomousController(&mRobotDrive, mShooter);
 
 }
 

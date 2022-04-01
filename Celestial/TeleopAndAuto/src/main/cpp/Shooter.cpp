@@ -6,7 +6,7 @@
 #include <iostream>
 
 static const double kMinTargetAreaPercent = 0.0;
-static const double kRollerIdleSpeed = 1800.0;
+static const double kRollerIdleSpeed = 2300.0;
 static const double kVelocityTolerance = 500;
 static const double kFeederSpeed = 0.9;
 
@@ -75,7 +75,7 @@ bool Shooter::CargoAvailable() {
 }
 
 double CalcHighTargetSpeed(double d){
-  double result = (173.0/18.0) * d * d - (11845.0/18.0) * d + 5057;
+  double result = (173.0/18.0) * d * d + (11845.0/18.0) * d + 5057;
   // std::cout << "speed target: " << result << std::endl;
   return result;
 }
@@ -170,12 +170,12 @@ void Shooter::ManualFeed (frc::Joystick *pilot) {
   if (pilot->GetRawButton(3)) {
     mManualFeeding = true;
     StopFeeder();
-  } else if (pilot->GetRawButton(2)) {
-    mManualFeeding = true;
-    mFeeder.Set(1.0);
-  } else if (pilot->GetRawButton(1)) {
-    mManualFeeding = true;
-    mFeeder.Set(0.7);
+  // } else if (pilot->GetRawButton(2)) {
+  //   mManualFeeding = true;
+  //   mFeeder.Set(1.0);
+  // } else if (pilot->GetRawButton(1)) {
+  //   mManualFeeding = true;
+  //   mFeeder.Set(0.7);
   } else if (pilot->GetRawButton(4)) {
     mManualFeeding = true;
     mFeeder.Set(0.3);
