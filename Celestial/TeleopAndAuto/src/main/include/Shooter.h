@@ -7,7 +7,8 @@
 #include "ctre/Phoenix.h"
 #include <Elevator.h>
 
-static const double kShooterSpeedForAuto = 14000;
+static const double kShooterSpeedForAuto = 13300; // was 14000
+static const double kShooterSpeedForBlindShot = 13300; 
 
 enum ShooterState {
   kShooterUnknownState = 0,
@@ -18,6 +19,16 @@ enum ShooterState {
   kEmpty,
   kIdle
 };
+
+enum BlindShotState {
+		kBSSUnknownState = 0,
+    kBSSBegin,
+    kBSSReadying,
+    kBSSShooting,
+		kBSSCompleted
+	};
+
+
 
 class Shooter {
 private:
@@ -32,7 +43,7 @@ private:
 
   std::shared_ptr<nt::NetworkTable> mLimeTable; // for LimeLight
 
-  bool mLightOn = true;  // light is on when booted up
+  bool mLightOn = true;  // light may be on when booted up
   ShooterState mState = kShooterUnknownState;
   frc2::PIDController *mPIDController;
 
@@ -42,6 +53,10 @@ private:
   double mMotorOutVelocity = 0.0; // for collecting data for targeting
 
   bool ReadyShooter(bool hightTarget);
+
+  // blind shot stuff
+  BlindShotState mBlindShotState = kBSSUnknownState;
+  frc::Timer mBlindShotTimer; 
 
   // feeder
   WPI_TalonSRX mFeeder{7};
@@ -79,5 +94,6 @@ public:
   bool FixedElevationForAuto();
   void ShootForAuto();
   void AutonomousInit();
+  void BlindShot(frc::Joystick *copilot);
 
 };

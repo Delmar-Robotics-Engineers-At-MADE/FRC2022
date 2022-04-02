@@ -9,6 +9,7 @@ static const double kMinTargetAreaPercent = 0.0;
 static const double kRollerIdleSpeed = 2300.0;
 static const double kVelocityTolerance = 500;
 static const double kFeederSpeed = 0.9;
+constexpr units::time::second_t kBlindShotReadyTime = 2.0_s; // seconds
 
 double ConvertRadsToDegrees (double rads) {
     const static double conversion_factor = 180.0/3.141592653589793238463;
@@ -31,17 +32,17 @@ Shooter::Shooter () {  // constructor
 }
 
 void Shooter::TurnLightOnOrOff (bool turnOn) {
-  mLimeTable->PutNumber("ledMode",3.0); // LED on bright
-  // bool turnOff = !turnOn;
-  // bool lightIsOff = !mLightOn;
-  // if (mLightOn && turnOff) {
-  //   std::cout << "sending command to turn off light " << std::endl;
-  //   mLimeTable->PutNumber("ledMode",1.0); // LED off
-  //   mLightOn = false;
-  // } else if (lightIsOff && turnOn) {
-  //   mLimeTable->PutNumber("ledMode",3.0); // LED on bright
-  //   mLightOn = true;
-  // }
+  bool turnOff = !turnOn;
+  bool lightIsOff = !mLightOn;
+  if (mLightOn && turnOff) {
+    std::cout << "sending command to turn OFF light " << std::endl;
+    mLimeTable->PutNumber("ledMode",1.0); // LED off
+    mLightOn = false;
+  } else if (lightIsOff && turnOn) {
+    std::cout << "sending command to turn ON light " << std::endl;
+    mLimeTable->PutNumber("ledMode",3.0); // LED on bright
+    mLightOn = true;
+  }
 }
 
 void Shooter::CheckLimelight() {
@@ -206,11 +207,14 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, Drive
   bool shootAtHighGoal = copilot->GetRawButton(4);
   bool shootAtLowGoal = copilot->GetRawButton(2);
 
-  if (shootAtHighGoal || shootAtLowGoal) {
+  if (shootAtHighGoal) { //  || shootAtLowGoal
     TurnLightOnOrOff(true);
     CheckLimelight();
     Shoot(shootAtHighGoal, driveState);
     // std::cout << "shooter state" << mState << std::endl;
+  } else if (shootAtLowGoal) {
+    // for now, do blind shot
+    BlindShot(copilot);
   } else { // no shooter buttons pressed
     TurnLightOnOrOff(false);
     Idle();
@@ -233,7 +237,7 @@ void Shooter::RobotInit() {
   frc::SmartDashboard::PutNumber("H2", mH2);
 
   mLimeTable->PutNumber("camMode",0.0); // camera in normal CV mode
-  mLimeTable->PutNumber("ledMode",1.0); // LED off
+  TurnLightOnOrOff(false); // mLimeTable->PutNumber("ledMode",1.0); // LED off
   mLimeTable->PutNumber("stream",0.0);  // secondary camera side-by-side
 
   mStarShooter.ConfigFactoryDefault();
@@ -288,7 +292,7 @@ void Shooter::RobotPeriodic() {
 }
 
 void Shooter::DoOnceInit() {
-  mLimeTable->PutNumber("ledMode",3.0); // LED on bright
+  TurnLightOnOrOff(false); // mLimeTable->PutNumber("ledMode",3.0); // LED on bright
 }
 
 void Shooter::FixedSpeedForAuto(){
@@ -299,4 +303,34 @@ void Shooter::AutonomousInit() {
   // frc::SmartDashboard::PutNumber("Distance", mTargetDistance);
   mAutoShootSpeed = frc::SmartDashboard::GetNumber("Auto Shoot V", mAutoShootSpeed);
 
+}
+
+void Shooter::BlindShot(frc::Joystick *copilot) {
+  bool dontCare = false;
+  switch (mBlindShotState) {
+    default:
+    case kBSSBegin:
+      mBlindShotTimer.Reset();
+      mBlindShotTimer.Start();
+      mBlindShotState = kBSSReadying;
+      break;
+    case kBSSReadying:
+      FixedSpeedForAuto();
+      FixedElevationForAuto();
+      if (mBlindShotTimer.Get() > kBlindShotReadyTime) {
+        mBlindShotState = kBSSShooting;
+      }
+      break;
+    case kBSSShooting:
+      if (copilot->GetRawButton(2)) {
+        ShootForAuto();  // stay on this state as long as button is pressed
+      } else {
+        mBlindShotState = kBSSCompleted;
+      }
+      break;
+    case kBSSCompleted:
+      Idle();
+      StopFeeder();
+      break;    
+  }
 }
