@@ -222,7 +222,8 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, Drive
     frc::SmartDashboard::PutBoolean("Shooter Ready", false);
     frc::SmartDashboard::PutBoolean("Elevator Ready", false);
     frc::SmartDashboard::PutBoolean("Feeding Cargo", false);
-    ManualFeed(pilot);  // alowed if not shooting
+    // ManualFeed(pilot);  // alowed if not shooting
+    StopFeeder();
  }
   // }
   // mMotorOutVelocity = frc::SmartDashboard::GetNumber("motor output percentage", 0);
