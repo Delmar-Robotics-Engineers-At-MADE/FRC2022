@@ -6,10 +6,15 @@
 #include <iostream>
 
 static const double kMinTargetAreaPercent = 0.0;
-static const double kRollerIdleSpeed = 2300.0;
+static const double kRollerIdleSpeed = 0.0;  // was 2300 for 2022 competition
 static const double kVelocityTolerance = 500;
 static const double kFeederSpeed = 0.9;
 constexpr units::time::second_t kBlindShotReadyTime = 2.0_s; // seconds
+
+static const double kFtuned = 0.0451;
+static const double kPtuned = 0.1;
+static const double kDtuned = 0.002;
+static const double kRampTuned = 2.5;
 
 double ConvertRadsToDegrees (double rads) {
     const static double conversion_factor = 180.0/3.141592653589793238463;
@@ -254,10 +259,11 @@ void Shooter::RobotInit() {
 
   // Port is the leader, so set its PID and sensor
 
-  mPortShooter.Config_kF(0, 0.045, 30); // was .045 in 2020
-  mPortShooter.Config_kP(0, 0.009, 30);
-  mPortShooter.Config_kI(0, 0.000005, 30); // was .00005 in 2020
-  mPortShooter.Config_kD(0, 0.0009, 30); // was 0 in 2020
+  mPortShooter.Config_kF(0, kFtuned, 30); // was .045 in 2020
+  mPortShooter.Config_kP(0, kPtuned, 30);
+  mPortShooter.Config_kI(0, 0.0, 30); // was .00005 in 2020
+  mPortShooter.Config_kD(0, kDtuned, 30); // was 0 in 2020
+  mPortShooter.ConfigClosedloopRamp(kRampTuned);
   mPortShooter.ConfigSelectedFeedbackSensor(FeedbackDevice::IntegratedSensor, 0, 30);
 
   // Other motors

@@ -25,6 +25,39 @@
               "Slider Settings/Block increment": 0.0625,
               "Visuals/Display value": true
             }
+          },
+          "0,1": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/motor kF",
+              "_title": "motor kF"
+            }
+          },
+          "1,1": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/motor kP",
+              "_title": "motor kP"
+            }
+          },
+          "2,1": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/motor kD",
+              "_title": "motor kD"
+            }
           }
         }
       }
@@ -67,9 +100,9 @@
     }
   ],
   "windowGeometry": {
-    "x": -8.0,
-    "y": 32.0,
-    "width": 1616.0,
-    "height": 876.0
+    "x": -1928.0,
+    "y": -8.0,
+    "width": 1936.0,
+    "height": 1056.0
   }
 }
