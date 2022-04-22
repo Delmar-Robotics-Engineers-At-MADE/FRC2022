@@ -368,6 +368,7 @@ void Shooter::SetTrapezoidGoalForTestIdle () {
   SetTrapezoidGoal(0_deg_per_s, kShooterIdleAngularV);
 }
 
+
 bool Shooter::ReadyViaTrapezoid () {
   frc::TrapezoidProfile<units::angular_acceleration::degrees_per_second_squared_t>::State setpoint = mProfile->Calculate(mTimer.Get()); 
   double velocityInEncoderCounts = DegPerSecToEncoderCountsPerTenth(setpoint.velocity);
