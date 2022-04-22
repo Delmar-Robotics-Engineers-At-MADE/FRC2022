@@ -10,6 +10,8 @@ static const double kRollerIdleSpeed = 2300.0;
 static const double kVelocityTolerance = 500;
 static const double kFeederSpeed = 0.9;
 constexpr units::time::second_t kBlindShotReadyTime = 2.0_s; // seconds
+constexpr units::angular_acceleration::degrees_per_second_squared_t kShooterIdleAngularV = 6000.0_deg_per_s;
+
 
 double ConvertRadsToDegrees (double rads) {
     const static double conversion_factor = 180.0/3.141592653589793238463;
@@ -171,8 +173,17 @@ void Shooter::Shoot (bool highTarget, DriveSysTargetingState driveState) {
 
 void Shooter::Idle(){
   mState = kIdle;
-  mPortShooter.Set(ControlMode::Velocity, kRollerIdleSpeed);
+  // mPortShooter.Set(ControlMode::Velocity, kRollerIdleSpeed);
+  StopViaTrapezoid();
 }
+
+
+void Shooter::TestIdle(){  // test trapezoidal motion with this method, then delete it
+  mState = kIdle;
+  // mPortShooter.Set(ControlMode::Velocity, kRollerIdleSpeed);
+  ReadyViaTrapezoid();
+}
+
 
 void Shooter::StopFeeder() {
   // std::cout << "stopping feeder" << std::endl;
@@ -334,4 +345,37 @@ void Shooter::BlindShot(frc::Joystick *copilot) {
       StopFeeder();
       break;    
   }
+}
+
+
+// Falcon integrated encoder gives 2048 counts per revolution.
+// so 1 degree/sec = 2048/360 counts per sec = 0.5689 counts per 100 msec
+double DegPerSecToEncoderCountsPerTenth(units::angular_velocity::degrees_per_second_t degPerSec) {
+  return degPerSec.value() * 0.5689;
+}
+
+void Shooter::SetTrapezoidGoal (units::angular_velocity::degrees_per_second_t initial, units::angular_velocity::degrees_per_second_t goal) {
+  mGoal = {goal, kShooterAcceleration};
+  mInitialState = {initial, 0_deg_per_s_sq};
+  mProfile = new frc::TrapezoidProfile<units::angular_acceleration::degrees_per_second_squared_t> (mConstraints, mGoal, mInitialState);
+}
+
+void Shooter::SetTrapezoidGoalForTestIdle () {
+  SetTrapezoidGoal(0_deg_per_s, kShooterIdleAngularV);
+}
+
+void Shooter::SetTrapezoidGoalForTestIdle () {
+  SetTrapezoidGoal(0_deg_per_s, kShooterIdleAngularV);
+}
+
+bool Shooter::ReadyViaTrapezoid () {
+  frc::TrapezoidProfile<units::angular_acceleration::degrees_per_second_squared_t>::State setpoint = mProfile->Calculate(mTimer.Get()); 
+  double velocityInEncoderCounts = DegPerSecToEncoderCountsPerTenth(setpoint.velocity);
+  mPortShooter.Set(ControlMode::Velocity, velocityInEncoderCounts);
+  return mProfile->IsFinished(mTimer.Get());
+}
+
+void Shooter::StartMotionTimer() {
+  mTimer.Reset();
+  mTimer.Start();
 }

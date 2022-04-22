@@ -6,9 +6,12 @@
 #include <Constants.h>
 #include "ctre/Phoenix.h"
 #include <Elevator.h>
+#include <units/angular_velocity.h>
+#include <units/angular_acceleration.h>
 
 static const double kShooterSpeedForAuto = 13300; // was 14000
 static const double kShooterSpeedForBlindShot = 13300; 
+constexpr units::angular_acceleration::degrees_per_second_squared_t kShooterAcceleration = 3000.0_deg_per_s_sq;
 
 enum ShooterState {
   kShooterUnknownState = 0,
@@ -58,6 +61,13 @@ private:
   BlindShotState mBlindShotState = kBSSUnknownState;
   frc::Timer mBlindShotTimer; 
 
+  // trapezoid stuff
+  frc::TrapezoidProfile<units::angular_acceleration::degrees_per_second_squared_t>::Constraints mConstraints{6000_deg_per_s, kShooterAcceleration};
+  frc::TrapezoidProfile<units::angular_acceleration::degrees_per_second_squared_t>::State mGoal;
+  frc::TrapezoidProfile<units::angular_acceleration::degrees_per_second_squared_t>::State mInitialState;
+  frc::TrapezoidProfile<units::angular_acceleration::degrees_per_second_squared_t> *mProfile;
+  frc::Timer mTimer;
+
   // feeder
   WPI_TalonSRX mFeeder{7};
   void ManualFeed (frc::Joystick *copilot);
@@ -65,7 +75,6 @@ private:
   bool mManualFeeding = false;
   double mAutoShootSpeed= kShooterSpeedForAuto;
   
-
   // elevator
   Elevator mElevator;
 
@@ -95,5 +104,8 @@ public:
   void ShootForAuto();
   void AutonomousInit();
   void BlindShot(frc::Joystick *copilot);
-
+  void SetTrapezoidGoal (units::angular_velocity::degrees_per_second_t initial, units::angular_velocity::degrees_per_second_t goal);
+  void SetTrapezoidGoalForIdle ();
+  bool ReadyViaTrapezoid();
+  void StartMotionTimer();
 };
