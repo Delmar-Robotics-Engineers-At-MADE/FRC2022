@@ -223,6 +223,7 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, Drive
   } else { // no shooter buttons pressed
     TurnLightOnOrOff(false);
     Idle();
+    mBlindShotState = kBSSUnknownState;
     frc::SmartDashboard::PutBoolean("On Target", false);
     frc::SmartDashboard::PutBoolean("Shooter Ready", false);
     frc::SmartDashboard::PutBoolean("Elevator Ready", false);
