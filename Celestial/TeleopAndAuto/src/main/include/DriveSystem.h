@@ -2,7 +2,8 @@
 
 #include "frc/drive/RobotDriveBase.h"
 #include <frc/drive/MecanumDrive.h>
-#include <frc/Joystick.h>
+// #include <frc/Joystick.h>
+#include <Gamepad.h>
 #include "AHRS.h"
 #include <Shooter.h>
 #include <frc/controller/PIDController.h>
@@ -19,20 +20,20 @@ public:
 
   DriveSysTargetingState mTargetingState = kDriveUnknownState;
 
-  void TeleopPeriodic (frc::Joystick *copilot);
+  void TeleopPeriodic (Gamepad *copilot);
   DriveSystem(frc::SpeedController& frontLeftMotor, frc::SpeedController& rearLeftMotor,
               frc::SpeedController& frontRightMotor, frc::SpeedController& rearRightMotor);
 
   // ~DriveSystem() override = default;
 
-  void TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot);
+  void TelopPeriodic (Gamepad *pilot, Gamepad *copilot);
   void DoOnceInit();
   void RepeatableInit();
   void RobotPeriodic();
-  void RotateToTarget(frc::Joystick *pilot, frc::Joystick *copilot); // angle in degrees
+  void RotateToTarget(Gamepad *pilot, Gamepad *copilot); // angle in degrees
   void DriveTrapezoid();
   void DriveSlowForAuto(double x, double y);
-  void DriveSlowAndSnapForHanging (frc::Joystick *pilot);
+  void DriveSlowAndSnapForHanging (Gamepad *pilot);
 
   void RobotInit(Shooter *shooter, 
                 rev::SparkMaxPIDController *pidFL, rev::SparkMaxPIDController *pidRL, 

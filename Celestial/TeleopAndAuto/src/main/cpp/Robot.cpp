@@ -24,6 +24,11 @@ void Robot::RobotInit() {
 
   mAutoController = new AutonomousController(&mRobotDrive, mShooter);
 
+  mPilot = new Gamepad(0);
+  mCopilot = new Gamepad(1);
+  mPilot->RobotInit(mCopilot); // for summer, just have one controller
+  mCopilot->RobotInit(mPilot);
+
 }
 
 void Robot::RobotPeriodic() {
@@ -57,10 +62,10 @@ void Robot::TeleopInit() {
 
 void Robot::TeleopPeriodic() {
 
-  mClimber.TelopPeriodic(&mCopilot);
-  mShooter->TelopPeriodic(&mPilot, &mCopilot, mRobotDrive.mTargetingState);
-  mRobotDrive.TelopPeriodic(&mPilot, &mCopilot);
-  mIntake.TeleopPeriodic(&mPilot);
+  mClimber.TelopPeriodic(mCopilot);
+  mShooter->TelopPeriodic(mPilot, mCopilot, mRobotDrive.mTargetingState);
+  mRobotDrive.TelopPeriodic(mPilot, mCopilot);
+  mIntake.TeleopPeriodic(mPilot);
  
 }
 

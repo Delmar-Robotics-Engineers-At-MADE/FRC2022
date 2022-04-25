@@ -1,6 +1,7 @@
 #pragma once
 
-#include <frc/Joystick.h>
+//#include <frc/Joystick.h>
+#include <Gamepad.h>
 #include "ctre/Phoenix.h"
 #include "frc/DigitalInput.h"
 #include <frc/DoubleSolenoid.h>
@@ -16,7 +17,7 @@ enum RatchetState {
 
 class Climber {
 public:
-  void TelopPeriodic (frc::Joystick *copilot);
+  void TelopPeriodic (Gamepad *copilot);
   void RobotInit();
   void DoOnceInit();
   void RepeatableInit();
@@ -38,7 +39,7 @@ private:
   RatchetState mRatchetState = kRatchetUnknown;
 
   void SmartClimber(int povPad);
-  void ManualClimber(frc::Joystick *copilot, bool slowspeed);
+  void ManualClimber(Gamepad *copilot, bool slowspeed);
   void CheckHomePositions();
   void OpenRatchetIfExtending (double powerPort, double powerStar);
   void StopClimbers();

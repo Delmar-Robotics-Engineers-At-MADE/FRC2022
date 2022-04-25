@@ -3,7 +3,7 @@
 
 static const double kIntakeSpeed = 1.0;
 
-void Intake::TeleopPeriodic (frc::Joystick *pilot) {
+void Intake::TeleopPeriodic (Gamepad *pilot) {
   bool deploy = pilot->GetRawButton(8) || pilot->GetRawButton(7);
   if (deploy) {
     mSolenoid.Set(frc::DoubleSolenoid::kReverse);

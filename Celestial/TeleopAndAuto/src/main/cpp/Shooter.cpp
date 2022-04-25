@@ -184,7 +184,7 @@ void Shooter::StopFeeder() {
   mFeeder.Set(0.0);
 }
 
-void Shooter::ManualFeed (frc::Joystick *pilot) {
+void Shooter::ManualFeed (Gamepad *pilot) {
   // if (pilot->GetRawButton(3)) {
   //   mManualFeeding = true;
   //   std::cout << "stopping feed from ManualFeed" << std::endl;
@@ -206,7 +206,7 @@ void Shooter::ManualFeed (frc::Joystick *pilot) {
   // bool TODO_Finish_Manual_Feed = false;
 }
 
-void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, DriveSysTargetingState driveState){
+void Shooter::TelopPeriodic (Gamepad *pilot, Gamepad *copilot, DriveSysTargetingState driveState){
   mPhi = frc::SmartDashboard::GetNumber("Phi", mPhi); // angle of limelight from vertical
   mH2 = frc::SmartDashboard::GetNumber("H2", mH2); // height of target above limelight
   bool shootAtHighGoal = copilot->GetRawButton(4);
@@ -243,10 +243,6 @@ void Shooter::RobotInit() {
   frc::SmartDashboard::PutNumber("Phi", mPhi);
   frc::SmartDashboard::PutNumber("H2", mH2);
 
-  mLimeTable->PutNumber("camMode",0.0); // camera in normal CV mode
-  TurnLightOnOrOff(false); // mLimeTable->PutNumber("ledMode",1.0); // LED off
-  mLimeTable->PutNumber("stream",0.0);  // secondary camera side-by-side
-
   mStarShooter.ConfigFactoryDefault();
   mPortShooter.ConfigFactoryDefault();
 
@@ -280,6 +276,8 @@ void Shooter::RobotInit() {
   // Limelight
   std::cout << "calling TurnLightOff " <<  std::endl;
   TurnLightOnOrOff(false);
+  mLimeTable->PutNumber("camMode",0.0); // camera in normal CV mode
+  mLimeTable->PutNumber("stream",0.0);  // secondary camera side-by-side
 
   frc::SmartDashboard::PutNumber("Auto Shoot V", mAutoShootSpeed);
 }
@@ -313,7 +311,7 @@ void Shooter::AutonomousInit() {
 
 }
 
-void Shooter::BlindShot(frc::Joystick *copilot) {
+void Shooter::BlindShot(Gamepad *copilot) {
   bool dontCare = false;
   switch (mBlindShotState) {
     default:

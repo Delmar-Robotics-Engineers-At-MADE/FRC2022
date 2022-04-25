@@ -1,6 +1,7 @@
 #pragma once
 
-#include <frc/Joystick.h>
+// #include <frc/Joystick.h>
+#include <Gamepad.h>
 #include <networktables/NetworkTable.h>
 #include <frc/controller/PIDController.h>
 #include <Constants.h>
@@ -60,7 +61,7 @@ private:
 
   // feeder
   WPI_TalonSRX mFeeder{7};
-  void ManualFeed (frc::Joystick *copilot);
+  void ManualFeed (Gamepad *copilot);
   bool CargoAvailable();
   bool mManualFeeding = false;
   double mAutoShootSpeed= kShooterSpeedForAuto;
@@ -78,7 +79,7 @@ public:
   double mTargetDistance = 0.0;
 
   Shooter (); // constructor
-  void TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, DriveSysTargetingState driveState);
+  void TelopPeriodic (Gamepad *pilot, Gamepad *copilot, DriveSysTargetingState driveState);
   void RobotInit();
   void RepeatableInit();
   void TeleopInit();
@@ -94,6 +95,6 @@ public:
   bool FixedElevationForAuto();
   void ShootForAuto();
   void AutonomousInit();
-  void BlindShot(frc::Joystick *copilot);
+  void BlindShot(Gamepad *copilot);
 
 };

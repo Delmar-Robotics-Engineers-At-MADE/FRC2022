@@ -39,7 +39,7 @@ DriveSystem::DriveSystem(frc::SpeedController& frontLeftMotor, frc::SpeedControl
 
   }
 
-void DriveSystem::RotateToTarget (frc::Joystick *pilot, frc::Joystick *copilot) { 
+void DriveSystem::RotateToTarget (Gamepad *pilot, Gamepad *copilot) { 
   double rotateRate = 0.0;
   double angleToTarget = mShooter->mTargetAngleHorizontal;
   std::cout << "rotating, target seen: " << mShooter->mTargetSeen << std::endl;
@@ -75,7 +75,7 @@ void DriveSystem::RotateToTarget (frc::Joystick *pilot, frc::Joystick *copilot) 
   DriveCartesian(0, 0, rotateRate);
 }
 
-void DriveSystem::DriveSlowAndSnapForHanging (frc::Joystick *pilot){
+void DriveSystem::DriveSlowAndSnapForHanging (Gamepad *pilot){
   // offset everything 180 deg. to avoid discontinuity at 0/360
   double x = pilot->GetX();
   double y = pilot->GetY();
@@ -85,7 +85,8 @@ void DriveSystem::DriveSlowAndSnapForHanging (frc::Joystick *pilot){
   // return mPIDControllerGyro->AtSetpoint();
 }
 
-void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
+void DriveSystem::TelopPeriodic (Gamepad *pilot, Gamepad *copilot){
+  std::cout << "in drive system teleop periodic" << std::endl;
   bool shooting = (copilot->GetRawButton(4) || copilot->GetRawButton(2));
   // std::cout << "driving" << std::endl;
   if (shooting) {
@@ -93,7 +94,7 @@ void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
     RotateToTarget(pilot, copilot);
   } else {
     mTargetingState = kDriveNotTargeting;
-    double x = pilot->GetX();
+    double x = pilot->GetX();  frc::SmartDashboard::PutNumber("Drive X", x);
     double y = pilot->GetY();
     double z = pilot->GetZ();
     if (pilot->GetRawButton(6) && pilot->GetRawButton(4)) {

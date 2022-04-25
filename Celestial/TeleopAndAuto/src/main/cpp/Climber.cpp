@@ -99,7 +99,7 @@ void Climber::OpenRatchetIfExtending (double powerPort, double powerStar) {
   }
 }
 
-void Climber::ManualClimber(frc::Joystick *copilot, bool slowspeed){
+void Climber::ManualClimber(Gamepad *copilot, bool slowspeed){
   bool TODO_Add_Dashboard_Displays = false;
   double powerPort = 0.0;
   double powerStar = 0.0;
@@ -169,7 +169,7 @@ void Climber::TeleopInit(){
   mEndgameTimer.Start();
 }
 
-void Climber::TelopPeriodic (frc::Joystick *copilot){
+void Climber::TelopPeriodic (Gamepad *copilot){
 
   bool endgameOverridePressed = copilot->GetRawButton(1);
   int povPad = copilot->GetPOV();

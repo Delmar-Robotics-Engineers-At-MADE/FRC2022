@@ -2,13 +2,14 @@
 
 #include <frc/Encoder.h>
 #include "ctre/Phoenix.h"
-#include <frc/Joystick.h>
+// #include <frc/Joystick.h>
+#include <Gamepad.h>
 #include <frc/DigitalInput.h>
 #include <frc/controller/PIDController.h>
 
 class Elevator {
 public:
-  void TelopPeriodic (frc::Joystick *copilot);
+  void TelopPeriodic (Gamepad *copilot);
   void DoOnceInit();
   void RobotInit();
   void RobotPeriodic();
@@ -40,7 +41,7 @@ private:
   frc::DigitalInput mLimitSwitch{4};
   frc2::PIDController *mPIDController;
   
-  void ManualElevate (frc::Joystick *copilot);
+  void ManualElevate (Gamepad *copilot);
   void CheckHomePosition();
 
 };

@@ -12,7 +12,7 @@ const static double kItuned = 0.0;
 const static double kDtuned = 0.001;
 const static double kPIDTolerance = 5;
 
-void Elevator::ManualElevate (frc::Joystick *copilot) {
+void Elevator::ManualElevate (Gamepad *copilot) {
   // positive power moves nut up, lowering elevation, flattening trajectory, for farther away
   // negative power moves nut down, increasing elevation, for steeper trajectory
   double speed = -copilot->GetY();
@@ -55,7 +55,7 @@ void Elevator::DoOnceInit() {
   frc::SmartDashboard::PutNumber("Elevator Homed", mHomed);
 }
 
-void Elevator::TelopPeriodic (frc::Joystick *copilot) {
+void Elevator::TelopPeriodic (Gamepad *copilot) {
   CheckHomePosition();
   if (mHomed && copilot->GetRawButton(4)) { // shooting at high goal
    // Elevate method is called from Shoot in Shooter, so do nothing here

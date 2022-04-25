@@ -3,12 +3,13 @@
 // #include <frc/PneumaticsControlModule.h>
 // #include <frc/Solenoid.h>
 #include <frc/DoubleSolenoid.h>
-#include <frc/Joystick.h>
+// #include <frc/Joystick.h>
+#include <Gamepad.h>
 #include "ctre/Phoenix.h"
 
 class Intake {
 public:
-  void TeleopPeriodic (frc::Joystick *pilot);
+  void TeleopPeriodic (Gamepad *pilot);
   void RobotInit();
   void DoOnceInit();
 private:

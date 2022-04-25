@@ -1,7 +1,8 @@
 #include <frc/TimedRobot.h>
 #include <frc/drive/MecanumDrive.h>
 #include <frc/motorcontrol/Talon.h>
-#include <frc/Joystick.h>
+// #include <frc/Joystick.h>
+#include <Gamepad.h>
 #include <PixyBallTracker.h>
 #include <AutonomousController.h>
 #include <Climber.h>
@@ -37,8 +38,10 @@ private:
   
   DriveSystem mRobotDrive{mFrontLeft, mRearLeft, mFrontRight, mRearRight};
 
-  frc::Joystick mPilot{0};
-  frc::Joystick mCopilot{1};
+//  frc::Joystick mPilot{0};
+//  frc::Joystick mCopilot{1};
+  Gamepad *mPilot; // Gamepad is a subclass of Joystick to make bot safer for demos
+  Gamepad *mCopilot;
 
   PixyBallTracker *mTracker;
 
