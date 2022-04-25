@@ -171,7 +171,7 @@ void Climber::TeleopInit(){
 
 void Climber::TelopPeriodic (frc::Joystick *copilot){
 
-  bool endgameOverridePressed = copilot->GetRawButton(1);
+  bool bluebuttnoPressed = copilot->GetRawButton(1);
   int povPad = copilot->GetPOV();
   bool smartControl = false;
   // bool manualControl = false;
@@ -186,18 +186,18 @@ void Climber::TelopPeriodic (frc::Joystick *copilot){
     smartControl = true;
   }
 
-  if (endgameOverridePressed || mEndgameTimer.Get() > kEndGameTime) { // don't let any controls work until endgame, unless override button pressed
-    //std::cout << "endgame timer: " << (mEndgameTimer.Get() > 2_min) << std::endl;
-    if (smartControl) {
-      SmartClimber(povPad);
-    } else {
-      ManualClimber(copilot, endgameOverridePressed);
-      CheckHomePositions();  // if operator needs to home a climber to enable smart-climber, check here
-    }
+  // if (endgameOverridePressed || mEndgameTimer.Get() > kEndGameTime) { // don't let any controls work until endgame, unless override button pressed
+  // no longer care about endgame timer
+  if (smartControl) {
+    SmartClimber(povPad);
   } else {
-    // possibly just let up on blue button
-    StopClimbers();
+    ManualClimber(copilot, bluebuttnoPressed);
+    CheckHomePositions();  // if operator needs to home a climber to enable smart-climber, check here
   }
+  // } else {
+  //   // possibly just let up on blue button
+  //   StopClimbers();
+  // }
 
 }
 
