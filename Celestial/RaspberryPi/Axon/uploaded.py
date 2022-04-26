@@ -114,6 +114,11 @@ class Tester:
         ntinst.startDSClient()
         self.entry = ntinst.getTable("ML").getEntry("detections")
 
+        # MJS: added network tables entries for neareast object
+        self.entryNearestIndex = ntinst.getTable("ML").getEntry("nearestindex")
+        self.entryNearestArea = ntinst.getTable("ML").getEntry("nearestarea")
+        self.entryNearestLabel = ntinst.getTable("ML").getEntry("nearestlabel")
+
         self.coral_entry = ntinst.getTable("ML").getEntry("coral")
         self.fps_entry = ntinst.getTable("ML").getEntry("fps")
         self.resolution_entry = ntinst.getTable("ML").getEntry("resolution")
@@ -149,10 +154,15 @@ class Tester:
             # run inference
             self.interpreter.invoke()
 
+            # MJS: added simple info on nearest object
+            nearestIndex = -1
+            nearestArea = 0
+            nearestLabel = ''
+
             # output
             boxes, class_ids, scores, x_scale, y_scale = self.get_output(scale)
             for i in range(len(boxes)):
-                if scores[i] > .5:
+                if scores[i] > .5:  # MJS: make this confidence threshhold adjustable
 
                     class_id = class_ids[i]
                     if np.isnan(class_id):
@@ -164,8 +174,22 @@ class Tester:
 
                     frame_cv2 = self.label_frame(frame_cv2, self.labels[class_id], boxes[i], scores[i], x_scale,
                                                  y_scale)
+
+                    # MJS: check for nearest
+                    area = (boxes[i].xmax - boxes[i].xmin) * (boxes[i].ymax - boxes[i].ymin)
+                    if area > nearestArea:
+                        nearestArea = area
+                        nearestIndex = i
+                        nearestLabel = self.labels[class_id]
+
             self.output.putFrame(frame_cv2)
             self.entry.setString(json.dumps(self.temp_entry))
+
+            # MJS: output nearest object
+            self.entryNearestIndex.setNumber(nearestIndex)
+            self.entryNearestArea.setNumber(nearestArea)
+            self.entryNearestLabel.setString(nearestLabel)
+
             self.temp_entry = []
             if self.frames % 100 == 0:
                 print("Completed", self.frames, "frames. FPS:", (1 / (time() - start)))
