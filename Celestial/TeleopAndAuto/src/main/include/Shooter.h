@@ -43,7 +43,7 @@ private:
 
   std::shared_ptr<nt::NetworkTable> mLimeTable; // for LimeLight
 
-  bool mLightOn = true;  // light may be on when booted up
+  bool mLightOn = false;  // light should be off when booted up; if not, turn it off on web console
   ShooterState mState = kShooterUnknownState;
   frc2::PIDController *mPIDController;
 

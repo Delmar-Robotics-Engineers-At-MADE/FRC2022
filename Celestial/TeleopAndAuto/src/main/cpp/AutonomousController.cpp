@@ -1,6 +1,7 @@
 #include <AutonomousController.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <iostream>
+#define SUMMER
 
 constexpr units::time::second_t kAutoDriveTime = 2.0_s; // seconds
 constexpr units::time::second_t kAutoShootTime = 5.0_s; // seconds
@@ -11,11 +12,16 @@ AutonomousController::AutonomousController (DriveSystem *drive, Shooter *shooter
   mDrive = drive;
   mShooter = shooter;
 
-  mChooser.SetDefaultOption(kAutoNameDriveOnly, kAutoNameDriveOnly);
+  mChooser.SetDefaultOption(kAutoNameDemoDriving, kAutoNameDemoDriving);
+  mChooser.AddOption(kAutoNameDemoDriving, kAutoNameDemoDriving);
+
+#ifndef SUMMER
   mChooser.AddOption(kAutoNameDriveOnly, kAutoNameDriveOnly);
   mChooser.AddOption(kAutoNameDriveAndShoot, kAutoNameDriveAndShoot);
   mChooser.AddOption(kAutoNameJustInit, kAutoNameJustInit);
+#endif
 
+#ifndef SUMMER
   mChooserOptionsDirection.SetDefaultOption(kAutoOptionDirStraight,kAutoOptionDirStraight);
   mChooserOptionsDirection.AddOption(kAutoOptionDirStraight, kAutoOptionDirStraight);
   mChooserOptionsDirection.AddOption(kAutoOptionDirLeft, kAutoOptionDirLeft);
@@ -24,10 +30,14 @@ AutonomousController::AutonomousController (DriveSystem *drive, Shooter *shooter
   mChooserOptionsWait.SetDefaultOption(kAutoOptionNoWait,kAutoOptionNoWait);
   mChooserOptionsWait.AddOption(kAutoOptionWait, kAutoOptionWait);
   mChooserOptionsWait.AddOption(kAutoOptionNoWait, kAutoOptionNoWait);
+#endif
 
   frc::SmartDashboard::PutData("A Modes", &mChooser);
+
+#ifndef SUMMER
   frc::SmartDashboard::PutData("A Direction?", &mChooserOptionsDirection);
   frc::SmartDashboard::PutData("A Wait?", &mChooserOptionsWait);
+#endif
 
 }
 
@@ -36,7 +46,9 @@ void AutonomousController::AutonomousInit() {
   mAutoSelected = mChooser.GetSelected();
   mAutoSelectedOptionsDirection = mChooserOptionsDirection.GetSelected();
   mAutoSelectedOptionsWait = mChooserOptionsWait.GetSelected();
-  if (mAutoSelected == kAutoNameDriveOnly) {
+  if (mAutoSelected == kAutoNameDemoDriving) {
+      frc::SmartDashboard::PutBoolean("Auto Does Something", true);
+  } else if (mAutoSelected == kAutoNameDriveOnly) {
       frc::SmartDashboard::PutBoolean("Auto Does Something", true);
   } else if (mAutoSelected == kAutoNameDriveAndShoot) {
       frc::SmartDashboard::PutBoolean("Auto Does Something", true);
@@ -183,6 +195,8 @@ void AutonomousController::AutonomousPeriodic() {
     DriveOnly();
   } else if (mAutoSelected == kAutoNameDriveAndShoot) {
     DriveAndShoot();
+  } else if (mAutoSelected == kAutoNameDemoDriving) {
+    //DemoDriving(gamepad);  // this doesn't work because controllers are disabled in auto
   } else {
     mDrive->StopMotor();
   }

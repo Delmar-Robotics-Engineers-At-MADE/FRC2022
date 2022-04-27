@@ -5,6 +5,8 @@
 #include <math.h>
 #include <iostream>
 
+#define SUMMER
+
 const static double kPtunedGyro = 0.01;
 const static double kItunedGyro = 0.0;
 const static double kDtunedGyro = 0.0;
@@ -85,6 +87,16 @@ void DriveSystem::DriveSlowAndSnapForHanging (frc::Joystick *pilot){
   // return mPIDControllerGyro->AtSetpoint();
 }
 
+#ifdef SUMMER
+
+void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
+  double x = pilot->GetX();
+  double y = pilot->GetY();
+  DriveSlowForAuto(-x, -y);
+}
+
+#else
+
 void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
   bool shooting = (copilot->GetRawButton(4) || copilot->GetRawButton(2));
   // std::cout << "driving" << std::endl;
@@ -110,6 +122,8 @@ void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
     // frc::SmartDashboard::PutNumber("Rev Color IR", IR);
   }
 }
+
+#endif
 
 void SetPIDValues (rev::SparkMaxPIDController *pidController) {
     pidController->SetP     (kPtunedDrive );
@@ -205,5 +219,5 @@ void DriveSystem::DriveSlowForAuto(double x, double y) {
   double currHeading = mAHRS->GetAngle();
   double rotateRate = mPIDControllerGyro->Calculate(currHeading + 180.0);  // offset by 180 to avoid discontinuity
   // DriveCartesian(y*kSlowSpeedMultiplier, -x*kSlowSpeedMultiplier, -rotateRate, currHeading);
-  DriveCartesian(-y*kAutoSpeedMultiplier, x*kAutoSpeedMultiplier, -rotateRate, currHeading);
+  DriveCartesian(-y*kAutoSpeedMultiplier, x*kAutoSpeedMultiplier*2, -rotateRate, currHeading);
 }

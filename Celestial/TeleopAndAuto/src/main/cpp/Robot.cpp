@@ -1,6 +1,8 @@
 #include <Robot.h>
-// #include <frc/smartdashboard/SmartDashboard.h>
+#include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/DriverStation.h>
+
+#define SUMMER
 
 const double kP = 0.012;
 const double kI = 0.0;
@@ -30,6 +32,7 @@ void Robot::RobotPeriodic() {
   // for testing
   mShooter->RobotPeriodic();  // display limit switch
   // mRobotDrive.RobotPeriodic(); // display heading
+  frc::SmartDashboard::PutNumber("joystick X", mPilot.GetX());
 }
 
 void Robot::DoOnceInit()  {
@@ -57,10 +60,12 @@ void Robot::TeleopInit() {
 
 void Robot::TeleopPeriodic() {
 
+#ifndef SUMMER
   mClimber.TelopPeriodic(&mCopilot);
   mShooter->TelopPeriodic(&mPilot, &mCopilot, mRobotDrive.mTargetingState);
-  mRobotDrive.TelopPeriodic(&mPilot, &mCopilot);
   mIntake.TeleopPeriodic(&mPilot);
+#endif
+  mRobotDrive.TelopPeriodic(&mPilot, &mCopilot);
  
 }
 
