@@ -27,7 +27,9 @@ const static double kMinOutputDrive = -1.0;
 const static double kSlowSpeedMultiplier = 0.3;
 const static double kAutoSpeedMultiplier = 0.2;
 const static double kNormalSpeedMultiplier = 0.9;
-const static double kNormalYawMultiplier = 0.75;
+const static double kNormalYawMultiplier = 0.5;
+const static double kDemoSpeedMultX = 0.25;
+const static double kDemoSpeedMultY = 0.13;
 
 const static double kDefaultRotateToTargetRate = 0.5;
 
@@ -90,9 +92,19 @@ void DriveSystem::DriveSlowAndSnapForHanging (frc::Joystick *pilot){
 #ifdef SUMMER
 
 void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
-  double x = pilot->GetX();
-  double y = pilot->GetY();
-  DriveSlowForAuto(-x, -y);
+  if (pilot->GetRawButton(6) && pilot->GetRawButton(4)) {
+      mAHRS->ZeroYaw();   // use current robot orientation as field forward
+  } else {
+    double x = pilot->GetX();
+    double y = pilot->GetY();
+    double z = pilot->GetZ();
+    bool overrideSummerSafeBox = pilot->GetRawButton(4);
+    if (overrideSummerSafeBox) {
+      DriveCartesian(-y*kNormalSpeedMultiplier, x*kNormalSpeedMultiplier, -z*kNormalYawMultiplier, mAHRS->GetAngle());
+    } else { // summer demo
+      DriveSlowForSummer(x, y);
+    }
+  }
 }
 
 #else
@@ -118,8 +130,6 @@ void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
       // std::cout << "normal: " << y << ", " << x << std::endl;
       DriveCartesian(y*kNormalSpeedMultiplier, -x*kNormalSpeedMultiplier, -z*kNormalYawMultiplier, mAHRS->GetAngle());
     }
-    // double IR = mColorSensor.GetIR();
-    // frc::SmartDashboard::PutNumber("Rev Color IR", IR);
   }
 }
 
@@ -209,6 +219,11 @@ void DriveSystem::RepeatableInit() {
 void DriveSystem::RobotPeriodic() {
   // for debugging
   frc::SmartDashboard::PutNumber("Heading", mAHRS->GetAngle());
+  rev::ColorSensorV3::RawColor rawColor = mColorSensor.GetRawColor();
+  frc::SmartDashboard::PutNumber("Color R", rawColor.red);
+  frc::SmartDashboard::PutNumber("Color G", rawColor.green);
+  frc::SmartDashboard::PutNumber("Color B", rawColor.blue);
+  frc::SmartDashboard::PutNumber("Color IR", rawColor.ir);
 }
 
 void DriveSystem::DriveTrapezoid() {
@@ -220,4 +235,57 @@ void DriveSystem::DriveSlowForAuto(double x, double y) {
   double rotateRate = mPIDControllerGyro->Calculate(currHeading + 180.0);  // offset by 180 to avoid discontinuity
   // DriveCartesian(y*kSlowSpeedMultiplier, -x*kSlowSpeedMultiplier, -rotateRate, currHeading);
   DriveCartesian(-y*kAutoSpeedMultiplier, x*kAutoSpeedMultiplier*2, -rotateRate, currHeading);
+}
+
+void DriveSystem::CheckColorForAllClear(bool isWhite, bool isRed, bool isBlue) {
+  if (!isWhite && !isRed && !isBlue) {
+    mDemoDriveState = kSDDClear;
+  }
+}
+
+void DriveSystem::DriveSlowForSummer(double x, double y) {
+
+  // check for boundary lines for summer demo
+  rev::ColorSensorV3::RawColor rawColor = mColorSensor.GetRawColor();
+  bool isWhite = rawColor.blue > 1500 && rawColor.red > 1500;
+  bool isRed = rawColor.blue < 1000 && rawColor.red > 1500;
+  bool isBlue = rawColor.blue > 1500 && rawColor.red < 1000;
+
+  switch (mDemoDriveState) {
+    default:
+      if (isRed) {
+        if (y < 0) {mDemoDriveState = kSDDOnFrontBoundary;}
+        else {mDemoDriveState = kSDDOnRearBoundary;}
+      } else if (isBlue) {
+        if (x > 0) {mDemoDriveState = kSDDOnLeftBoundary;}
+        else {mDemoDriveState = kSDDOnRightBoundary;}
+      }
+      break;
+    // case kSDDOnEdgeBoundary:
+    //   x = 0; y = 0; // stop and don't move again until someone manually gets us off boundary
+    //   break;
+    case kSDDOnLeftBoundary:
+      if (x > 0) {x = 0;} // don't permit more forward motion
+      CheckColorForAllClear(isWhite, isRed, isBlue);
+      break;
+		case kSDDOnRightBoundary:
+      if (x < 0) {x = 0;} // don't permit more forward motion
+      CheckColorForAllClear(isWhite, isRed, isBlue);
+      break;
+    case kSDDOnFrontBoundary:
+      if (y < 0) {y = 0;} // don't permit more forward motion
+      CheckColorForAllClear(isWhite, isRed, isBlue);
+      break;
+    case kSDDOnRearBoundary:
+      if (y > 0) {y = 0;} // don't permit more rearward motion
+      CheckColorForAllClear(isWhite, isRed, isBlue);
+      break;
+  }
+  frc::SmartDashboard::PutNumber("Demo State", mDemoDriveState);
+  frc::SmartDashboard::PutNumber("Demo X", x);
+
+  double currHeading = mAHRS->GetAngle();
+  double rotateRate = mPIDControllerGyro->Calculate(currHeading + 180.0);  // offset by 180 to avoid discontinuity
+
+  DriveCartesian(-y*kDemoSpeedMultY, x*kDemoSpeedMultX, -rotateRate, currHeading);
 }

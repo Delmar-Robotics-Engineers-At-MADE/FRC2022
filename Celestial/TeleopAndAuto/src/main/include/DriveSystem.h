@@ -14,6 +14,17 @@
 #include <units/velocity.h>
 #include <units/acceleration.h>
 
+
+enum SummerDemoDriveStates {
+		kSDDUnknownState = 0,
+    kSDDClear,
+    kSDDOnLeftBoundary,
+		kSDDOnRightBoundary,
+    kSDDOnFrontBoundary,
+    kSDDOnRearBoundary,
+    kSDDOnEdgeBoundary
+	};
+
 class DriveSystem : public frc::MecanumDrive {
 public:
 
@@ -33,6 +44,7 @@ public:
   void DriveTrapezoid();
   void DriveSlowForAuto(double x, double y);
   void DriveSlowAndSnapForHanging (frc::Joystick *pilot);
+  void DriveSlowForSummer(double x, double y);
 
   void RobotInit(Shooter *shooter, 
                 rev::SparkMaxPIDController *pidFL, rev::SparkMaxPIDController *pidRL, 
@@ -45,8 +57,9 @@ private:
   AHRS *mAHRS;
   Shooter *mShooter;
 
+
   static constexpr auto i2cPort = frc::I2C::Port::kOnboard;
-  // rev::ColorSensorV3 mColorSensor{i2cPort};
+  rev::ColorSensorV3 mColorSensor{i2cPort};
   frc2::PIDController *mPIDControllerLimelight; // for orienting robot with limelight
   frc2::PIDController *mPIDControllerGyro; // for orienting robot with gyro
 
@@ -55,5 +68,9 @@ private:
   frc::TrapezoidProfile<units::feet>::State mInitialState;
   frc::TrapezoidProfile<units::feet> *mProfile;
   frc::Timer mTimer;  
+
+  SummerDemoDriveStates mDemoDriveState = kSDDUnknownState;
+
+  void CheckColorForAllClear(bool isWhite, bool isRed, bool isBlue);
 
 };
