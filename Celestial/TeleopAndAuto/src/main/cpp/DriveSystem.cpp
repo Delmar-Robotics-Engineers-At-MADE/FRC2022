@@ -14,7 +14,7 @@ const static double kDtunedGyro = 0.0;
 const static double kPtunedLimelight= 0.02;
 const static double kItunedLimelight = 0.0;
 const static double kDtunedLimelight = 0.0;
-const static double kPIDToleranceLimeLight = 5.0;
+const static double kPIDToleranceLimeLight = 3.0;
 
 const static double kPtunedDrive = 0.1;
 const static double kItunedDrive = 0.0; 
@@ -46,7 +46,7 @@ DriveSystem::DriveSystem(frc::SpeedController& frontLeftMotor, frc::SpeedControl
 void DriveSystem::RotateToTarget (frc::Joystick *pilot, frc::Joystick *copilot) { 
   double rotateRate = 0.0;
   double angleToTarget = mShooter->mTargetAngleHorizontal;
-  std::cout << "rotating, target seen: " << mShooter->mTargetSeen << std::endl;
+  // std::cout << "rotating, target seen: " << mShooter->mTargetSeen << std::endl;
   switch (mTargetingState) {
     default:
       if (mShooter->mTargetSeen) {
@@ -92,18 +92,24 @@ void DriveSystem::DriveSlowAndSnapForHanging (frc::Joystick *pilot){
 #ifdef SUMMER
 
 void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
-  mTargetingState = kDriveOnTarget; // for summer testing
-  if (pilot->GetRawButton(6) && pilot->GetRawButton(4)) {
-      mAHRS->ZeroYaw();   // use current robot orientation as field forward
+  bool shooting = (copilot->GetRawButton(4) || copilot->GetRawButton(2));
+  // std::cout << "driving" << std::endl;
+  if (shooting) {
+    RotateToTarget(pilot, copilot);
   } else {
-    double x = pilot->GetX();
-    double y = pilot->GetY();
-    double z = pilot->GetZ();
-    bool overrideSummerSafeBox = pilot->GetRawButton(4);
-    if (overrideSummerSafeBox) {
-      DriveCartesian(-y*kNormalSpeedMultiplier, x*kNormalSpeedMultiplier, -z*kNormalYawMultiplier, mAHRS->GetAngle());
-    } else { // summer demo
-      DriveSlowForSummer(x, y);
+    mTargetingState = kDriveNotTargeting;
+    if (pilot->GetRawButton(6) && pilot->GetRawButton(4)) {
+        mAHRS->ZeroYaw();   // use current robot orientation as field forward
+    } else {
+      double x = pilot->GetX();
+      double y = pilot->GetY();
+      double z = pilot->GetZ();
+      bool overrideSummerSafeBox = pilot->GetRawButton(4);
+      if (overrideSummerSafeBox) {
+        DriveCartesian(-y*kNormalSpeedMultiplier, x*kNormalSpeedMultiplier, -z*kNormalYawMultiplier, mAHRS->GetAngle());
+      } else { // summer demo
+        DriveSlowForSummer(x, y);
+      }
     }
   }
 }

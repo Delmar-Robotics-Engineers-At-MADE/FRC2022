@@ -106,7 +106,7 @@ double CalcHighTargetSpeed(double d){
 bool FalconSpeedInRange(double speed) {
   bool result = true;
   if (speed < 10000 || speed > 25000) { 
-    std::cout << "Falcon speed out of range: " << speed << std::endl;
+    // std::cout << "Falcon speed out of range: " << speed << std::endl;
     result = false;
   }
   return result;
@@ -116,15 +116,21 @@ bool Shooter::ReadyShooter(bool hightTarget) {
   bool result = false;
   if (hightTarget) {
     if (mTargetSeen) {
-      double speed = CalcHighTargetSpeed(mTargetDistance);
-      if (FalconSpeedInRange(speed)) {
-        mPortShooter.Set(ControlMode::Velocity, speed);
-        frc::SmartDashboard::PutNumber("Shooter V target", speed);
-     }
       bool elevationReady = mElevator.Elevate(hightTarget, mTargetDistance);
-      result = elevationReady && mPortShooter.GetClosedLoopError() < kVelocityTolerance;  // shooter is ready when elevation is achieved and shooter speed is achieved
+      double speedTarget = CalcHighTargetSpeed(mTargetDistance);
+      double actualSpeed = mPortShooter.GetSelectedSensorVelocity();
+      double pidError = 0.0;
+      if (FalconSpeedInRange(speedTarget)) {
+        mPortShooter.Set(ControlMode::Velocity, speedTarget);
+        frc::SmartDashboard::PutNumber("Shooter V target", speedTarget);
+        pidError = mPortShooter.GetClosedLoopError();
+        result = elevationReady 
+              && mPortShooter.GetClosedLoopError() < kVelocityTolerance
+              && FalconSpeedInRange(actualSpeed);
+      }
       frc::SmartDashboard::PutBoolean("Elevator Ready", elevationReady);
-      frc::SmartDashboard::PutNumber("Shooter Error", mPortShooter.GetClosedLoopError());
+      frc::SmartDashboard::PutNumber("Shooter Actual", actualSpeed);
+      frc::SmartDashboard::PutNumber("Shooter Error", pidError);
     }
   } else { // low target
     // for now permit dashboard widget to control speed
