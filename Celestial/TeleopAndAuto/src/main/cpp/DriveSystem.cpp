@@ -92,6 +92,7 @@ void DriveSystem::DriveSlowAndSnapForHanging (frc::Joystick *pilot){
 #ifdef SUMMER
 
 void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
+  mTargetingState = kDriveOnTarget; // for summer testing
   if (pilot->GetRawButton(6) && pilot->GetRawButton(4)) {
       mAHRS->ZeroYaw();   // use current robot orientation as field forward
   } else {
@@ -220,10 +221,10 @@ void DriveSystem::RobotPeriodic() {
   // for debugging
   frc::SmartDashboard::PutNumber("Heading", mAHRS->GetAngle());
   rev::ColorSensorV3::RawColor rawColor = mColorSensor.GetRawColor();
-  frc::SmartDashboard::PutNumber("Color R", rawColor.red);
-  frc::SmartDashboard::PutNumber("Color G", rawColor.green);
-  frc::SmartDashboard::PutNumber("Color B", rawColor.blue);
-  frc::SmartDashboard::PutNumber("Color IR", rawColor.ir);
+  // frc::SmartDashboard::PutNumber("Color R", rawColor.red);
+  // frc::SmartDashboard::PutNumber("Color G", rawColor.green);
+  // frc::SmartDashboard::PutNumber("Color B", rawColor.blue);
+  // frc::SmartDashboard::PutNumber("Color IR", rawColor.ir);
 }
 
 void DriveSystem::DriveTrapezoid() {
@@ -281,8 +282,7 @@ void DriveSystem::DriveSlowForSummer(double x, double y) {
       CheckColorForAllClear(isWhite, isRed, isBlue);
       break;
   }
-  frc::SmartDashboard::PutNumber("Demo State", mDemoDriveState);
-  frc::SmartDashboard::PutNumber("Demo X", x);
+  // frc::SmartDashboard::PutNumber("Demo State", mDemoDriveState);
 
   double currHeading = mAHRS->GetAngle();
   double rotateRate = mPIDControllerGyro->Calculate(currHeading + 180.0);  // offset by 180 to avoid discontinuity

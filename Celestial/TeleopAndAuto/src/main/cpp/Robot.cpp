@@ -32,10 +32,6 @@ void Robot::RobotPeriodic() {
   // for testing
   // mShooter->RobotPeriodic();  // display limit switch
   mRobotDrive.RobotPeriodic(); // display heading and color sensor
-  frc::SmartDashboard::PutNumber("FL", mFrontLeft.Get());
-  frc::SmartDashboard::PutNumber("RL", mRearLeft.Get());
-  frc::SmartDashboard::PutNumber("FR", mFrontRight.Get());
-  frc::SmartDashboard::PutNumber("RR", mRearRight.Get());
 }
 
 void Robot::DoOnceInit()  {
@@ -65,9 +61,9 @@ void Robot::TeleopPeriodic() {
 
 #ifndef SUMMER
   mClimber.TelopPeriodic(&mCopilot);
-  mShooter->TelopPeriodic(&mPilot, &mCopilot, mRobotDrive.mTargetingState);
   mIntake.TeleopPeriodic(&mPilot);
 #endif
+  mShooter->TelopPeriodic(&mPilot, &mCopilot, mRobotDrive.mTargetingState);
   mRobotDrive.TelopPeriodic(&mPilot, &mCopilot);
  
 }

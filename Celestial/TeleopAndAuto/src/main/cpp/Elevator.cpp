@@ -18,7 +18,7 @@ void Elevator::ManualElevate (frc::Joystick *copilot) {
   double speed = -copilot->GetY();
   double position = -mEncoder.GetDistance();  // IMPORTANT: invert encoder!
   bool onLimitSwitch = !mLimitSwitch.Get();
-  frc::SmartDashboard::PutNumber("elevator speed", speed);
+  // frc::SmartDashboard::PutNumber("elevator speed", speed);
   frc::SmartDashboard::PutNumber("elevator pos", position);
   // std::cout << "elevator speed "<< speed << std::endl;
   if (speed > 0.0) {

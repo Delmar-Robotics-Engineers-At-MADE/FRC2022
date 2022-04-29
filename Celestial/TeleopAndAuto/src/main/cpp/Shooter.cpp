@@ -12,7 +12,7 @@ static const double kFeederSpeed = 0.9;
 constexpr units::time::second_t kBlindShotReadyTime = 2.0_s; // seconds
 
 static const double kFtuned = 0.0451;
-static const double kPtuned = 0.1;
+static const double kPtuned = 0.15;  // was 0.1
 static const double kDtuned = 0.002;
 static const double kRampTuned = 2.5;
 
@@ -89,7 +89,7 @@ double CalcHighTargetSpeed(double d){
 
 bool FalconSpeedInRange(double speed) {
   bool result = true;
-  if (abs(speed) > 30000) {
+  if (speed < 13000 || speed > 25000) { 
     std::cout << "Falcon speed out of range: " << speed << std::endl;
     result = false;
   }
@@ -101,15 +101,18 @@ bool Shooter::ReadyShooter(bool hightTarget) {
   if (hightTarget) {
     if (mTargetSeen) {
       double speed = CalcHighTargetSpeed(mTargetDistance);
-      frc::SmartDashboard::PutNumber("Shooter V target", speed);
-      if (FalconSpeedInRange(speed)) { mPortShooter.Set(ControlMode::Velocity, speed); }
+      if (FalconSpeedInRange(speed)) {
+        mPortShooter.Set(ControlMode::Velocity, speed);
+        frc::SmartDashboard::PutNumber("Shooter V target", speed);
+     }
       bool elevationReady = mElevator.Elevate(hightTarget, mTargetDistance);
       result = elevationReady && mPortShooter.GetClosedLoopError() < kVelocityTolerance;  // shooter is ready when elevation is achieved and shooter speed is achieved
       frc::SmartDashboard::PutBoolean("Elevator Ready", elevationReady);
+      frc::SmartDashboard::PutNumber("Shooter Error", mPortShooter.GetClosedLoopError());
     }
   } else { // low target
     // for now permit dashboard widget to control speed
-    mMotorOutVelocity = frc::SmartDashboard::GetNumber("motor output percentage", 0);
+    mMotorOutVelocity = frc::SmartDashboard::GetNumber("Shooter Speed Low Target", 0);
     mPortShooter.Set(ControlMode::Velocity, mMotorOutVelocity);
     double actualVelocity = mPortShooter.GetSelectedSensorVelocity();
     if (abs(actualVelocity - mMotorOutVelocity) < kVelocityTolerance) {
@@ -143,6 +146,7 @@ void Shooter::Shoot (bool highTarget, DriveSysTargetingState driveState) {
   bool shooterReady = false;
   frc::SmartDashboard::PutNumber("Shooter State", mState);
   frc::SmartDashboard::PutNumber("Drive State", driveState);
+  frc::SmartDashboard::PutBoolean("Cargo Present", mEyeFeeder.Get());
   switch (mState) {
     default:
     case kIdle:
@@ -228,6 +232,7 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, Drive
     frc::SmartDashboard::PutBoolean("Shooter Ready", false);
     frc::SmartDashboard::PutBoolean("Elevator Ready", false);
     frc::SmartDashboard::PutBoolean("Feeding Cargo", false);
+    frc::SmartDashboard::PutBoolean("Cargo Present", false);
     // ManualFeed(pilot);  // alowed if not shooting
     StopFeeder();
  }
@@ -242,6 +247,8 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, Drive
 void Shooter::RobotInit() {
   frc::SmartDashboard::PutNumber("Phi", mPhi);
   frc::SmartDashboard::PutNumber("H2", mH2);
+  frc::SmartDashboard::PutNumber("Auto Shoot V", mAutoShootSpeed);
+  frc::SmartDashboard::PutNumber("Shooter Speed Low Target", mAutoShootSpeed);
 
   mStarShooter.ConfigFactoryDefault();
   mPortShooter.ConfigFactoryDefault();
@@ -279,7 +286,6 @@ void Shooter::RobotInit() {
   mLimeTable->PutNumber("camMode",0.0); // camera in normal CV mode
   mLimeTable->PutNumber("stream",0.0);  // secondary camera side-by-side
 
-  frc::SmartDashboard::PutNumber("Auto Shoot V", mAutoShootSpeed);
 }
 
 void Shooter::RepeatableInit() {
@@ -288,8 +294,7 @@ void Shooter::RepeatableInit() {
 }
 
 void Shooter::TeleopInit() {
-  mMotorOutVelocity = kRollerIdleSpeed;
-  frc::SmartDashboard::PutNumber("motor output percentage", mMotorOutVelocity);
+  // mMotorOutVelocity = kRollerIdleSpeed;
 }
 
 void Shooter::RobotPeriodic() {
@@ -308,7 +313,6 @@ void Shooter::FixedSpeedForAuto(){
 void Shooter::AutonomousInit() {
   // frc::SmartDashboard::PutNumber("Distance", mTargetDistance);
   mAutoShootSpeed = frc::SmartDashboard::GetNumber("Auto Shoot V", mAutoShootSpeed);
-
 }
 
 void Shooter::BlindShot(frc::Joystick *copilot) {
@@ -321,8 +325,10 @@ void Shooter::BlindShot(frc::Joystick *copilot) {
       mBlindShotState = kBSSReadying;
       break;
     case kBSSReadying:
-      FixedSpeedForAuto();
-      FixedElevationForAuto();
+      // FixedSpeedForAuto();
+      // FixedElevationForAuto();
+      // leave elevator in place, and set shooter speed according to dashboard
+      dontCare = ReadyShooter(false);
       if (mBlindShotTimer.Get() > kBlindShotReadyTime) {
         mBlindShotState = kBSSShooting;
       }

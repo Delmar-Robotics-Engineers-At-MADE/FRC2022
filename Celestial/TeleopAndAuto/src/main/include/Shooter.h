@@ -5,6 +5,7 @@
 #include <frc/controller/PIDController.h>
 #include <Constants.h>
 #include "ctre/Phoenix.h"
+#include <frc/DigitalInput.h>
 #include <Elevator.h>
 
 static const double kShooterSpeedForAuto = 13300; // was 14000
@@ -95,5 +96,6 @@ public:
   void ShootForAuto();
   void AutonomousInit();
   void BlindShot(frc::Joystick *copilot);
+  frc::DigitalInput mEyeFeeder{5};
 
 };
