@@ -65,12 +65,17 @@ void Elevator::TelopPeriodic (frc::Joystick *copilot) {
 }
 
 double CalcHighTargetElevation(double d){
-  double result = (59.0/180.0) * d * d - (1303.0/180.0) * d + 1081.0/10.0;
+  // used for 2022 regional:
+  // double result = (59.0/180.0) * d * d - (1303.0/180.0) * d + 1081.0/10.0;
   // std::cout << "elevation target: " << result << std::endl;
   // std::cout << "distance: " << d << std::endl;
   // std::cout << "intermediate: " << (59.0/180.0) * d * d  << std::endl;
   // std::cout << "intermediate: " << (1303.0/180.0) * d << std::endl;
   // std::cout << "intermediate: " << 1081.0/10.0 << std::endl;
+
+  // for summer 2022:
+  // 0.985622 x^3 - 40.8047 x^2 + 558.493 x - 2446.18
+  double result = (0.985622 * d * d * d) - (40.8047 * d * d) + (558.493 * d) - 2446.18;
   return result;
 }
 

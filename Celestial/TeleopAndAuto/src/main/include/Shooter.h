@@ -41,6 +41,7 @@ private:
   constexpr static double kH2 = 8.6 - kH1; // height in feet of target ring from limelight
   double mPhi = kPhi;
   double mH2 = kH2;
+  // double *mCoeff;  // array of coefficients for calcs
 
   std::shared_ptr<nt::NetworkTable> mLimeTable; // for LimeLight
 
@@ -65,7 +66,7 @@ private:
   bool CargoAvailable();
   bool mManualFeeding = false;
   double mAutoShootSpeed= kShooterSpeedForAuto;
-  
+  frc::DigitalInput mEyeFeeder{5};  
 
   // elevator
   Elevator mElevator;
@@ -96,6 +97,5 @@ public:
   void ShootForAuto();
   void AutonomousInit();
   void BlindShot(frc::Joystick *copilot);
-  frc::DigitalInput mEyeFeeder{5};
 
 };

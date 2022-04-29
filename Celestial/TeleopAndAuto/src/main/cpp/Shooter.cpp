@@ -16,6 +16,8 @@ static const double kPtuned = 0.15;  // was 0.1
 static const double kDtuned = 0.002;
 static const double kRampTuned = 2.5;
 
+// static const double kCoeff2022[3] = {-173.0/18.0, 11845.0/18.0, 5057}; // used at regional
+
 double ConvertRadsToDegrees (double rads) {
     const static double conversion_factor = 180.0/3.141592653589793238463;
     return rads * conversion_factor;
@@ -48,6 +50,14 @@ void Shooter::TurnLightOnOrOff (bool turnOn) {
     mLimeTable->PutNumber("ledMode",3.0); // LED on bright
     mLightOn = true;
   }
+  frc::SmartDashboard::PutBoolean("Light is On", mLightOn);
+  // if (turnOn) {
+  //   std::cout << "sending command to turn ON light " << std::endl;
+  //   mLimeTable->PutNumber("ledMode",3.0); // LED on bright
+  // } else { // turn off
+  //   std::cout << "sending command to turn OFF light " << std::endl;
+  //   mLimeTable->PutNumber("ledMode",1.0); // LED off
+  // }
 }
 
 void Shooter::CheckLimelight() {
@@ -82,14 +92,20 @@ bool Shooter::CargoAvailable() {
 }
 
 double CalcHighTargetSpeed(double d){
-  double result = (173.0/18.0) * d * d + (11845.0/18.0) * d + 5057;
+
+  // used for 2022 regional: 
+  // double result = (-173.0/18.0) * d * d + (11845.0/18.0) * d + 5057;
   // std::cout << "speed target: " << result << std::endl;
+  
+  // for summer 2022: 11.5601 x^3 - 570.057 x^2 + 9517.92 x - 41011.8
+  double result = (11.5601 * d * d * d) - (570.057 * d * d) + (9517.92 * d) - 41011.8;
+
   return result;
 }
 
 bool FalconSpeedInRange(double speed) {
   bool result = true;
-  if (speed < 13000 || speed > 25000) { 
+  if (speed < 10000 || speed > 25000) { 
     std::cout << "Falcon speed out of range: " << speed << std::endl;
     result = false;
   }
@@ -127,7 +143,7 @@ void Shooter::FeedCargo() {
   if (mManualFeeding) {
     // let driver control feeder
   } else {
-    std::cout << "feeding from FeedCargo: " << kFeederSpeed << std::endl;
+    // std::cout << "feeding from FeedCargo: " << kFeederSpeed << std::endl;
     mFeeder.Set(kFeederSpeed);
   }
 }
@@ -146,7 +162,6 @@ void Shooter::Shoot (bool highTarget, DriveSysTargetingState driveState) {
   bool shooterReady = false;
   frc::SmartDashboard::PutNumber("Shooter State", mState);
   frc::SmartDashboard::PutNumber("Drive State", driveState);
-  frc::SmartDashboard::PutBoolean("Cargo Present", mEyeFeeder.Get());
   switch (mState) {
     default:
     case kIdle:
@@ -215,6 +230,7 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, Drive
   mH2 = frc::SmartDashboard::GetNumber("H2", mH2); // height of target above limelight
   bool shootAtHighGoal = copilot->GetRawButton(4);
   bool shootAtLowGoal = copilot->GetRawButton(2);
+  frc::SmartDashboard::PutBoolean("Cargo Present", mEyeFeeder.Get());
 
   if (shootAtHighGoal) { //  || shootAtLowGoal
     TurnLightOnOrOff(true);
@@ -222,6 +238,8 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, Drive
     Shoot(shootAtHighGoal, driveState);
     // std::cout << "shooter state" << mState << std::endl;
   } else if (shootAtLowGoal) {
+    TurnLightOnOrOff(true);
+    CheckLimelight();  // to populate numbers in dashboard; not used for blind shot
     // for now, do blind shot
     BlindShot(copilot);
   } else { // no shooter buttons pressed
@@ -232,7 +250,6 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, Drive
     frc::SmartDashboard::PutBoolean("Shooter Ready", false);
     frc::SmartDashboard::PutBoolean("Elevator Ready", false);
     frc::SmartDashboard::PutBoolean("Feeding Cargo", false);
-    frc::SmartDashboard::PutBoolean("Cargo Present", false);
     // ManualFeed(pilot);  // alowed if not shooting
     StopFeeder();
  }
@@ -283,6 +300,7 @@ void Shooter::RobotInit() {
   // Limelight
   std::cout << "calling TurnLightOff " <<  std::endl;
   TurnLightOnOrOff(false);
+  frc::SmartDashboard::PutBoolean("Light is On", mLightOn);
   mLimeTable->PutNumber("camMode",0.0); // camera in normal CV mode
   mLimeTable->PutNumber("stream",0.0);  // secondary camera side-by-side
 
@@ -295,6 +313,7 @@ void Shooter::RepeatableInit() {
 
 void Shooter::TeleopInit() {
   // mMotorOutVelocity = kRollerIdleSpeed;
+  frc::SmartDashboard::GetBoolean("Light is On", mLightOn);
 }
 
 void Shooter::RobotPeriodic() {

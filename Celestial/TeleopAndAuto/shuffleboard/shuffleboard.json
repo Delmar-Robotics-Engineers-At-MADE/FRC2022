@@ -245,18 +245,7 @@
               "_title": "Elevator PID"
             }
           },
-          "13,1": {
-            "size": [
-              1,
-              1
-            ],
-            "content": {
-              "_type": "Text View",
-              "_source0": "network_table:///SmartDashboard/elevator limit",
-              "_title": "elevator limit"
-            }
-          },
-          "12,1": {
+          "8,4": {
             "size": [
               1,
               1
@@ -267,7 +256,7 @@
               "_title": "Shooter State"
             }
           },
-          "10,1": {
+          "6,4": {
             "size": [
               1,
               1
@@ -278,7 +267,7 @@
               "_title": "Shooter V target"
             }
           },
-          "11,1": {
+          "7,4": {
             "size": [
               1,
               1
@@ -499,6 +488,17 @@
               "_type": "Text View",
               "_source0": "network_table:///SmartDashboard/Shooter Error",
               "_title": "Shooter Error"
+            }
+          },
+          "4,5": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Toggle Switch",
+              "_source0": "network_table:///SmartDashboard/Light is On",
+              "_title": "Light is On"
             }
           }
         }
