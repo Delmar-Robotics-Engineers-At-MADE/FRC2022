@@ -267,7 +267,7 @@
               "_title": "Shooter V target"
             }
           },
-          "7,4": {
+          "9,4": {
             "size": [
               1,
               1
@@ -499,6 +499,17 @@
               "_type": "Toggle Switch",
               "_source0": "network_table:///SmartDashboard/Light is On",
               "_title": "Light is On"
+            }
+          },
+          "7,4": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Shooter Actual",
+              "_title": "Shooter Actual"
             }
           }
         }
