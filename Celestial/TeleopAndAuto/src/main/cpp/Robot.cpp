@@ -15,6 +15,7 @@ void Robot::RobotInit() {
   mClimber.RobotInit();
   mShooter = new Shooter();
   mShooter->RobotInit();
+  mIntake.RobotInit();
 
   mRobotDrive.RobotInit(mShooter, &mPIDFrontLeft, &mPIDRearLeft, &mPIDFrontRight, &mPIDRearRight,
                     &mEncoderFrontLeft, &mEncoderRearLeft, &mEncoderFrontRight, &mEncoderRearRight);
@@ -55,17 +56,24 @@ void Robot::TeleopInit() {
   RepeatableInit();
   mShooter->TeleopInit();
   mClimber.TeleopInit();
+  mIntake.TeleopInit();
 }
 
 void Robot::TeleopPeriodic() {
 
 #ifndef SUMMER
   mClimber.TelopPeriodic(&mCopilot);
-  mIntake.TeleopPeriodic(&mPilot);
 #endif
   mShooter->TelopPeriodic(&mPilot, &mCopilot, mRobotDrive.mTargetingState);
   mRobotDrive.TelopPeriodic(&mPilot, &mCopilot);
- 
+  mIntake.TeleopPeriodic(&mPilot, mShooter->CargoAvailable(), &mRaspPi);
+
+#ifdef SUMMER
+  // for summer, return balls picked up by auto-intake
+  bool returning = mIntake.DemoReturningBall();
+  mShooter->DemoReturnBall(returning);
+#endif
+
 }
 
 void Robot::AutonomousInit() {

@@ -117,6 +117,7 @@ class Tester:
         # MJS: added network tables entries for neareast object
         self.entryNearestIndex = ntinst.getTable("ML").getEntry("nearestindex")
         self.entryNearestArea = ntinst.getTable("ML").getEntry("nearestarea")
+        self.entryNearestX = ntinst.getTable("ML").getEntry("nearestx")
         self.entryNearestLabel = ntinst.getTable("ML").getEntry("nearestlabel")
 
         self.coral_entry = ntinst.getTable("ML").getEntry("coral")
@@ -156,7 +157,8 @@ class Tester:
 
             # MJS: added simple info on nearest object
             nearestIndex = -1
-            nearestArea = 0
+            nearestArea = 0.0
+            nearestX = 0.0
             nearestLabel = ''
 
             # output
@@ -176,18 +178,21 @@ class Tester:
                                                  y_scale)
 
                     # MJS: check for nearest
-                    area = (boxes[i].xmax - boxes[i].xmin) * (boxes[i].ymax - boxes[i].ymin)
+                    ymin, xmin, ymax, xmax = boxes[i]
+                    area = (xmax - xmin) * (ymax - ymin)
                     if area > nearestArea:
                         nearestArea = area
+                        nearestX = (xmax + xmin) / 2 # center coordinate is average
                         nearestIndex = i
                         nearestLabel = self.labels[class_id]
 
             self.output.putFrame(frame_cv2)
-            self.entry.setString(json.dumps(self.temp_entry))
+            # MJS: dont need json, was self.entry.setString(json.dumps(self.temp_entry))
 
             # MJS: output nearest object
             self.entryNearestIndex.setNumber(nearestIndex)
             self.entryNearestArea.setNumber(nearestArea)
+            self.entryNearestX.setNumber(nearestX)
             self.entryNearestLabel.setString(nearestLabel)
 
             self.temp_entry = []

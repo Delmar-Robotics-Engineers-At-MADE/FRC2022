@@ -511,6 +511,41 @@
               "_source0": "network_table:///SmartDashboard/Shooter Actual",
               "_title": "Shooter Actual"
             }
+          },
+          "6,5": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Boolean Box",
+              "_source0": "network_table:///SmartDashboard/Ball Ahead",
+              "_title": "Ball Ahead",
+              "Colors/Color when true": "#7CFC00FF",
+              "Colors/Color when false": "#8B0000FF"
+            }
+          },
+          "7,5": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Fetch State",
+              "_title": "Fetch State"
+            }
+          },
+          "5,5": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Toggle Switch",
+              "_source0": "network_table:///SmartDashboard/Ball Demo",
+              "_title": "Ball Demo"
+            }
           }
         }
       }

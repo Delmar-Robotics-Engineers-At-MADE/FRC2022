@@ -63,7 +63,6 @@ private:
   // feeder
   WPI_TalonSRX mFeeder{7};
   void ManualFeed (frc::Joystick *copilot);
-  bool CargoAvailable();
   bool mManualFeeding = false;
   double mAutoShootSpeed= kShooterSpeedForAuto;
   frc::DigitalInput mEyeFeeder{5};  
@@ -97,5 +96,7 @@ public:
   void ShootForAuto();
   void AutonomousInit();
   void BlindShot(frc::Joystick *copilot);
+  bool CargoAvailable();
+  void DemoReturnBall(bool returning);
 
 };

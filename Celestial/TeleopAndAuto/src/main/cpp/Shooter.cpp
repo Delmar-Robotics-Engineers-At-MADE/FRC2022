@@ -87,8 +87,7 @@ void Shooter::CheckLimelight() {
 }
 
 bool Shooter::CargoAvailable() {
-  // TODO: check photo eyes; if both are false, we're empty
-  return true;
+  return mEyeFeeder.Get();
 }
 
 double CalcHighTargetSpeed(double d){
@@ -153,6 +152,15 @@ void Shooter::FeedCargo() {
     mFeeder.Set(kFeederSpeed);
   }
 }
+
+void Shooter::DemoReturnBall(bool returning) {
+  if (returning) {
+    mFeeder.Set(-kFeederSpeed);
+  } else {
+    mFeeder.Set(0.0);
+  }
+}
+
 
 void Shooter::ShootForAuto() {
   mFeeder.Set(kFeederSpeed);  // change to FeedCargo() eventually
@@ -236,7 +244,7 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, Drive
   mH2 = frc::SmartDashboard::GetNumber("H2", mH2); // height of target above limelight
   bool shootAtHighGoal = copilot->GetRawButton(4);
   bool shootAtLowGoal = copilot->GetRawButton(2);
-  frc::SmartDashboard::PutBoolean("Cargo Present", mEyeFeeder.Get());
+  frc::SmartDashboard::PutBoolean("Cargo Present", CargoAvailable());
 
   if (shootAtHighGoal) { //  || shootAtLowGoal
     TurnLightOnOrOff(true);
@@ -319,7 +327,7 @@ void Shooter::RepeatableInit() {
 
 void Shooter::TeleopInit() {
   // mMotorOutVelocity = kRollerIdleSpeed;
-  frc::SmartDashboard::GetBoolean("Light is On", mLightOn);
+  mLightOn = frc::SmartDashboard::GetBoolean("Light is On", mLightOn);
 }
 
 void Shooter::RobotPeriodic() {

@@ -8,7 +8,7 @@
 #include <Shooter.h>
 #include <DriveSystem.h>
 #include <Intake.h>
-// #include <frc/PneumaticsControlModule.h> // trigger compressor to come on
+#include <RaspPi.h>
 
 class Robot : public frc::TimedRobot {
 public:
@@ -41,6 +41,7 @@ private:
   frc::Joystick mCopilot{1};
 
   PixyBallTracker *mTracker;
+  RaspPi mRaspPi;
 
   // VelocityController2 *mVelocityController;
   AutonomousController *mAutoController;
