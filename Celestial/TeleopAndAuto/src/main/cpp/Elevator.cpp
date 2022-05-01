@@ -58,13 +58,14 @@ void Elevator::DoOnceInit() {
 void Elevator::TelopPeriodic (frc::Joystick *copilot) {
   CheckHomePosition();
   if (mHomed && copilot->GetRawButton(4)) { // shooting at high goal
-   // Elevate method is called from Shoot in Shooter, so do nothing here
+    // Elevate method is called from Shoot in Shooter, so do nothing here except check bump factor
+    mBump = frc::SmartDashboard::GetNumber("Elevator Bump", mBump);
   } else {
     ManualElevate(copilot);
   }
 }
 
-double CalcHighTargetElevation(double d){
+double Elevator::CalcHighTargetElevation(double d){
   // used for 2022 regional:
   // double result = (59.0/180.0) * d * d - (1303.0/180.0) * d + 1081.0/10.0;
   // std::cout << "elevation target: " << result << std::endl;
@@ -84,6 +85,10 @@ double CalcHighTargetElevation(double d){
   } else { 
     result = 117;
   }
+
+  // allow drivers to adjust calculated elevation
+  result += mBump;
+
   return result;
 }
 
@@ -122,11 +127,13 @@ void Elevator::RobotInit() {
   mMotor.ConfigFactoryDefault();
   mMotor.ConfigNominalOutputForward(0, kTimeoutMs);
   mMotor.ConfigNominalOutputReverse(0, kTimeoutMs);
+  mMotor.SetNeutralMode(ctre::phoenix::motorcontrol::NeutralMode::Brake);
   mMotor.SetInverted(true);
 
   mPIDController = new frc2::PIDController (kPtuned, kItuned, kDtuned);
   mPIDController->SetTolerance(kPIDTolerance);
   frc::SmartDashboard::PutData("Elevator PID", mPIDController);  // dashboard should be able to change values
+  frc::SmartDashboard::PutNumber("Elevator Bump", mBump);
 }
 
 void Elevator::RobotPeriodic() {

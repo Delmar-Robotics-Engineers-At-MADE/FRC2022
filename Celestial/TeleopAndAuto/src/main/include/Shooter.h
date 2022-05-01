@@ -55,6 +55,7 @@ private:
   double mMotorOutVelocity = 0.0; // for collecting data for targeting
 
   bool ReadyShooter(bool hightTarget);
+  double CalcHighTargetSpeed(double d);
 
   double mAutoShootSpeed= kShooterSpeedForAuto;
 
@@ -75,6 +76,7 @@ public:
   double mTargetAngleHorizontal = 0.0;
   double mTargetAngleVertical = 0.0;
   double mTargetDistance = 0.0;
+  double mSpeedMultiplier = 1.0;
 
   Shooter (); // constructor
   void TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, DriveSysTargetingState driveState);

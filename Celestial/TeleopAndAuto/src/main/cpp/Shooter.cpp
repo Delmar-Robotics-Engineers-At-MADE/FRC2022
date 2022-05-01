@@ -85,7 +85,7 @@ void Shooter::CheckLimelight() {
   frc::SmartDashboard::PutNumber("Distance", mTargetDistance);
 }
 
-double CalcHighTargetSpeed(double d){
+double Shooter::CalcHighTargetSpeed(double d){
 
   // used for 2022 regional: 
   // double result = (-173.0/18.0) * d * d + (11845.0/18.0) * d + 5057;
@@ -93,6 +93,9 @@ double CalcHighTargetSpeed(double d){
   
   // for summer 2022: 11.5601 x^3 - 570.057 x^2 + 9517.92 x - 41011.8
   double result = (11.5601 * d * d * d) - (570.057 * d * d) + (9517.92 * d) - 41011.8;
+
+  // allow drivers to boost or deboost with multiplier
+  result *= mSpeedMultiplier;
 
   return result;
 }
@@ -197,6 +200,7 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, Drive
   bool shootAtLowGoal = copilot->GetRawButton(2);
 
   if (shootAtHighGoal) { //  || shootAtLowGoal
+    mSpeedMultiplier = frc::SmartDashboard::GetNumber("Shooter Boost", mSpeedMultiplier);
     TurnLightOnOrOff(true);
     CheckLimelight();
     Shoot(shootAtHighGoal, driveState);
@@ -232,6 +236,7 @@ void Shooter::RobotInit(Feeder *feeder) {
   frc::SmartDashboard::PutNumber("H2", mH2);
   frc::SmartDashboard::PutNumber("Auto Shoot V", mAutoShootSpeed);
   frc::SmartDashboard::PutNumber("Shooter Speed Low Target", mAutoShootSpeed);
+  frc::SmartDashboard::PutNumber("Shooter Boost", mSpeedMultiplier);
 
   mStarShooter.ConfigFactoryDefault();
   mPortShooter.ConfigFactoryDefault();

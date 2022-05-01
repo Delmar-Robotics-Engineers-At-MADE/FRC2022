@@ -546,6 +546,28 @@
               "_source0": "network_table:///SmartDashboard/Ball Demo",
               "_title": "Ball Demo"
             }
+          },
+          "1,3": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Elevator Bump",
+              "_title": "Elevator Bump"
+            }
+          },
+          "0,3": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Shooter Boost",
+              "_title": "Shooter Boost"
+            }
           }
         }
       }

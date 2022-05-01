@@ -19,6 +19,7 @@ public:
 private:
   WPI_TalonSRX mMotor{11};
   bool mHomed = false;
+  double mBump = 0.0;  // allow drivers to adjust calculated elevation
 
   /**
    * The Encoder object is constructed with 4 parameters, the last two being
@@ -42,5 +43,6 @@ private:
   
   void ManualElevate (frc::Joystick *copilot);
   void CheckHomePosition();
+  double CalcHighTargetElevation(double d);
 
 };
