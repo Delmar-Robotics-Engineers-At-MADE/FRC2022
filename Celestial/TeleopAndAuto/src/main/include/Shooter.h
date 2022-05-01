@@ -5,8 +5,8 @@
 #include <frc/controller/PIDController.h>
 #include <Constants.h>
 #include "ctre/Phoenix.h"
-#include <frc/DigitalInput.h>
 #include <Elevator.h>
+#include <Feeder.h>
 
 static const double kShooterSpeedForAuto = 13300; // was 14000
 static const double kShooterSpeedForBlindShot = 13300; 
@@ -56,19 +56,17 @@ private:
 
   bool ReadyShooter(bool hightTarget);
 
+  double mAutoShootSpeed= kShooterSpeedForAuto;
+
   // blind shot stuff
   BlindShotState mBlindShotState = kBSSUnknownState;
   frc::Timer mBlindShotTimer; 
 
-  // feeder
-  WPI_TalonSRX mFeeder{7};
-  void ManualFeed (frc::Joystick *copilot);
-  bool mManualFeeding = false;
-  double mAutoShootSpeed= kShooterSpeedForAuto;
-  frc::DigitalInput mEyeFeeder{5};  
-
   // elevator
   Elevator mElevator;
+
+  // feeder
+  Feeder *mFeeder;
 
 public:
 
@@ -80,12 +78,11 @@ public:
 
   Shooter (); // constructor
   void TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, DriveSysTargetingState driveState);
-  void RobotInit();
+  void RobotInit(Feeder *feeder);
   void RepeatableInit();
   void TeleopInit();
   void RobotPeriodic();
   void FeedCargo();
-  void StopFeeder();
   void Shoot (bool highTarget, DriveSysTargetingState driveState);
   void Idle();
   void CheckLimelight();
@@ -96,7 +93,6 @@ public:
   void ShootForAuto();
   void AutonomousInit();
   void BlindShot(frc::Joystick *copilot);
-  bool CargoAvailable();
   void DemoReturnBall(bool returning);
 
 };

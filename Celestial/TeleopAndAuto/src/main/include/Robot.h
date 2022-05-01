@@ -48,6 +48,7 @@ private:
   Climber mClimber;
   Shooter *mShooter;
   Intake mIntake;
+  Feeder mFeeder;
 
   //frc::DoubleSolenoid mTempSolenoid{frc::PneumaticsModuleType::CTREPCM, 4, 5};
 

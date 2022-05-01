@@ -7,10 +7,11 @@ constexpr units::time::second_t kAutoDriveTime = 2.0_s; // seconds
 constexpr units::time::second_t kAutoShootTime = 5.0_s; // seconds
 constexpr units::time::second_t kAutoShootTimeEnd = 8.0_s; // seconds
 
-AutonomousController::AutonomousController (DriveSystem *drive, Shooter *shooter) { // constructor
+AutonomousController::AutonomousController (DriveSystem *drive, Shooter *shooter, Feeder *feeder) { // constructor
 
   mDrive = drive;
   mShooter = shooter;
+  mFeeder = feeder;
 
   mChooser.SetDefaultOption(kAutoNameDemoDriving, kAutoNameDemoDriving);
   mChooser.AddOption(kAutoNameDemoDriving, kAutoNameDemoDriving);
@@ -130,7 +131,7 @@ void AutonomousController::DriveAndShoot() {
     case kDASCompleted:
       mDrive->StopMotor();
       mShooter->Idle();
-      mShooter->StopFeeder();
+      mFeeder->StopFeedingCargo();
       break;    
   }
 }

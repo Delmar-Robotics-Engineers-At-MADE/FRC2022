@@ -8,7 +8,6 @@
 static const double kMinTargetAreaPercent = 0.0;
 static const double kRollerIdleSpeed = 0.0;  // was 2300 for 2022 competition
 static const double kVelocityTolerance = 500;
-static const double kFeederSpeed = 0.9;
 constexpr units::time::second_t kBlindShotReadyTime = 2.0_s; // seconds
 
 static const double kFtuned = 0.0451;
@@ -86,10 +85,6 @@ void Shooter::CheckLimelight() {
   frc::SmartDashboard::PutNumber("Distance", mTargetDistance);
 }
 
-bool Shooter::CargoAvailable() {
-  return mEyeFeeder.Get();
-}
-
 double CalcHighTargetSpeed(double d){
 
   // used for 2022 regional: 
@@ -144,26 +139,9 @@ bool Shooter::ReadyShooter(bool hightTarget) {
   return result;
 }
 
-void Shooter::FeedCargo() {
-  if (mManualFeeding) {
-    // let driver control feeder
-  } else {
-    // std::cout << "feeding from FeedCargo: " << kFeederSpeed << std::endl;
-    mFeeder.Set(kFeederSpeed);
-  }
-}
-
-void Shooter::DemoReturnBall(bool returning) {
-  if (returning) {
-    mFeeder.Set(-kFeederSpeed);
-  } else {
-    mFeeder.Set(0.0);
-  }
-}
-
-
 void Shooter::ShootForAuto() {
-  mFeeder.Set(kFeederSpeed);  // change to FeedCargo() eventually
+  // mFeeder.Set(kFeederSpeed);  // change to FeedCargo() eventually
+  mFeeder->FeedCargo();
 }
 
 bool Shooter::FixedElevationForAuto() {
@@ -180,10 +158,10 @@ void Shooter::Shoot (bool highTarget, DriveSysTargetingState driveState) {
     default:
     case kIdle:
       mState = kRotatingToTarget;
-      StopFeeder();
+      mFeeder->StopFeedingCargo();
       break; 
     case kRotatingToTarget:
-      StopFeeder();
+      mFeeder->StopFeedingCargo();
       // drive system has access to state info, and will know to rotate
       onTarget = (driveState == kDriveOnTarget);
       shooterReady = ReadyShooter(highTarget);
@@ -192,15 +170,14 @@ void Shooter::Shoot (bool highTarget, DriveSysTargetingState driveState) {
       if (onTarget && shooterReady) {mState = kShooterReady;}
       break;
     case kShooterReady:
-      if (CargoAvailable()) {
-        frc::SmartDashboard::PutBoolean("Feeding Cargo", true);
-        FeedCargo();
+      if (mFeeder->CargoAvailable()) {
+        mFeeder->FeedCargo();
       } else {
         mState = kEmpty;
       }
       break;
     case kEmpty:
-      StopFeeder();
+      mFeeder->StopFeedingCargo();
       Idle();
       break;
   }
@@ -212,39 +189,12 @@ void Shooter::Idle(){
   mPortShooter.Set(ControlMode::Velocity, kRollerIdleSpeed);
 }
 
-void Shooter::StopFeeder() {
-  // std::cout << "stopping feeder" << std::endl;
-  mFeeder.Set(0.0);
-}
-
-void Shooter::ManualFeed (frc::Joystick *pilot) {
-  // if (pilot->GetRawButton(3)) {
-  //   mManualFeeding = true;
-  //   std::cout << "stopping feed from ManualFeed" << std::endl;
-  //   StopFeeder();
-  // // } else if (pilot->GetRawButton(2)) {
-  // //   mManualFeeding = true;
-  // //   mFeeder.Set(1.0);
-  // // } else if (pilot->GetRawButton(1)) {
-  // //   mManualFeeding = true;
-  // //   mFeeder.Set(0.7);
-  // } else if (pilot->GetRawButton(4)) {
-  //   mManualFeeding = true;
-  //   std::cout << "feeding from ManualFeed: " << 0.3 << std::endl;
-  //   mFeeder.Set(0.3);
-  // } else {
-  //   mManualFeeding = false;
-  // }
-  // frc::SmartDashboard::PutBoolean("Manual Feed", mManualFeeding);
-  // bool TODO_Finish_Manual_Feed = false;
-}
 
 void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, DriveSysTargetingState driveState){
   mPhi = frc::SmartDashboard::GetNumber("Phi", mPhi); // angle of limelight from vertical
   mH2 = frc::SmartDashboard::GetNumber("H2", mH2); // height of target above limelight
   bool shootAtHighGoal = copilot->GetRawButton(4);
   bool shootAtLowGoal = copilot->GetRawButton(2);
-  frc::SmartDashboard::PutBoolean("Cargo Present", CargoAvailable());
 
   if (shootAtHighGoal) { //  || shootAtLowGoal
     TurnLightOnOrOff(true);
@@ -265,7 +215,7 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, Drive
     frc::SmartDashboard::PutBoolean("Elevator Ready", false);
     frc::SmartDashboard::PutBoolean("Feeding Cargo", false);
     // ManualFeed(pilot);  // alowed if not shooting
-    StopFeeder();
+    mFeeder->StopFeedingCargo();
  }
   // }
   // mMotorOutVelocity = frc::SmartDashboard::GetNumber("motor output percentage", 0);
@@ -275,7 +225,9 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, Drive
   mElevator.TelopPeriodic(copilot);
 }
 
-void Shooter::RobotInit() {
+void Shooter::RobotInit(Feeder *feeder) {
+  mFeeder = feeder;
+
   frc::SmartDashboard::PutNumber("Phi", mPhi);
   frc::SmartDashboard::PutNumber("H2", mH2);
   frc::SmartDashboard::PutNumber("Auto Shoot V", mAutoShootSpeed);
@@ -301,14 +253,7 @@ void Shooter::RobotInit() {
   mPortShooter.ConfigClosedloopRamp(kRampTuned);
   mPortShooter.ConfigSelectedFeedbackSensor(FeedbackDevice::IntegratedSensor, 0, 30);
 
-  // Other motors
-
-  mFeeder.ConfigFactoryDefault();
-  mFeeder.SetInverted(true);
-  mFeeder.ConfigNominalOutputForward(0, kTimeoutMs);
-  mFeeder.ConfigNominalOutputReverse(0, kTimeoutMs);
-
-  // Elevator
+   // Elevator
   mElevator.RobotInit();
 
   // Limelight
@@ -322,7 +267,7 @@ void Shooter::RobotInit() {
 
 void Shooter::RepeatableInit() {
   Idle();
-  StopFeeder();
+  mFeeder->StopFeedingCargo();
 }
 
 void Shooter::TeleopInit() {
@@ -375,7 +320,7 @@ void Shooter::BlindShot(frc::Joystick *copilot) {
       break;
     case kBSSCompleted:
       Idle();
-      StopFeeder();
+      mFeeder->StopFeedingCargo();
       break;    
   }
 }

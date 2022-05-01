@@ -75,7 +75,15 @@ double CalcHighTargetElevation(double d){
 
   // for summer 2022:
   // 0.985622 x^3 - 40.8047 x^2 + 558.493 x - 2446.18
-  double result = (0.985622 * d * d * d) - (40.8047 * d * d) + (558.493 * d) - 2446.18;
+  // double result = (0.985622 * d * d * d) - (40.8047 * d * d) + (558.493 * d) - 2446.18;
+
+  // simplify things: just two or three elevations depending on distance
+  double result = 0.0;
+  if (d < 16.5) {
+    result = 83;
+  } else { 
+    result = 117;
+  }
   return result;
 }
 

@@ -3,6 +3,7 @@
 #include <frc/smartdashboard/SendableChooser.h>
 #include <DriveSystem.h>
 #include <Shooter.h>
+#include <Feeder.h>
 
 // enum DriveTurnStates {
 // 		kdtsUnknownState = 0,
@@ -32,13 +33,14 @@ enum DriveAndShootStates {
 class AutonomousController {
 
 public:
-  AutonomousController (DriveSystem *drive, Shooter *shooter); // constructor
+  AutonomousController (DriveSystem *drive, Shooter *shooter, Feeder *feeder); // constructor
   void AutonomousInit();
   void AutonomousPeriodic();
 
 private:
   DriveSystem *mDrive;
   Shooter *mShooter;
+  Feeder *mFeeder;
   
   frc::SendableChooser<std::string> mChooser;
   frc::SendableChooser<std::string> mChooserOptionsDirection;

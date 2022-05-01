@@ -5,7 +5,7 @@
 
 #define SUMMER
 
-static const double kIntakeSpeed = 0.8;
+static const double kIntakeSpeed = 0.6;
 
 void Intake::TeleopInit() {
 #ifdef SUMMER

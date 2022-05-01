@@ -24,13 +24,13 @@ public:
   void DoOnceInit();
   bool DemoReturningBall();
   void TeleopInit();
+  bool mEnableSummerDemo = false;
 
 private:
   frc::DoubleSolenoid mSolenoid{frc::PneumaticsModuleType::CTREPCM, 2, 3};
   WPI_TalonSRX mRoller{8};
   frc::Timer mTimer; 
   FetchBallStates mFetchState = kFBSUnknownState;
-  bool mEnableSummerDemo = false;
 
   void FetchBall (bool ballAtFeeder, RaspPi *rPi);
   void Deploy();

@@ -14,8 +14,9 @@ void Robot::RobotInit() {
   mTracker = new PixyBallTracker (kP, kI, kD);
   mClimber.RobotInit();
   mShooter = new Shooter();
-  mShooter->RobotInit();
+  mShooter->RobotInit(&mFeeder);
   mIntake.RobotInit();
+  mFeeder.RobotInit();
 
   mRobotDrive.RobotInit(mShooter, &mPIDFrontLeft, &mPIDRearLeft, &mPIDFrontRight, &mPIDRearRight,
                     &mEncoderFrontLeft, &mEncoderRearLeft, &mEncoderFrontRight, &mEncoderRearRight);
@@ -25,7 +26,7 @@ void Robot::RobotInit() {
   mFrontRight.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
   mRearRight .SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
 
-  mAutoController = new AutonomousController(&mRobotDrive, mShooter);
+  mAutoController = new AutonomousController(&mRobotDrive, mShooter, &mFeeder);
 
 }
 
@@ -66,13 +67,8 @@ void Robot::TeleopPeriodic() {
 #endif
   mShooter->TelopPeriodic(&mPilot, &mCopilot, mRobotDrive.mTargetingState);
   mRobotDrive.TelopPeriodic(&mPilot, &mCopilot);
-  mIntake.TeleopPeriodic(&mPilot, mShooter->CargoAvailable(), &mRaspPi);
-
-#ifdef SUMMER
-  // for summer, return balls picked up by auto-intake
-  bool returning = mIntake.DemoReturningBall();
-  mShooter->DemoReturnBall(returning);
-#endif
+  mIntake.TeleopPeriodic(&mPilot, mFeeder.CargoAvailable(), &mRaspPi);
+  mFeeder.TelopPeriodic(&mIntake);
 
 }
 
