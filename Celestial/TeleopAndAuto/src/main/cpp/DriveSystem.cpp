@@ -28,6 +28,7 @@ const static double kSlowSpeedMultiplier = 0.3;
 const static double kAutoSpeedMultiplier = 0.2;
 const static double kNormalSpeedMultiplier = 0.9;
 const static double kNormalYawMultiplier = 0.5;
+const static double kDemoYawMultiplier = 0.25;
 const static double kDemoSpeedMultX = 0.25;
 const static double kDemoSpeedMultY = 0.13;
 
@@ -135,7 +136,7 @@ void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
       DriveSlowAndSnapForHanging (pilot);
     } else {
       // std::cout << "normal: " << y << ", " << x << std::endl;
-      DriveCartesian(y*kNormalSpeedMultiplier, -x*kNormalSpeedMultiplier, -z*kNormalYawMultiplier, mAHRS->GetAngle());
+      DriveCartesian(y*kDemoSpeedMultY, -x*kDemoSpeedMultX, -z*kDemoYawMultiplier, mAHRS->GetAngle());
     }
   }
 }

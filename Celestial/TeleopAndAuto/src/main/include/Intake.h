@@ -6,6 +6,8 @@
 #include <frc/Joystick.h>
 #include "ctre/Phoenix.h"
 #include <RaspPi.h>
+#include <frc/Encoder.h>
+#include <frc/controller/PIDController.h>
 
 enum FetchBallStates {
 		kFBSUnknownState = 0,
@@ -31,10 +33,11 @@ private:
   WPI_TalonSRX mRoller{8};
   frc::Timer mTimer; 
   FetchBallStates mFetchState = kFBSUnknownState;
+  frc::Encoder mEncoder{6, 7, false, frc::Encoder::k4X};
+  frc2::PIDController *mPIDController;
 
   void FetchBall (bool ballAtFeeder, RaspPi *rPi);
   void Deploy();
   void Retract();
-
 
 };

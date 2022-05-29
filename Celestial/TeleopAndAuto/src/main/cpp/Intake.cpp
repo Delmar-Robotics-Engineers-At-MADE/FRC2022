@@ -3,9 +3,15 @@
 #include <RaspPi.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 
-#define SUMMER
+//#define SUMMER
 
-static const double kIntakeSpeed = 0.6;
+static const double kIntakeSpeed = -12000; // before encoder was 0.6;
+
+const static double kPtuned = .00015;
+const static double kItuned = 0.0;
+const static double kDtuned = 0.000001;
+const static double kFtuned = -0.6;
+const static double kPIDTolerance = 500;
 
 void Intake::TeleopInit() {
 #ifdef SUMMER
@@ -29,11 +35,13 @@ void Intake::TeleopPeriodic (frc::Joystick *pilot, bool ballAtFeeder, RaspPi *rP
 #else
   bool deploy = pilot->GetRawButton(8) || pilot->GetRawButton(7);
   if (deploy) {
-    mSolenoid.Set(frc::DoubleSolenoid::kReverse);
-    mRoller.Set(kIntakeSpeed);
+    // mSolenoid.Set(frc::DoubleSolenoid::kReverse);
+    // mRoller.Set(kIntakeSpeed);
+    Deploy();
   } else {
-    mRoller.Set(0.0);
-    mSolenoid.Set(frc::DoubleSolenoid::kForward);
+    // mRoller.Set(0.0);
+    // mSolenoid.Set(frc::DoubleSolenoid::kForward);
+    Retract();
   }
 #endif
 
@@ -43,6 +51,12 @@ void Intake::RobotInit() {
 		mRoller.ConfigFactoryDefault();
 		mRoller.ConfigNominalOutputForward(0, kTimeoutMs);
 		mRoller.ConfigNominalOutputReverse(0, kTimeoutMs);
+    mRoller.SetInverted(true);
+
+    mPIDController = new frc2::PIDController (kPtuned, kItuned, kDtuned);
+    mPIDController->SetTolerance(kPIDTolerance);
+    mPIDController->SetSetpoint(kIntakeSpeed);
+    frc::SmartDashboard::PutData("Intake PID", mPIDController);
 
 #ifdef SUMMER
   frc::SmartDashboard::PutBoolean("Ball Demo", mEnableSummerDemo);
@@ -61,7 +75,17 @@ void Intake::AutonomousPeriodic () {
 
 void Intake::Deploy() {
   mSolenoid.Set(frc::DoubleSolenoid::kReverse);
-  mRoller.Set(kIntakeSpeed);
+
+  // mRoller.Set(kIntakeSpeed);
+  double encoderSpeed = mEncoder.GetRate() ; // invert encoder, as in ManualElevate
+  double power = kFtuned;  // basically feed forward
+  power += mPIDController->Calculate(encoderSpeed); 
+  mRoller.Set(power); 
+  frc::SmartDashboard::PutNumber("Intake Actual", encoderSpeed);
+  frc::SmartDashboard::PutNumber("Intake Power", power);
+  frc::SmartDashboard::PutNumber("Intake Error1", mPIDController->GetPositionError());
+  frc::SmartDashboard::PutNumber("Intake Error2", mPIDController->GetVelocityError());
+  frc::SmartDashboard::PutBoolean("Intake Maxed", abs(power) >= 1.0);
 }
 
 void Intake::Retract() {

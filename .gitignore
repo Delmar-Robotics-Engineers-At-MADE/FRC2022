@@ -14,3 +14,4 @@ Protobot/PositionClosedLoop/.gradle/
 Protobot/PositionClosedLoop/build/
 Testing/Samples-from-2022/Pneumatic-Sample/
 Protobot/system-identification/extraneous/
+Testing/trapezoid-with-encoder/
