@@ -7,6 +7,7 @@
 #include "ctre/Phoenix.h"
 #include <Elevator.h>
 #include <Feeder.h>
+#include <Intake.h>
 
 static const double kShooterSpeedForAuto = 13300; // was 14000
 static const double kShooterSpeedForBlindShot = 13300; 
@@ -69,6 +70,9 @@ private:
   // feeder
   Feeder *mFeeder;
 
+  // for summer, monitor intake demo mode
+  Intake *mIntake;
+
 public:
 
   bool mTargetSeen = false; // tv is non-zero if there is a target detected
@@ -80,7 +84,7 @@ public:
 
   Shooter (); // constructor
   void TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, DriveSysTargetingState driveState);
-  void RobotInit(Feeder *feeder);
+  void RobotInit(Feeder *feeder, Intake *index);
   void RepeatableInit();
   void TeleopInit();
   void RobotPeriodic();

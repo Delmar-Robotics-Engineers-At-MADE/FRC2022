@@ -14,7 +14,7 @@ void Robot::RobotInit() {
   mTracker = new PixyBallTracker (kP, kI, kD);
   mClimber.RobotInit();
   mShooter = new Shooter();
-  mShooter->RobotInit(&mFeeder);
+  mShooter->RobotInit(&mFeeder, &mIntake);
   mIntake.RobotInit();
   mFeeder.RobotInit();
 

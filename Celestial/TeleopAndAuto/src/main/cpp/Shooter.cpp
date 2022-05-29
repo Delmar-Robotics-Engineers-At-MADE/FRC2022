@@ -5,6 +5,8 @@
 #include <DriveSystem.h>
 #include <iostream>
 
+#define SUMMER
+
 static const double kMinTargetAreaPercent = 0.0;
 static const double kRollerIdleSpeed = 0.0;  // was 2300 for 2022 competition
 static const double kVelocityTolerance = 500;
@@ -199,6 +201,13 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, Drive
   bool shootAtHighGoal = copilot->GetRawButton(4);
   bool shootAtLowGoal = copilot->GetRawButton(2);
 
+#ifdef SUMMER
+  // monitor intake's summer demo mode, and shoot if necessary
+  if (mIntake->mFetchState == kFBSShooting) {
+    shootAtLowGoal = true;
+  }
+#endif
+
   if (shootAtHighGoal) { //  || shootAtLowGoal
     mSpeedMultiplier = frc::SmartDashboard::GetNumber("Shooter Boost", mSpeedMultiplier);
     TurnLightOnOrOff(true);
@@ -229,8 +238,9 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, Drive
   mElevator.TelopPeriodic(copilot);
 }
 
-void Shooter::RobotInit(Feeder *feeder) {
+void Shooter::RobotInit(Feeder *feeder, Intake *intake) {
   mFeeder = feeder;
+  mIntake = intake;
 
   frc::SmartDashboard::PutNumber("Phi", mPhi);
   frc::SmartDashboard::PutNumber("H2", mH2);
@@ -299,6 +309,14 @@ void Shooter::AutonomousInit() {
 }
 
 void Shooter::BlindShot(frc::Joystick *copilot) {
+  bool shootButtonPressed = copilot->GetRawButton(2);
+#ifdef SUMMER
+  // monitor intake's summer demo mode, and shoot if necessary
+  if (mIntake->mFetchState == kFBSShooting) {
+    shootButtonPressed = true;
+  }
+#endif
+
   bool dontCare = false;
   switch (mBlindShotState) {
     default:
@@ -317,7 +335,7 @@ void Shooter::BlindShot(frc::Joystick *copilot) {
       }
       break;
     case kBSSShooting:
-      if (copilot->GetRawButton(2)) {
+      if (shootButtonPressed) {
         ShootForAuto();  // stay on this state as long as button is pressed
       } else {
         mBlindShotState = kBSSCompleted;

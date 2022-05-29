@@ -16,6 +16,7 @@ const static double kPIDTolerance = 500;
 void Intake::TeleopInit() {
 #ifdef SUMMER
   frc::SmartDashboard::PutBoolean("Ball Demo", mEnableSummerDemo);
+  frc::SmartDashboard::PutBoolean("Also Shoot", mEnableSummerDemoShoot);
 #endif  
   
 }
@@ -25,6 +26,7 @@ void Intake::TeleopPeriodic (frc::Joystick *pilot, bool ballAtFeeder, RaspPi *rP
 
 #ifdef SUMMER
   mEnableSummerDemo = frc::SmartDashboard::GetBoolean("Ball Demo", mEnableSummerDemo);
+  mEnableSummerDemoShoot = frc::SmartDashboard::GetBoolean("Also Shoot", mEnableSummerDemoShoot);
   if (mEnableSummerDemo) {
     rPi->CheckForBall();
     frc::SmartDashboard::PutBoolean("Ball Ahead", rPi->mBallAhead);
@@ -60,6 +62,7 @@ void Intake::RobotInit() {
 
 #ifdef SUMMER
   frc::SmartDashboard::PutBoolean("Ball Demo", mEnableSummerDemo);
+  frc::SmartDashboard::PutBoolean("Also Shoot", mEnableSummerDemoShoot);
 #endif  
 
 }
@@ -119,9 +122,10 @@ void Intake::FetchBall (bool ballAtFeeder, RaspPi *rPi) {
       break;
     case kFBSBallAtFeeder:
       Retract();
-      // for summer, stay in this state for 2 secs, then spit ball back out
+      // for summer, stay in this state for 2 secs, then spit ball back out or shoot
       if (mTimer.Get() > 2.0_s) {
-        mFetchState = kFBSBallReturning;
+        if (mEnableSummerDemoShoot) { mFetchState = kFBSShooting; } 
+        else { mFetchState = kFBSBallReturning; }
         mTimer.Reset(); // return for a period of time
         mTimer.Start();
       }
@@ -129,6 +133,12 @@ void Intake::FetchBall (bool ballAtFeeder, RaspPi *rPi) {
     case kFBSBallReturning:
       // for summer, stay in this state for 2 secs
       if (mTimer.Get() > 2.0_s) {
+        mFetchState = kFBSWaitingForBall;
+      }
+      break;
+    case kFBSShooting:
+      // for summer, stay in this state for longer
+      if (mTimer.Get() > 4.0_s) {
         mFetchState = kFBSWaitingForBall;
       }
       break;
@@ -146,7 +156,7 @@ void Intake::FetchBall (bool ballAtFeeder, RaspPi *rPi) {
   }
 }
 
-bool Intake::DemoReturningBall() {
-  bool result = (mFetchState == kFBSBallReturning);
-  return result;
-}
+// bool Intake::DemoReturningBall() {
+//   bool result = (mFetchState == kFBSBallReturning);
+//   return result;
+// }

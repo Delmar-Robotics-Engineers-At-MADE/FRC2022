@@ -29,9 +29,11 @@ void Feeder::StopFeedingCargo() {
   }
 }
 
-void Feeder::DemoReturnBall(bool returning) {
-  if (returning) {
+void Feeder::DemoReturnBall(Intake *intake) {
+  if (intake->mFetchState == kFBSBallReturning) {
     mFeeder.Set(-kFeederSpeed);
+  } else if (intake->mFetchState == kFBSShooting) {
+    // don't do anything; shooter will control us
   } else {
     mFeeder.Set(0.0);
   }
@@ -41,10 +43,9 @@ void Feeder::TelopPeriodic (Intake *intake){
   frc::SmartDashboard::PutBoolean("Cargo Present", CargoAvailable());
 
 #ifdef SUMMER
-  // for summer, return balls picked up by auto-intake
+  // for summer, return balls picked up by auto-intake, or maybe even shoot
   if (intake->mEnableSummerDemo) {
-    bool returning = intake->DemoReturningBall();
-    DemoReturnBall(returning);
+    DemoReturnBall(intake);
   } else {
     // let shooter tell us what to do
   }

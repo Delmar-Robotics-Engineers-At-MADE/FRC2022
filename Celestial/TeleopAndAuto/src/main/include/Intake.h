@@ -15,7 +15,8 @@ enum FetchBallStates {
     kFBSBallAhead,
     kFBSBallGone,
 		kFBSBallAtFeeder,
-    kFBSBallReturning
+    kFBSBallReturning,
+    kFBSShooting
 	};
 
 class Intake {
@@ -24,15 +25,16 @@ public:
   void AutonomousPeriodic ();
   void RobotInit();
   void DoOnceInit();
-  bool DemoReturningBall();
+  // bool DemoReturningBall();
   void TeleopInit();
+  FetchBallStates mFetchState = kFBSUnknownState;
   bool mEnableSummerDemo = false;
+  bool mEnableSummerDemoShoot = false;
 
 private:
   frc::DoubleSolenoid mSolenoid{frc::PneumaticsModuleType::CTREPCM, 2, 3};
   WPI_TalonSRX mRoller{8};
   frc::Timer mTimer; 
-  FetchBallStates mFetchState = kFBSUnknownState;
   frc::Encoder mEncoder{6, 7, false, frc::Encoder::k4X};
   frc2::PIDController *mPIDController;
 

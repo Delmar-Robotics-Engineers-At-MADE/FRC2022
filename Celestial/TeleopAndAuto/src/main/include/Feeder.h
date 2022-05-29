@@ -14,12 +14,12 @@ private:
   frc::DigitalInput mEyeFeeder{5}; 
 
   bool mManualFeeding = false; // might never be true, as we have not figured out where to put controls yet 
+  void DemoReturnBall(Intake *intake);
 
 public:
   bool CargoAvailable();
   void FeedCargo();
   void StopFeedingCargo();
-  void DemoReturnBall(bool returning);
   void ManualFeed (frc::Joystick *pilot);
   void TelopPeriodic (Intake *intake);
   void RobotInit();
