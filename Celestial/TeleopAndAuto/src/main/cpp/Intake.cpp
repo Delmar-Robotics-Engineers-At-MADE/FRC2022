@@ -5,7 +5,7 @@
 
 #define SUMMER
 
-static const double kIntakeSpeed = -12500; // before encoder was 0.6;
+static const double kIntakeSpeed = -18000; // before encoder was 0.6;
 
 const static double kPtuned = .0001;
 const static double kItuned = 0.0;
