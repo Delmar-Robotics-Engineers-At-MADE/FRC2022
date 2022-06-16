@@ -13,6 +13,7 @@
 #include <frc/trajectory/TrapezoidProfile.h>
 #include <units/velocity.h>
 #include <units/acceleration.h>
+#include <RaspPi.h>
 
 
 enum SummerDemoDriveStates {
@@ -40,7 +41,8 @@ public:
   void DoOnceInit();
   void RepeatableInit();
   void RobotPeriodic();
-  void RotateToTarget(frc::Joystick *pilot, frc::Joystick *copilot); // angle in degrees
+  void RotateToTarget(frc::Joystick *pilot, frc::Joystick *copilot);
+  void RotateToBall(RaspPi *rPi); 
   void DriveTrapezoid();
   void DriveSlowForAuto(double x, double y);
   void DriveSlowAndSnapForHanging (frc::Joystick *pilot);
@@ -61,6 +63,7 @@ private:
   static constexpr auto i2cPort = frc::I2C::Port::kOnboard;
   rev::ColorSensorV3 mColorSensor{i2cPort};
   frc2::PIDController *mPIDControllerLimelight; // for orienting robot with limelight
+  frc2::PIDController *mPIDControllerRaspPi; // for orienting robot with limelight
   frc2::PIDController *mPIDControllerGyro; // for orienting robot with gyro
 
   frc::TrapezoidProfile<units::feet>::Constraints mConstraints{5_fps, 5_fps_sq};

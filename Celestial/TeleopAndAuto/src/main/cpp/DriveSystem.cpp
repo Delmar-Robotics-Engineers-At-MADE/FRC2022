@@ -16,6 +16,11 @@ const static double kItunedLimelight = 0.0;
 const static double kDtunedLimelight = 0.0;
 const static double kPIDToleranceLimeLight = 3.0;
 
+const static double kPtunedRaspPi= 0.02;
+const static double kItunedRaspPi = 0.0;
+const static double kDtunedRaspPi = 0.0;
+const static double kPIDToleranceRaspPi = 3.0;
+
 const static double kPtunedDrive = 0.1;
 const static double kItunedDrive = 0.0; 
 const static double kDtunedDrive = 0.001;
@@ -74,6 +79,39 @@ void DriveSystem::RotateToTarget (frc::Joystick *pilot, frc::Joystick *copilot) 
         mTargetingState = kDriveRotatingToTarget;
       } else {
         rotateRate = copilot->GetX();
+      }
+      break;
+  }
+  DriveCartesian(0, 0, rotateRate);
+}
+
+void DriveSystem::RotateToBall(RaspPi *rPi) {
+  double rotateRate = 0.0;
+  // for Summer demo, Intake calls rPi->CheckForBall()
+  double angleToTarget = rPi->mNearestBallX; 
+  switch (mTargetingState) {
+    default:
+      if (rPi->mBallAhead) {
+        mTargetingState = kDriveRotatingToTarget;
+      } else { 
+        mTargetingState = kDriveWaitingForTarget;
+      }
+      break;
+    case kDriveRotatingToTarget: 
+      rotateRate = mPIDControllerRaspPi->Calculate(angleToTarget);
+      if (mPIDControllerRaspPi->AtSetpoint()) {
+        mTargetingState = kDriveOnTarget;
+      } else {
+        mTargetingState = kDriveRotatingToTarget;
+      }
+      break;
+    case kDriveOnTarget:
+      // settle; don't keep moving
+      rotateRate = 0.0;
+      break;
+    case kDriveWaitingForTarget:
+      if (mShooter->mTargetSeen) {
+        mTargetingState = kDriveRotatingToTarget;
       }
       break;
   }
@@ -178,8 +216,12 @@ void DriveSystem::RobotInit(Shooter *shooter,
   mPIDControllerLimelight->SetTolerance(kPIDToleranceLimeLight, kPIDToleranceLimeLight); // degrees
   mPIDControllerLimelight->SetSetpoint(0.0); // always centering target, so always zero
 
+  // PID for rotating to nearest ball (Summer demo)
+  mPIDControllerRaspPi = new frc2::PIDController (kPtunedRaspPi, kItunedRaspPi, kDtunedRaspPi);
+  mPIDControllerRaspPi->SetTolerance(kPIDToleranceRaspPi, kPIDToleranceRaspPi); // degrees
+  mPIDControllerRaspPi->SetSetpoint(0.0); // always centering target, so always zero
+
   // PID for snap to hanging
-  
   mPIDControllerGyro = new frc2::PIDController (kPtunedGyro, kItunedGyro, kDtunedGyro);
   mPIDControllerGyro->SetTolerance(8, 8);  // within 8 degrees of direction is considered on set point
   mPIDControllerGyro->SetSetpoint(180.0); // will use this to snap to zero, by passing angle + 180 as error
