@@ -62,9 +62,7 @@ void Robot::TeleopInit() {
 
 void Robot::TeleopPeriodic() {
 
-#ifndef SUMMER
   mClimber.TelopPeriodic(&mCopilot);
-#endif
   mShooter->TelopPeriodic(&mPilot, &mCopilot, mRobotDrive.mTargetingState);
   mRobotDrive.TelopPeriodic(&mPilot, &mCopilot, &mRaspPi);
   mIntake.TeleopPeriodic(&mPilot, mFeeder.CargoAvailable(), &mRaspPi);
