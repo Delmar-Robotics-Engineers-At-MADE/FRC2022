@@ -16,10 +16,10 @@ const static double kItunedLimelight = 0.0;
 const static double kDtunedLimelight = 0.0;
 const static double kPIDToleranceLimeLight = 3.0;
 
-const static double kPtunedRaspPi= 0.1;
+const static double kPtunedRaspPi= 1;
 const static double kItunedRaspPi = 0.0;
 const static double kDtunedRaspPi = 0.0;
-const static double kPIDToleranceRaspPi = 3.0;
+const static double kPIDToleranceRaspPi = 0.05;
 
 const static double kPtunedDrive = 0.1;
 const static double kItunedDrive = 0.0; 
@@ -37,7 +37,7 @@ const static double kDemoYawMultiplier = 0.25;
 const static double kDemoSpeedMultX = 0.25;
 const static double kDemoSpeedMultY = 0.13;
 
-const static double kDefaultRotateToTargetRate = 0.5;
+const static double kDefaultRotateToTargetRate = 0.2;
 
 // constructor
 DriveSystem::DriveSystem(frc::SpeedController& frontLeftMotor, frc::SpeedController& rearLeftMotor,
@@ -89,9 +89,9 @@ void DriveSystem::RotateToBall(RaspPi *rPi) {
   double rotateRate = 0.0;
   // for Summer demo, Intake calls rPi->CheckForBall()
   double angleToTarget = rPi->mNearestBallX; 
-  frc::SmartDashboard::PutNumber("Ball X", angleToTarget);
+  // frc::SmartDashboard::PutNumber("Ball X", angleToTarget);
   // mTargetingState = kDriveOnTarget;
-  frc::SmartDashboard::PutNumber("Rotate State", mTargetingState);
+  // frc::SmartDashboard::PutNumber("Rotate State", mTargetingState);
   switch (mTargetingState) {
     default:
       if (rPi->mBallAhead) {
@@ -113,7 +113,7 @@ void DriveSystem::RotateToBall(RaspPi *rPi) {
       }
       break;
   }
-  frc::SmartDashboard::PutNumber("Rotate", rotateRate);
+  // frc::SmartDashboard::PutNumber("Rotate", rotateRate);
   DriveCartesian(0, 0, rotateRate);
 }
 
@@ -136,10 +136,16 @@ void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, R
   bool trackBall = (mIntake->mFetchState == kFBSBallAhead
                  || mIntake->mFetchState == kFBSBallGone);
 
+  bool rotate180ForSummer = (mIntake->mFetchState == kFBSRotating);
+  
+  shooting = (mIntake->mFetchState == kFBSShooting);
+
   // std::cout << "driving" << std::endl;
 
   if (trackBall) {
     RotateToBall(rPi);
+  } else if (rotate180ForSummer) {
+    Rotate180ForSummer();
   } else if (shooting) {
     RotateToTarget(pilot, copilot);
   } else {
@@ -345,5 +351,18 @@ void DriveSystem::DriveSlowForSummer(double x, double y) {
   double currHeading = mAHRS->GetAngle();
   double rotateRate = mPIDControllerGyro->Calculate(currHeading + 180.0);  // offset by 180 to avoid discontinuity
 
+  // clip rate to max rotation
+  rotateRate = std::min(kDefaultRotateToTargetRate, rotateRate);
+  rotateRate = std::max(-kDefaultRotateToTargetRate, rotateRate);
+
   DriveCartesian(-y*kDemoSpeedMultY, x*kDemoSpeedMultX, -rotateRate, currHeading);
+}
+
+void DriveSystem::Rotate180ForSummer() {
+  double currHeading = mAHRS->GetAngle();
+  double rotateRate = mPIDControllerGyro->Calculate(currHeading);  // setpoint is 180
+  // clip rate to max rotation to keep ball from flying out
+  rotateRate = std::min(kDefaultRotateToTargetRate, rotateRate);
+  rotateRate = std::max(-kDefaultRotateToTargetRate, rotateRate);
+  DriveCartesian(0, 0, -rotateRate, currHeading);
 }

@@ -48,6 +48,7 @@ public:
   void DriveSlowForAuto(double x, double y);
   void DriveSlowAndSnapForHanging (frc::Joystick *pilot);
   void DriveSlowForSummer(double x, double y);
+  void Rotate180ForSummer();
 
   void RobotInit(Shooter *shooter, Intake *intake,
                 rev::SparkMaxPIDController *pidFL, rev::SparkMaxPIDController *pidRL, 

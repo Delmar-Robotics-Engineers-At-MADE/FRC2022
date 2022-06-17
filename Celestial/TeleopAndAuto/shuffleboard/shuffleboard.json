@@ -385,7 +385,7 @@
               "_title": "A Direction?"
             }
           },
-          "4,5": {
+          "10,5": {
             "size": [
               1,
               1
@@ -442,7 +442,7 @@
           },
           "10,6": {
             "size": [
-              1,
+              2,
               1
             ],
             "content": {
@@ -490,7 +490,7 @@
               "_title": "Shooter Error"
             }
           },
-          "5,5": {
+          "4,5": {
             "size": [
               1,
               1
@@ -525,7 +525,7 @@
               "Colors/Color when false": "#8B0000FF"
             }
           },
-          "9,5": {
+          "10,4": {
             "size": [
               1,
               1
@@ -536,7 +536,7 @@
               "_title": "Fetch State"
             }
           },
-          "6,5": {
+          "5,5": {
             "size": [
               1,
               1
@@ -571,7 +571,7 @@
           },
           "2,5": {
             "size": [
-              2,
+              1,
               2
             ],
             "content": {
@@ -593,7 +593,7 @@
               "Colors/Color when false": "#8B0000FF"
             }
           },
-          "7,5": {
+          "6,5": {
             "size": [
               1,
               1
@@ -602,6 +602,61 @@
               "_type": "Toggle Switch",
               "_source0": "network_table:///SmartDashboard/Also Shoot",
               "_title": "Also Shoot"
+            }
+          },
+          "9,5": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Ball X",
+              "_title": "Ball X"
+            }
+          },
+          "3,5": {
+            "size": [
+              1,
+              2
+            ],
+            "content": {
+              "_type": "PID Controller",
+              "_source0": "network_table:///SmartDashboard/RPi PID",
+              "_title": "RPi PID"
+            }
+          },
+          "6,0": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Rotate State",
+              "_title": "Rotate State"
+            }
+          },
+          "13,0": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Rotate",
+              "_title": "Rotate"
+            }
+          },
+          "7,5": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Toggle Switch",
+              "_source0": "network_table:///SmartDashboard/Also Rotate",
+              "_title": "Also Rotate"
             }
           }
         }
@@ -777,7 +832,7 @@
     }
   ],
   "windowGeometry": {
-    "x": -8.0,
+    "x": -1928.0,
     "y": -8.0,
     "width": 1936.0,
     "height": 1056.0

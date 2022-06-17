@@ -16,6 +16,8 @@ enum FetchBallStates {
     kFBSBallGone,
 		kFBSBallAtFeeder,
     kFBSBallReturning,
+    kFBSRotating,
+    kFBSRotatingBack,
     kFBSShooting
 	};
 
@@ -30,6 +32,7 @@ public:
   FetchBallStates mFetchState = kFBSUnknownState;
   bool mEnableSummerDemo = false;
   bool mEnableSummerDemoShoot = false;
+  bool mEnableSummerDemoRotateShoot = false;
 
 private:
   frc::DoubleSolenoid mSolenoid{frc::PneumaticsModuleType::CTREPCM, 2, 3};
