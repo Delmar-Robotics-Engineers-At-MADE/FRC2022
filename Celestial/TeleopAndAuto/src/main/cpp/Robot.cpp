@@ -18,7 +18,7 @@ void Robot::RobotInit() {
   mIntake.RobotInit();
   mFeeder.RobotInit();
 
-  mRobotDrive.RobotInit(mShooter, &mPIDFrontLeft, &mPIDRearLeft, &mPIDFrontRight, &mPIDRearRight,
+  mRobotDrive.RobotInit(mShooter, &mIntake, &mPIDFrontLeft, &mPIDRearLeft, &mPIDFrontRight, &mPIDRearRight,
                     &mEncoderFrontLeft, &mEncoderRearLeft, &mEncoderFrontRight, &mEncoderRearRight);
 
   mFrontLeft .SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
@@ -66,7 +66,7 @@ void Robot::TeleopPeriodic() {
   mClimber.TelopPeriodic(&mCopilot);
 #endif
   mShooter->TelopPeriodic(&mPilot, &mCopilot, mRobotDrive.mTargetingState);
-  mRobotDrive.TelopPeriodic(&mPilot, &mCopilot);
+  mRobotDrive.TelopPeriodic(&mPilot, &mCopilot, &mRaspPi);
   mIntake.TeleopPeriodic(&mPilot, mFeeder.CargoAvailable(), &mRaspPi);
   mFeeder.TelopPeriodic(&mIntake);
 

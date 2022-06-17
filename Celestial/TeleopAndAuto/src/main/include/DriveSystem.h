@@ -14,6 +14,7 @@
 #include <units/velocity.h>
 #include <units/acceleration.h>
 #include <RaspPi.h>
+#include <Intake.h>
 
 
 enum SummerDemoDriveStates {
@@ -37,7 +38,7 @@ public:
 
   // ~DriveSystem() override = default;
 
-  void TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot);
+  void TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, RaspPi *rPi);
   void DoOnceInit();
   void RepeatableInit();
   void RobotPeriodic();
@@ -48,7 +49,7 @@ public:
   void DriveSlowAndSnapForHanging (frc::Joystick *pilot);
   void DriveSlowForSummer(double x, double y);
 
-  void RobotInit(Shooter *shooter, 
+  void RobotInit(Shooter *shooter, Intake *intake,
                 rev::SparkMaxPIDController *pidFL, rev::SparkMaxPIDController *pidRL, 
                 rev::SparkMaxPIDController *pidFR, rev::SparkMaxPIDController *pidRR,
                 rev::SparkMaxRelativeEncoder *mEncoderFL, rev::SparkMaxRelativeEncoder *mEncodeRL,
@@ -59,6 +60,8 @@ private:
   AHRS *mAHRS;
   Shooter *mShooter;
 
+  // for summer, monitor intake demo mode
+  Intake *mIntake;
 
   static constexpr auto i2cPort = frc::I2C::Port::kOnboard;
   rev::ColorSensorV3 mColorSensor{i2cPort};

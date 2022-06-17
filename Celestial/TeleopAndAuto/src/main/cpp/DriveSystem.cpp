@@ -16,7 +16,7 @@ const static double kItunedLimelight = 0.0;
 const static double kDtunedLimelight = 0.0;
 const static double kPIDToleranceLimeLight = 3.0;
 
-const static double kPtunedRaspPi= 0.02;
+const static double kPtunedRaspPi= 0.1;
 const static double kItunedRaspPi = 0.0;
 const static double kDtunedRaspPi = 0.0;
 const static double kPIDToleranceRaspPi = 3.0;
@@ -89,6 +89,9 @@ void DriveSystem::RotateToBall(RaspPi *rPi) {
   double rotateRate = 0.0;
   // for Summer demo, Intake calls rPi->CheckForBall()
   double angleToTarget = rPi->mNearestBallX; 
+  frc::SmartDashboard::PutNumber("Ball X", angleToTarget);
+  // mTargetingState = kDriveOnTarget;
+  frc::SmartDashboard::PutNumber("Rotate State", mTargetingState);
   switch (mTargetingState) {
     default:
       if (rPi->mBallAhead) {
@@ -99,22 +102,18 @@ void DriveSystem::RotateToBall(RaspPi *rPi) {
       break;
     case kDriveRotatingToTarget: 
       rotateRate = mPIDControllerRaspPi->Calculate(angleToTarget);
-      if (mPIDControllerRaspPi->AtSetpoint()) {
-        mTargetingState = kDriveOnTarget;
-      } else {
-        mTargetingState = kDriveRotatingToTarget;
-      }
-      break;
-    case kDriveOnTarget:
-      // settle; don't keep moving
-      rotateRate = 0.0;
+      if (!rPi->mBallAhead) { // when lose ball, stop rotating
+        mTargetingState = kDriveWaitingForTarget;
+      } 
       break;
     case kDriveWaitingForTarget:
-      if (mShooter->mTargetSeen) {
+      rotateRate = 0;
+      if (rPi->mBallAhead) {
         mTargetingState = kDriveRotatingToTarget;
       }
       break;
   }
+  frc::SmartDashboard::PutNumber("Rotate", rotateRate);
   DriveCartesian(0, 0, rotateRate);
 }
 
@@ -130,10 +129,18 @@ void DriveSystem::DriveSlowAndSnapForHanging (frc::Joystick *pilot){
 
 #ifdef SUMMER
 
-void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
+void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, RaspPi *rPi){
   bool shooting = (copilot->GetRawButton(4) || copilot->GetRawButton(2));
+
+  // monitor intake's summer demo mode
+  bool trackBall = (mIntake->mFetchState == kFBSBallAhead
+                 || mIntake->mFetchState == kFBSBallGone);
+
   // std::cout << "driving" << std::endl;
-  if (shooting) {
+
+  if (trackBall) {
+    RotateToBall(rPi);
+  } else if (shooting) {
     RotateToTarget(pilot, copilot);
   } else {
     mTargetingState = kDriveNotTargeting;
@@ -203,13 +210,14 @@ void SetEncoderConversion (rev::SparkMaxRelativeEncoder *encoder) {
   encoder->SetVelocityConversionFactor(0.006);
 }
 
-void DriveSystem::RobotInit(Shooter *shooter, 
+void DriveSystem::RobotInit(Shooter *shooter, Intake *intake,
                 rev::SparkMaxPIDController *pidFL, rev::SparkMaxPIDController *pidRL, 
                 rev::SparkMaxPIDController *pidFR, rev::SparkMaxPIDController *pidRR,
                 rev::SparkMaxRelativeEncoder *encoderFL, rev::SparkMaxRelativeEncoder *encoderRL,
                 rev::SparkMaxRelativeEncoder *encoderFR, rev::SparkMaxRelativeEncoder *encoderRR) {
 
   mShooter = shooter;
+  mIntake = intake; // for summer
 
   // PID for limelight
   mPIDControllerLimelight = new frc2::PIDController (kPtunedLimelight, kItunedLimelight, kDtunedLimelight);
@@ -219,7 +227,7 @@ void DriveSystem::RobotInit(Shooter *shooter,
   // PID for rotating to nearest ball (Summer demo)
   mPIDControllerRaspPi = new frc2::PIDController (kPtunedRaspPi, kItunedRaspPi, kDtunedRaspPi);
   mPIDControllerRaspPi->SetTolerance(kPIDToleranceRaspPi, kPIDToleranceRaspPi); // degrees
-  mPIDControllerRaspPi->SetSetpoint(0.0); // always centering target, so always zero
+  mPIDControllerRaspPi->SetSetpoint(0.5); // always centering target
 
   // PID for snap to hanging
   mPIDControllerGyro = new frc2::PIDController (kPtunedGyro, kItunedGyro, kDtunedGyro);
@@ -233,6 +241,7 @@ void DriveSystem::RobotInit(Shooter *shooter,
   // frc::SmartDashboard::PutData("Front Right", pidFR);  // dashboard should be able to change values
   // frc::SmartDashboard::PutData("Rear Right", pidRR);  // dashboard should be able to change values
   frc::SmartDashboard::PutData("Gyro PID", mPIDControllerGyro);
+  frc::SmartDashboard::PutData("RPi PID", mPIDControllerRaspPi);
 
   // Spark Max stuff
 

@@ -5,7 +5,7 @@
 
 #define SUMMER
 
-static const double kIntakeSpeed = -16000; // before encoder was 0.6;
+static const double kIntakeSpeed = -14000; // before encoder was 0.6;
 
 const static double kPtuned = .0001;
 const static double kItuned = 0.0;
@@ -104,6 +104,10 @@ void Intake::FetchBall (bool ballAtFeeder, RaspPi *rPi) {
       // check ML for ball close enough
       if (rPi->mBallAhead) {
         mFetchState = kFBSBallAhead;
+      } else if (ballAtFeeder) {
+        mFetchState = kFBSBallAtFeeder;
+        mTimer.Reset(); // keep ball in feeder for period of time
+        mTimer.Start();
       }
       break;
     case kFBSBallAhead:
