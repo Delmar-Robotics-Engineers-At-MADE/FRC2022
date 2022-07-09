@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+#include <array>
 #include "frc/drive/RobotDriveBase.h"
 #include <frc/drive/MecanumDrive.h>
 #include <frc/Joystick.h>
@@ -13,8 +15,11 @@
 #include <frc/trajectory/TrapezoidProfile.h>
 #include <units/velocity.h>
 #include <units/acceleration.h>
+#include <units/angular_velocity.h>
+#include <units/angle.h>
 #include <RaspPi.h>
 #include <Intake.h>
+#include <frc/controller/SimpleMotorFeedforward.h>
 
 
 enum SummerDemoDriveStates {
@@ -56,6 +61,8 @@ public:
                 rev::SparkMaxRelativeEncoder *mEncoderFL, rev::SparkMaxRelativeEncoder *mEncodeRL,
                 rev::SparkMaxRelativeEncoder *mEncodeFR, rev::SparkMaxRelativeEncoder *mEncodeRR);
 
+  void MyDriveCartesian(double ySpeed, double xSpeed, double zRotation, double gyroAngle);
+  
 private:
   
   AHRS *mAHRS;
@@ -78,6 +85,10 @@ private:
 
   SummerDemoDriveStates mDemoDriveState = kSDDUnknownState;
 
+  // for converting SysID numbers to PID numbers
+  frc::SimpleMotorFeedforward<units::turns> mFeedForwardCalculator;
+  
   void CheckColorForAllClear(bool isWhite, bool isRed, bool isBlue);
+  void SetPIDValues (rev::SparkMaxPIDController *pidController);
 
 };

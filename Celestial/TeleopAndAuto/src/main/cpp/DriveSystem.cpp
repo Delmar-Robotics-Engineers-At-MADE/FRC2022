@@ -4,6 +4,8 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <math.h>
 #include <iostream>
+#include <frc/MathUtil.h>
+#include <units/voltage.h>
 
 #define SUMMER
 
@@ -21,13 +23,24 @@ const static double kItunedRaspPi = 0.0;
 const static double kDtunedRaspPi = 0.0;
 const static double kPIDToleranceRaspPi = 0.05;
 
-const static double kPtunedDrive = 0.1;
+// from SysID tool
+constexpr auto kSysIdkS = 0.14615_V;
+constexpr auto kSysIdkV = 0.97133_V * 1_s / 1_tr;  // 12_V / kShooterFreeRPS;
+constexpr auto kSysIdkA = 0.16704_V * 1_s * 1_s / 1_tr; // volts / acceleration
+const static double kSysIdkP = 2.7382E-07;
+const static double kSysIdkD = 0;
+
+// followed this ref for calculating PID numbers from SysID numbers: https://www.chiefdelphi.com/t/how-to-do-characterization-for-velocity-control-for-spark-max-and-neo/378990/6
+const static double kPtunedDrive = 0.0001; // kSysIdkP / (12.0 * 60); // this is a very small number!
 const static double kItunedDrive = 0.0; 
-const static double kDtunedDrive = 0.001;
+const static double kDtunedDrive = 0.0;
 const static double kIZtunedDrive = 0.0;
-const static double kFFtunedDrive =  0.0;
+const static double kFFtunedDrive =  0.001;
 const static double kMaxOutputDrive = 1.0;
 const static double kMinOutputDrive = -1.0;
+const auto maxRPS = 5700_tr / 1_s; // 5700 RPM; see Frisbeebot example for SimpleMotorFeedforward
+const auto maxVoltage = 12_V;
+const auto averageSetpointRPS = 1800_tr / 1_s; // 1800 RPM
 
 const static double kSlowSpeedMultiplier = 0.3;
 const static double kAutoSpeedMultiplier = 0.2;
@@ -43,11 +56,20 @@ const static double kDefaultRotateToTargetRate = 0.2;
 DriveSystem::DriveSystem(frc::SpeedController& frontLeftMotor, frc::SpeedController& rearLeftMotor,
                          frc::SpeedController& frontRightMotor, frc::SpeedController& rearRightMotor) :
 
-  MecanumDrive(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor) {
-                
-  // call parent class constructor automatically
+  // parent class constructor
+  MecanumDrive(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor) ,
 
+  // FeedForward constructor, for setting PID using numbers from SysID
+  //mFeedForwardCalculator = new SimpleMotorFeedforward<units::turns>(kSysIdkS, kSysIdkV, kSysIdkA);
+  mFeedForwardCalculator(kSysIdkS, kSysIdkV, kSysIdkA) // , kSysIdkA ?
+
+  // constructor code
+  {
+    // m_controller.SetTolerance(kShooterToleranceRPS.value());
+    // m_shooterEncoder.SetDistancePerPulse(kEncoderDistancePerPulse);
+    // SetSetpoint(kShooterTargetRPS.value());
   }
+    
 
 void DriveSystem::RotateToTarget (frc::Joystick *pilot, frc::Joystick *copilot) { 
   double rotateRate = 0.0;
@@ -127,6 +149,14 @@ void DriveSystem::DriveSlowAndSnapForHanging (frc::Joystick *pilot){
   // return mPIDControllerGyro->AtSetpoint();
 }
 
+void DriveSystem::MyDriveCartesian(double ySpeed, double xSpeed, double zRotation, double gyroAngle) {
+  ySpeed = ApplyDeadband(ySpeed, m_deadband);
+  xSpeed = ApplyDeadband(xSpeed, m_deadband);
+  auto [frontLeft, frontRight, rearLeft, rearRight] = DriveCartesianIK(ySpeed, xSpeed, zRotation, gyroAngle);
+  Feed();
+}
+
+
 #ifdef SUMMER
 
 void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, RaspPi *rPi){
@@ -194,13 +224,18 @@ void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
 
 #endif
 
-void SetPIDValues (rev::SparkMaxPIDController *pidController) {
-    pidController->SetP     (kPtunedDrive );
-    pidController->SetI     (kItunedDrive );
-    pidController->SetD     (kDtunedDrive );
-    pidController->SetIZone (kIZtunedDrive);
-    pidController->SetFF    (kFFtunedDrive);
-    pidController->SetOutputRange(kMinOutputDrive, kMaxOutputDrive);
+void DriveSystem::SetPIDValues (rev::SparkMaxPIDController *pidController) {
+  // ref for calculating using SysID numbers: https://www.chiefdelphi.com/t/how-to-do-characterization-for-velocity-control-for-spark-max-and-neo/378990/6
+  // also Frisbeebot
+  // auto feedForward =  mFeedForwardCalculator.Calculate(averageSetpointRPS, maxRPS);
+  //     / (maxVoltage * maxRPS);
+  auto feedForward =  0.0;
+  pidController->SetP     (kPtunedDrive );
+  pidController->SetI     (kItunedDrive );
+  pidController->SetD     (kDtunedDrive );
+  pidController->SetIZone (kIZtunedDrive);
+  pidController->SetFF    (feedForward);  // was kFFtunedDrive
+  pidController->SetOutputRange(kMinOutputDrive, kMaxOutputDrive);
 }
 
 void SetEncoderConversion (rev::SparkMaxRelativeEncoder *encoder) {
@@ -250,7 +285,6 @@ void DriveSystem::RobotInit(Shooter *shooter, Intake *intake,
   frc::SmartDashboard::PutData("RPi PID", mPIDControllerRaspPi);
 
   // Spark Max stuff
-
   SetPIDValues (pidFL);
   SetPIDValues (pidRL);
   SetPIDValues (pidFR);
@@ -284,7 +318,7 @@ void DriveSystem::RepeatableInit() {
 void DriveSystem::RobotPeriodic() {
   // for debugging
   frc::SmartDashboard::PutNumber("Heading", mAHRS->GetAngle());
-  rev::ColorSensorV3::RawColor rawColor = mColorSensor.GetRawColor();
+  // rev::ColorSensorV3::RawColor rawColor = mColorSensor.GetRawColor();
   // frc::SmartDashboard::PutNumber("Color R", rawColor.red);
   // frc::SmartDashboard::PutNumber("Color G", rawColor.green);
   // frc::SmartDashboard::PutNumber("Color B", rawColor.blue);

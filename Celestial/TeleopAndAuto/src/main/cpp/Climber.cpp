@@ -100,7 +100,6 @@ void Climber::OpenRatchetIfExtending (double powerPort, double powerStar) {
 }
 
 void Climber::ManualClimber(frc::Joystick *copilot, bool slowspeed){
-  bool TODO_Add_Dashboard_Displays = false;
   double powerPort = 0.0;
   double powerStar = 0.0;
 

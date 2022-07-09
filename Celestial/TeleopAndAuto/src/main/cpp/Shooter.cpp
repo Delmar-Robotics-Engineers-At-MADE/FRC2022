@@ -140,7 +140,6 @@ bool Shooter::ReadyShooter(bool hightTarget) {
       result = true; // up to speed, so ok to feed;
     }
   }
-  bool TODO_Speed_for_Low_Target = false;
   return result;
 }
 
@@ -317,7 +316,6 @@ void Shooter::BlindShot(frc::Joystick *copilot) {
   }
 #endif
 
-  bool dontCare = false;
   switch (mBlindShotState) {
     default:
     case kBSSBegin:
@@ -329,7 +327,7 @@ void Shooter::BlindShot(frc::Joystick *copilot) {
       // FixedSpeedForAuto();
       // FixedElevationForAuto();
       // leave elevator in place, and set shooter speed according to dashboard
-      dontCare = ReadyShooter(false);
+      ReadyShooter(false);  // don't wait for this to be true
       if (mBlindShotTimer.Get() > kBlindShotReadyTime) {
         mBlindShotState = kBSSShooting;
       }

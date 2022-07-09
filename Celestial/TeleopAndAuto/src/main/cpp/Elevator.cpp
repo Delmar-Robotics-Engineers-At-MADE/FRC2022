@@ -105,7 +105,6 @@ bool Elevator::Elevate (bool hightTarget, double distance) {
   } else { // low target
     // for now, allow manual position
   }
-  bool TODO_Low_Target_Elevation = false;
   return result;
 }
 

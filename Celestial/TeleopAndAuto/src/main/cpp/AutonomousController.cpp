@@ -67,7 +67,6 @@ void AutonomousController::AutonomousInit() {
 
 
 void AutonomousController::DriveOnly() {
-  bool drivingDone = false;
   switch (mDOSAutoState) {
     default:
     case kDOSBegin:
@@ -92,8 +91,6 @@ void AutonomousController::DriveOnly() {
 }
 
 void AutonomousController::DriveAndShoot() {
-  bool drivingDone = false;
-  bool dontCare = false;
   switch (mDASAutoState) {
     default:
     case kDASBegin:
@@ -114,7 +111,7 @@ void AutonomousController::DriveAndShoot() {
     case kDASReadying:
       mDrive->StopMotor();
       mShooter->FixedSpeedForAuto();
-      dontCare = mShooter->FixedElevationForAuto();
+      mShooter->FixedElevationForAuto(); // don't wait for this to be true
       // mShooter->CheckLimelight();
       // mShooter->Shoot(true, kDriveOnTarget);
       if (mTimer.Get() > kAutoShootTime) {
