@@ -56,6 +56,8 @@ public:
   void Rotate180ForSummer();
 
   void RobotInit(Shooter *shooter, Intake *intake,
+                rev::CANSparkMax *fl, rev::CANSparkMax *rl, 
+                rev::CANSparkMax *fr, rev::CANSparkMax *rr, 
                 rev::SparkMaxPIDController *pidFL, rev::SparkMaxPIDController *pidRL, 
                 rev::SparkMaxPIDController *pidFR, rev::SparkMaxPIDController *pidRR,
                 rev::SparkMaxRelativeEncoder *mEncoderFL, rev::SparkMaxRelativeEncoder *mEncodeRL,
@@ -83,6 +85,16 @@ private:
   frc::TrapezoidProfile<units::feet> *mProfile;
   frc::Timer mTimer;  
 
+  rev::CANSparkMax *mFrontLeft;
+  rev::CANSparkMax *mRearLeft;
+  rev::CANSparkMax *mFrontRight;
+  rev::CANSparkMax *mRearRight;
+
+  rev::SparkMaxPIDController *mPIDFrontLeft ;
+  rev::SparkMaxPIDController *mPIDRearLeft  ;
+  rev::SparkMaxPIDController *mPIDFrontRight;
+  rev::SparkMaxPIDController *mPIDRearRight ;
+  
   SummerDemoDriveStates mDemoDriveState = kSDDUnknownState;
 
   // for converting SysID numbers to PID numbers

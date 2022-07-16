@@ -31,16 +31,22 @@ const static double kSysIdkP = 2.7382E-07;
 const static double kSysIdkD = 0;
 
 // followed this ref for calculating PID numbers from SysID numbers: https://www.chiefdelphi.com/t/how-to-do-characterization-for-velocity-control-for-spark-max-and-neo/378990/6
-const static double kPtunedDrive = 0.0001; // kSysIdkP / (12.0 * 60); // this is a very small number!
-const static double kItunedDrive = 0.0; 
+// SysID gives: kSysIdkP / (12.0 * 60); // this is a very small number!
+
+// Try this reference instead: https://github.com/REVrobotics/SPARK-MAX-Examples/blob/master/C%2B%2B/Velocity%20PID%20Control/src/main/cpp/Robot.cpp
+
+const static double kPtunedDrive = .00001; 
+const static double kItunedDrive = 0.0;
 const static double kDtunedDrive = 0.0;
 const static double kIZtunedDrive = 0.0;
-const static double kFFtunedDrive =  0.001;
+const static double kFFtunedDrive =  0.001; 
 const static double kMaxOutputDrive = 1.0;
 const static double kMinOutputDrive = -1.0;
-const auto maxRPS = 5700_tr / 1_s; // 5700 RPM; see Frisbeebot example for SimpleMotorFeedforward
-const auto maxVoltage = 12_V;
-const auto averageSetpointRPS = 1800_tr / 1_s; // 1800 RPM
+const double kMaxRPM = 5700;
+// const auto maxRPS = 5700_tr / 1_s; // 5700 RPM; see Frisbeebot example for SimpleMotorFeedforward
+// const auto maxRPSPS = 10000_tr / 1_s / 1_s; // 0 to 10000 RPM in 1 sec
+// const auto maxVoltage = 12_V;
+// const auto averageSetpointRPS = 1800_tr / 1_s; // 1800 RPM
 
 const static double kSlowSpeedMultiplier = 0.3;
 const static double kAutoSpeedMultiplier = 0.2;
@@ -153,6 +159,10 @@ void DriveSystem::MyDriveCartesian(double ySpeed, double xSpeed, double zRotatio
   ySpeed = ApplyDeadband(ySpeed, m_deadband);
   xSpeed = ApplyDeadband(xSpeed, m_deadband);
   auto [frontLeft, frontRight, rearLeft, rearRight] = DriveCartesianIK(ySpeed, xSpeed, zRotation, gyroAngle);
+  mPIDFrontLeft->SetReference(frontLeft*kMaxRPM, rev::ControlType::kVelocity); // velocity in RPM
+  mPIDFrontRight->SetReference(frontRight*kMaxRPM, rev::ControlType::kVelocity); // velocity in RPM
+  mPIDRearLeft->SetReference(rearLeft*kMaxRPM, rev::ControlType::kVelocity); // velocity in RPM
+  mPIDRearLeft->SetReference(rearRight*kMaxRPM, rev::ControlType::kVelocity); // velocity in RPM
   Feed();
 }
 
@@ -226,15 +236,18 @@ void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
 
 void DriveSystem::SetPIDValues (rev::SparkMaxPIDController *pidController) {
   // ref for calculating using SysID numbers: https://www.chiefdelphi.com/t/how-to-do-characterization-for-velocity-control-for-spark-max-and-neo/378990/6
-  // also Frisbeebot
-  // auto feedForward =  mFeedForwardCalculator.Calculate(averageSetpointRPS, maxRPS);
+  // According to Frisbeebot, mFeedForwardCalculator.Calculate returns volts
+  // auto feedForward =  mFeedForwardCalculator.Calculate(averageSetpointRPS, maxRPS)
   //     / (maxVoltage * maxRPS);
-  auto feedForward =  0.0;
+  // auto feedForward =  0.0;
+  // auto feedForwardV = mFeedForwardCalculator.Calculate(averageSetpointRPS, maxRPSPS);
+  // auto feedForward = feedForwardV * maxRPS / maxVoltage;
+  // std::cout << "setting Spark Max FF: " << feedForward.value() << std::endl;
   pidController->SetP     (kPtunedDrive );
   pidController->SetI     (kItunedDrive );
   pidController->SetD     (kDtunedDrive );
   pidController->SetIZone (kIZtunedDrive);
-  pidController->SetFF    (feedForward);  // was kFFtunedDrive
+  pidController->SetFF    (kFFtunedDrive);  // takes a gain, which is unitless, was feedForward.value()
   pidController->SetOutputRange(kMinOutputDrive, kMaxOutputDrive);
 }
 
@@ -252,6 +265,8 @@ void SetEncoderConversion (rev::SparkMaxRelativeEncoder *encoder) {
 }
 
 void DriveSystem::RobotInit(Shooter *shooter, Intake *intake,
+                rev::CANSparkMax *fl, rev::CANSparkMax *rl, 
+                rev::CANSparkMax *fr, rev::CANSparkMax *rr,
                 rev::SparkMaxPIDController *pidFL, rev::SparkMaxPIDController *pidRL, 
                 rev::SparkMaxPIDController *pidFR, rev::SparkMaxPIDController *pidRR,
                 rev::SparkMaxRelativeEncoder *encoderFL, rev::SparkMaxRelativeEncoder *encoderRL,
@@ -259,6 +274,23 @@ void DriveSystem::RobotInit(Shooter *shooter, Intake *intake,
 
   mShooter = shooter;
   mIntake = intake; // for summer
+
+  // even though we are a subclass of MecanumDrive, the motors are private, so we need
+  // our own additional handles to them
+  mFrontLeft  = fl;
+  mRearLeft   = rl;
+  mFrontRight = fr;
+  mRearRight  = rr;
+
+  mFrontLeft ->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+  mRearLeft  ->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+  mFrontRight->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+  mRearRight ->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+
+  mPIDFrontLeft  = pidFL;
+  mPIDRearLeft   = pidRL;
+  mPIDFrontRight = pidFR;
+  mPIDRearRight  = pidRR;
 
   // PID for limelight
   mPIDControllerLimelight = new frc2::PIDController (kPtunedLimelight, kItunedLimelight, kDtunedLimelight);
@@ -389,7 +421,7 @@ void DriveSystem::DriveSlowForSummer(double x, double y) {
   rotateRate = std::min(kDefaultRotateToTargetRate, rotateRate);
   rotateRate = std::max(-kDefaultRotateToTargetRate, rotateRate);
 
-  DriveCartesian(-y*kDemoSpeedMultY, x*kDemoSpeedMultX, -rotateRate, currHeading);
+  MyDriveCartesian(-y*kDemoSpeedMultY, x*kDemoSpeedMultX, -rotateRate, currHeading);
 }
 
 void DriveSystem::Rotate180ForSummer() {

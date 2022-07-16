@@ -18,13 +18,10 @@ void Robot::RobotInit() {
   mIntake.RobotInit();
   mFeeder.RobotInit();
 
-  mRobotDrive.RobotInit(mShooter, &mIntake, &mPIDFrontLeft, &mPIDRearLeft, &mPIDFrontRight, &mPIDRearRight,
+  mRobotDrive.RobotInit(mShooter, &mIntake, 
+                    &mFrontLeft, &mRearLeft, &mFrontRight, &mRearRight,
+                    &mPIDFrontLeft, &mPIDRearLeft, &mPIDFrontRight, &mPIDRearRight,
                     &mEncoderFrontLeft, &mEncoderRearLeft, &mEncoderFrontRight, &mEncoderRearRight);
-
-  mFrontLeft .SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
-  mRearLeft  .SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
-  mFrontRight.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
-  mRearRight .SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
 
   mAutoController = new AutonomousController(&mRobotDrive, mShooter, &mFeeder);
 
