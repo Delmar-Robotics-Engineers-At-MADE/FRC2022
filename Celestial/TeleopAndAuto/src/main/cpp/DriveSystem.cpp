@@ -9,7 +9,7 @@
 
 #define SUMMER
 
-const static double kPtunedGyro = 0.01;
+const static double kPtunedGyro = 0.005;
 const static double kItunedGyro = 0.0;
 const static double kDtunedGyro = 0.0;
 
@@ -18,7 +18,7 @@ const static double kItunedLimelight = 0.0;
 const static double kDtunedLimelight = 0.0;
 const static double kPIDToleranceLimeLight = 3.0;
 
-const static double kPtunedRaspPi= 1;
+const static double kPtunedRaspPi= 0.1;
 const static double kItunedRaspPi = 0.0;
 const static double kDtunedRaspPi = 0.0;
 const static double kPIDToleranceRaspPi = 0.05;
@@ -48,15 +48,15 @@ const double kMaxRPM = 5700;
 // const auto maxVoltage = 12_V;
 // const auto averageSetpointRPS = 1800_tr / 1_s; // 1800 RPM
 
-const static double kSlowSpeedMultiplier = 0.3;
-const static double kAutoSpeedMultiplier = 0.2;
-const static double kNormalSpeedMultiplier = 0.9;
-const static double kNormalYawMultiplier = 0.5;
-const static double kDemoYawMultiplier = 0.25;
-const static double kDemoSpeedMultX = 0.25;
-const static double kDemoSpeedMultY = 0.13;
+const static double kSlowSpeedMultiplier = 0.1;
+const static double kAutoSpeedMultiplier = 0.1;
+const static double kNormalSpeedMultiplier = 0.1;
+const static double kNormalYawMultiplier = 0.1;
+//const static double kDemoYawMultiplier = 0.25;
+const static double kDemoSpeedMultX = 0.1;
+const static double kDemoSpeedMultY = 0.05;
 
-const static double kDefaultRotateToTargetRate = 0.2;
+const static double kDefaultRotateToTargetRate = 0.03;
 
 // constructor
 DriveSystem::DriveSystem(frc::SpeedController& frontLeftMotor, frc::SpeedController& rearLeftMotor,
@@ -110,7 +110,7 @@ void DriveSystem::RotateToTarget (frc::Joystick *pilot, frc::Joystick *copilot) 
       }
       break;
   }
-  DriveCartesian(0, 0, rotateRate);
+  MyDriveCartesian(0, 0, rotateRate, 0);
 }
 
 void DriveSystem::RotateToBall(RaspPi *rPi) {
@@ -142,7 +142,7 @@ void DriveSystem::RotateToBall(RaspPi *rPi) {
       break;
   }
   // frc::SmartDashboard::PutNumber("Rotate", rotateRate);
-  DriveCartesian(0, 0, rotateRate);
+  MyDriveCartesian(0, 0, rotateRate, 0);
 }
 
 void DriveSystem::DriveSlowAndSnapForHanging (frc::Joystick *pilot){
@@ -162,7 +162,7 @@ void DriveSystem::MyDriveCartesian(double ySpeed, double xSpeed, double zRotatio
   mPIDFrontLeft->SetReference(frontLeft*kMaxRPM, rev::ControlType::kVelocity); // velocity in RPM
   mPIDFrontRight->SetReference(frontRight*kMaxRPM, rev::ControlType::kVelocity); // velocity in RPM
   mPIDRearLeft->SetReference(rearLeft*kMaxRPM, rev::ControlType::kVelocity); // velocity in RPM
-  mPIDRearLeft->SetReference(rearRight*kMaxRPM, rev::ControlType::kVelocity); // velocity in RPM
+  mPIDRearRight->SetReference(rearRight*kMaxRPM, rev::ControlType::kVelocity); // velocity in RPM
   Feed();
 }
 
@@ -198,7 +198,7 @@ void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, R
       double z = pilot->GetZ();
       bool overrideSummerSafeBox = pilot->GetRawButton(4);
       if (overrideSummerSafeBox) {
-        DriveCartesian(-y*kNormalSpeedMultiplier, x*kNormalSpeedMultiplier, -z*kNormalYawMultiplier, mAHRS->GetAngle());
+        MyDriveCartesian(-y*kNormalSpeedMultiplier, x*kNormalSpeedMultiplier, -z*kNormalYawMultiplier, mAHRS->GetAngle());
       } else { // summer demo
         DriveSlowForSummer(x, y);
       }
@@ -287,6 +287,8 @@ void DriveSystem::RobotInit(Shooter *shooter, Intake *intake,
   mFrontRight->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
   mRearRight ->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
 
+  //m_deadband = 0.07; // default is 0.02;
+
   mPIDFrontLeft  = pidFL;
   mPIDRearLeft   = pidRL;
   mPIDFrontRight = pidFR;
@@ -350,11 +352,11 @@ void DriveSystem::RepeatableInit() {
 void DriveSystem::RobotPeriodic() {
   // for debugging
   frc::SmartDashboard::PutNumber("Heading", mAHRS->GetAngle());
-  // rev::ColorSensorV3::RawColor rawColor = mColorSensor.GetRawColor();
-  // frc::SmartDashboard::PutNumber("Color R", rawColor.red);
-  // frc::SmartDashboard::PutNumber("Color G", rawColor.green);
-  // frc::SmartDashboard::PutNumber("Color B", rawColor.blue);
-  // frc::SmartDashboard::PutNumber("Color IR", rawColor.ir);
+  rev::ColorSensorV3::RawColor rawColor = mColorSensor.GetRawColor();
+  frc::SmartDashboard::PutNumber("Color R", rawColor.red);
+  frc::SmartDashboard::PutNumber("Color G", rawColor.green);
+  frc::SmartDashboard::PutNumber("Color B", rawColor.blue);
+  frc::SmartDashboard::PutNumber("Color IR", rawColor.ir);
 }
 
 void DriveSystem::DriveTrapezoid() {
@@ -365,7 +367,7 @@ void DriveSystem::DriveSlowForAuto(double x, double y) {
   double currHeading = mAHRS->GetAngle();
   double rotateRate = mPIDControllerGyro->Calculate(currHeading + 180.0);  // offset by 180 to avoid discontinuity
   // DriveCartesian(y*kSlowSpeedMultiplier, -x*kSlowSpeedMultiplier, -rotateRate, currHeading);
-  DriveCartesian(-y*kAutoSpeedMultiplier, x*kAutoSpeedMultiplier*2, -rotateRate, currHeading);
+  MyDriveCartesian(-y*kAutoSpeedMultiplier, x*kAutoSpeedMultiplier*2, -rotateRate, currHeading);
 }
 
 void DriveSystem::CheckColorForAllClear(bool isWhite, bool isRed, bool isBlue) {
@@ -378,9 +380,9 @@ void DriveSystem::DriveSlowForSummer(double x, double y) {
 
   // check for boundary lines for summer demo
   rev::ColorSensorV3::RawColor rawColor = mColorSensor.GetRawColor();
-  bool isWhite = rawColor.blue > 1500 && rawColor.red > 1500;
-  bool isRed = rawColor.blue < 1000 && rawColor.red > 1500;
-  bool isBlue = rawColor.blue > 1500 && rawColor.red < 1000;
+  bool isWhite = rawColor.blue > 1400 && rawColor.red > 1400;
+  bool isRed = rawColor.blue < 1000 && rawColor.red > 1400;
+  bool isBlue = rawColor.blue > 1400 && rawColor.red < 1000;
 
   switch (mDemoDriveState) {
     default:
@@ -417,6 +419,7 @@ void DriveSystem::DriveSlowForSummer(double x, double y) {
   double currHeading = mAHRS->GetAngle();
   double rotateRate = mPIDControllerGyro->Calculate(currHeading + 180.0);  // offset by 180 to avoid discontinuity
 
+
   // clip rate to max rotation
   rotateRate = std::min(kDefaultRotateToTargetRate, rotateRate);
   rotateRate = std::max(-kDefaultRotateToTargetRate, rotateRate);
@@ -430,5 +433,5 @@ void DriveSystem::Rotate180ForSummer() {
   // clip rate to max rotation to keep ball from flying out
   rotateRate = std::min(kDefaultRotateToTargetRate, rotateRate);
   rotateRate = std::max(-kDefaultRotateToTargetRate, rotateRate);
-  DriveCartesian(0, 0, -rotateRate, currHeading);
+  MyDriveCartesian(0, 0, -rotateRate, currHeading);
 }
