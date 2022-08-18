@@ -13,7 +13,7 @@ const static double kPtunedGyro = 0.005;
 const static double kItunedGyro = 0.0;
 const static double kDtunedGyro = 0.0;
 
-const static double kPtunedLimelight= 0.02;
+const static double kPtunedLimelight= 0.005;
 const static double kItunedLimelight = 0.0;
 const static double kDtunedLimelight = 0.0;
 const static double kPIDToleranceLimeLight = 3.0;
@@ -56,7 +56,7 @@ const static double kNormalYawMultiplier = 0.1;
 const static double kDemoSpeedMultX = 0.1;
 const static double kDemoSpeedMultY = 0.05;
 
-const static double kDefaultRotateToTargetRate = 0.03;
+const static double kDefaultRotateToTargetRate = 0.04;
 
 // constructor
 DriveSystem::DriveSystem(frc::SpeedController& frontLeftMotor, frc::SpeedController& rearLeftMotor,
