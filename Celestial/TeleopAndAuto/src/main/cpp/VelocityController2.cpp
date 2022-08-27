@@ -68,7 +68,7 @@ void VelocityController2::TrackBall (PixyBallTracker *tracker) {
   mRobotDrive->DriveCartesian(0, 0, rotateSpeed);
 }
 
-void VelocityController2::TelopPeriodic (frc::Joystick *pilot){
+void VelocityController2::TeleopPeriodic (frc::Joystick *pilot){
     mRobotDrive->DriveCartesian(pilot->GetY(), -pilot->GetX(), -pilot->GetZ(), mAHRS->GetAngle());
 }
 

@@ -55,7 +55,7 @@ void Elevator::DoOnceInit() {
   frc::SmartDashboard::PutNumber("Elevator Homed", mHomed);
 }
 
-void Elevator::TelopPeriodic (frc::Joystick *copilot) {
+void Elevator::TeleopPeriodic (frc::Joystick *copilot) {
   CheckHomePosition();
   if (mHomed && copilot->GetRawButton(4)) { // shooting at high goal
     // Elevate method is called from Shoot in Shooter, so do nothing here except check bump factor

@@ -2,7 +2,7 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/DriverStation.h>
 
-#define SUMMER
+// #define SUMMER
 
 const double kP = 0.012;
 const double kI = 0.0;
@@ -59,11 +59,15 @@ void Robot::TeleopInit() {
 
 void Robot::TeleopPeriodic() {
 
-  mClimber.TelopPeriodic(&mCopilot);
-  mShooter->TelopPeriodic(&mPilot, &mCopilot, mRobotDrive.mTargetingState);
-  mRobotDrive.TelopPeriodic(&mPilot, &mCopilot, &mRaspPi);
+  mClimber.TeleopPeriodic(&mCopilot);
+  mShooter->TeleopPeriodic(&mPilot, &mCopilot, mRobotDrive.mTargetingState);
+#ifdef SUMMER  
+  mRobotDrive.TeleopPeriodic(&mPilot, &mCopilot, &mRaspPi);
+#else  
+  mRobotDrive.TeleopPeriodic(&mPilot, &mCopilot);
+#endif
   mIntake.TeleopPeriodic(&mPilot, mFeeder.CargoAvailable(), &mRaspPi);
-  mFeeder.TelopPeriodic(&mIntake);
+  mFeeder.TeleopPeriodic(&mIntake);
 
 }
 

@@ -7,7 +7,7 @@
 #include <frc/MathUtil.h>
 #include <units/voltage.h>
 
-#define SUMMER
+// #define SUMMER
 
 const static double kPtunedGyro = 0.005;
 const static double kItunedGyro = 0.0;
@@ -57,6 +57,7 @@ const static double kDemoSpeedMultX = 0.1;
 const static double kDemoSpeedMultY = 0.05;
 
 const static double kDefaultRotateToTargetRate = 0.04;
+const static double kRotationDeadZone = 0.1;
 
 // constructor
 DriveSystem::DriveSystem(frc::SpeedController& frontLeftMotor, frc::SpeedController& rearLeftMotor,
@@ -169,7 +170,7 @@ void DriveSystem::MyDriveCartesian(double ySpeed, double xSpeed, double zRotatio
 
 #ifdef SUMMER
 
-void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, RaspPi *rPi){
+void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, RaspPi *rPi){
   bool shooting = (copilot->GetRawButton(4) || copilot->GetRawButton(2));
 
   // monitor intake's summer demo mode
@@ -208,7 +209,7 @@ void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, R
 
 #else
 
-void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
+void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
   bool shooting = (copilot->GetRawButton(4) || copilot->GetRawButton(2));
   // std::cout << "driving" << std::endl;
   if (shooting) {
@@ -219,15 +220,30 @@ void DriveSystem::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
     double x = pilot->GetX();
     double y = pilot->GetY();
     double z = pilot->GetZ();
+    bool driveSlowly = pilot->GetRawButton(5) || pilot->GetRawButton(6);
+
+    // use rotation to keep robot at constant angle, unless driver is trying to spin
+    double currHeading = mAHRS->GetAngle();
+    double rotateRate = 0.0;
+    if (abs(z) > kRotationDeadZone) { // driver is rotating
+      rotateRate = driveSlowly ? -z*kSlowSpeedMultiplier : -z*kNormalYawMultiplier;
+      mPIDControllerGyro->SetSetpoint(currHeading + 180.0); // update lock heading
+    } else { // driver not rotating, so keep robot on lock heading
+      double rotateRate = mPIDControllerGyro->Calculate(currHeading + 180.0);  // offset by 180 to avoid discontinuity
+      // clip rate to max rotation
+      rotateRate = std::min(kDefaultRotateToTargetRate, rotateRate);
+      rotateRate = std::max(-kDefaultRotateToTargetRate, rotateRate);
+    }
+
     if (pilot->GetRawButton(6) && pilot->GetRawButton(4)) {
       mAHRS->ZeroYaw();   // use current robot orientation as field forward
-    } else if (pilot->GetRawButton(5) || pilot->GetRawButton(6)) { // drive slowly
-      DriveCartesian(y*kSlowSpeedMultiplier, -x*kSlowSpeedMultiplier, -z*kSlowSpeedMultiplier, mAHRS->GetAngle());
-    } else if (pilot->GetRawButton(2)) { // drive slowly and snap to hanging line
-      DriveSlowAndSnapForHanging (pilot);
+    } else if (driveSlowly) { // drive slowly
+      MyDriveCartesian(y*kSlowSpeedMultiplier, -x*kSlowSpeedMultiplier, rotateRate, mAHRS->GetAngle());
+    // } else if (pilot->GetRawButton(2)) { // drive slowly and snap to hanging line
+    //   DriveSlowAndSnapForHanging (pilot);
     } else {
       // std::cout << "normal: " << y << ", " << x << std::endl;
-      DriveCartesian(y*kDemoSpeedMultY, -x*kDemoSpeedMultX, -z*kDemoYawMultiplier, mAHRS->GetAngle());
+      MyDriveCartesian(y*kNormalSpeedMultiplier, -x*kNormalSpeedMultiplier, rotateRate, mAHRS->GetAngle());
     }
   }
 }

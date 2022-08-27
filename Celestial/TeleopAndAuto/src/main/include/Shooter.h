@@ -83,7 +83,7 @@ public:
   double mSpeedMultiplier = 1.0;
 
   Shooter (); // constructor
-  void TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, DriveSysTargetingState driveState);
+  void TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, DriveSysTargetingState driveState);
   void RobotInit(Feeder *feeder, Intake *index);
   void RepeatableInit();
   void TeleopInit();

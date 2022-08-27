@@ -168,7 +168,7 @@ void Climber::TeleopInit(){
   mEndgameTimer.Start();
 }
 
-void Climber::TelopPeriodic (frc::Joystick *copilot){
+void Climber::TeleopPeriodic (frc::Joystick *copilot){
 
   bool bluebuttnoPressed = copilot->GetRawButton(1);
   int povPad = copilot->GetPOV();

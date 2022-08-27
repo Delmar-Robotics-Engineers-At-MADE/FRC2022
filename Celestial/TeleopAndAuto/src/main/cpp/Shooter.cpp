@@ -5,7 +5,7 @@
 #include <DriveSystem.h>
 #include <iostream>
 
-#define SUMMER
+// #define SUMMER
 
 static const double kMinTargetAreaPercent = 0.0;
 static const double kRollerIdleSpeed = 0.0;  // was 2300 for 2022 competition
@@ -194,7 +194,7 @@ void Shooter::Idle(){
 }
 
 
-void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, DriveSysTargetingState driveState){
+void Shooter::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, DriveSysTargetingState driveState){
   mPhi = frc::SmartDashboard::GetNumber("Phi", mPhi); // angle of limelight from vertical
   mH2 = frc::SmartDashboard::GetNumber("H2", mH2); // height of target above limelight
   bool shootAtHighGoal = copilot->GetRawButton(4);
@@ -234,7 +234,7 @@ void Shooter::TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, Drive
   // mPortShooter.Set(ControlMode::Velocity, mMotorOutVelocity);
 
   // we own the elevator, so run it
-  mElevator.TelopPeriodic(copilot);
+  mElevator.TeleopPeriodic(copilot);
 }
 
 void Shooter::RobotInit(Feeder *feeder, Intake *intake) {

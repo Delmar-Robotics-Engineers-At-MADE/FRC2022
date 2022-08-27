@@ -16,7 +16,7 @@ enum RatchetState {
 
 class Climber {
 public:
-  void TelopPeriodic (frc::Joystick *copilot);
+  void TeleopPeriodic (frc::Joystick *copilot);
   void RobotInit();
   void DoOnceInit();
   void RepeatableInit();

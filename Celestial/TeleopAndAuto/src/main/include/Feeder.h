@@ -21,7 +21,7 @@ public:
   void FeedCargo();
   void StopFeedingCargo();
   void ManualFeed (frc::Joystick *pilot);
-  void TelopPeriodic (Intake *intake);
+  void TeleopPeriodic (Intake *intake);
   void RobotInit();
 
 };

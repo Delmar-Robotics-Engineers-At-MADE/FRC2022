@@ -37,13 +37,16 @@ public:
 
   DriveSysTargetingState mTargetingState = kDriveUnknownState;
 
-  void TeleopPeriodic (frc::Joystick *copilot);
   DriveSystem(frc::SpeedController& frontLeftMotor, frc::SpeedController& rearLeftMotor,
               frc::SpeedController& frontRightMotor, frc::SpeedController& rearRightMotor);
 
   // ~DriveSystem() override = default;
 
-  void TelopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, RaspPi *rPi);
+#ifdef SUMMER
+  void TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, RaspPi *rPi);
+#else
+  void TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot);
+#endif
   void DoOnceInit();
   void RepeatableInit();
   void RobotPeriodic();

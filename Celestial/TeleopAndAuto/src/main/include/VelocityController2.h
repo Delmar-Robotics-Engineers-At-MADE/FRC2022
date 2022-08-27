@@ -33,7 +33,7 @@ public:
   void StopDriving();
   bool TurnRight (double degrees);
   bool TurnStraight ();
-  void TelopPeriodic (frc::Joystick *pilot);
+  void TeleopPeriodic (frc::Joystick *pilot);
   void TrackBall (PixyBallTracker *tracker);
 };
 

@@ -3,7 +3,7 @@
 #include <RaspPi.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 
-#define SUMMER
+// #define SUMMER
 
 static const double kIntakeSpeed = -14000; // before encoder was 0.6;
 

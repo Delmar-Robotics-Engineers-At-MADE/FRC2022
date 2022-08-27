@@ -8,7 +8,7 @@
 
 class Elevator {
 public:
-  void TelopPeriodic (frc::Joystick *copilot);
+  void TeleopPeriodic (frc::Joystick *copilot);
   void DoOnceInit();
   void RobotInit();
   void RobotPeriodic();

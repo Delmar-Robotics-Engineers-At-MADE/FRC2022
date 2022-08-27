@@ -2,7 +2,7 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <Constants.h>
 
-#define SUMMER
+// #define SUMMER
 
 static const double kFeederSpeed = 0.9;
 
@@ -39,7 +39,7 @@ void Feeder::DemoReturnBall(Intake *intake) {
   }
 }
 
-void Feeder::TelopPeriodic (Intake *intake){
+void Feeder::TeleopPeriodic (Intake *intake){
   frc::SmartDashboard::PutBoolean("Cargo Present", CargoAvailable());
 
 #ifdef SUMMER

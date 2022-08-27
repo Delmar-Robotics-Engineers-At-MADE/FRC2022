@@ -1,7 +1,7 @@
 #include <AutonomousController.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <iostream>
-#define SUMMER
+// #define SUMMER
 
 constexpr units::time::second_t kAutoDriveTime = 2.0_s; // seconds
 constexpr units::time::second_t kAutoShootTime = 5.0_s; // seconds
