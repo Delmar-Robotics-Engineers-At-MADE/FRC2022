@@ -6,6 +6,8 @@
 static const double kEncoderLimitTop = 300.0;
 static const double kEncoderLimitBottom = 20.0;
 static const double kElevationForAuto = 55.75;
+static const double kElevationShortRange = 20.0;
+static const double kElevationLongRange = 55.75;
 
 const static double kPtuned = 0.1;
 const static double kItuned = 0.0;
@@ -92,19 +94,30 @@ double Elevator::CalcHighTargetElevation(double d){
   return result;
 }
 
-bool Elevator::Elevate (bool hightTarget, double distance) {
+bool Elevator::Elevate (ElevationOption option) {
   bool result = false;
-  if (mHomed && hightTarget) {
-    double target = CalcHighTargetElevation(distance);
-    double position = -mEncoder.GetDistance(); // invert encoder, as in ManualElevate
-    mPIDController->SetSetpoint(target);
-    double speed = mPIDController->Calculate(position);  
-    if (target > kEncoderLimitTop || target < kEncoderLimitBottom) {std::cout << "elevator target beyond limit"<< std::endl;}
-    else {mMotor.Set(speed);}
-    result = mPIDController->AtSetpoint();
-  } else { // low target
-    // for now, allow manual position
+  double automaticTarget = kElevationLongRange;
+  switch (option) {
+  case kEOShortRange:
+    automaticTarget = kElevationShortRange;
+    // fall through
+  case kEOLongRange:
+    if (mHomed) {
+      // double target = CalcHighTargetElevation(distance);
+      double position = -mEncoder.GetDistance(); // invert encoder, as in ManualElevate
+      mPIDController->SetSetpoint(automaticTarget);
+      double speed = mPIDController->Calculate(position);  
+      // if (target > kEncoderLimitTop || target < kEncoderLimitBottom) {std::cout << "elevator target beyond limit"<< std::endl;}
+      mMotor.Set(speed);
+      result = mPIDController->AtSetpoint();
+    }
+    break;
+  case kEOManual:
+  default:
+    // allow manual position via teleopPeriodic
+    result = true;
   }
+  frc::SmartDashboard::PutBoolean("Elevator Ready", result);
   return result;
 }
 

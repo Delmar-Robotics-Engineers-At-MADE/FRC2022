@@ -30,8 +30,6 @@ enum BlindShotState {
 		kBSSCompleted
 	};
 
-
-
 class Shooter {
 private:
 
@@ -55,7 +53,7 @@ private:
 
   double mMotorOutVelocity = 0.0; // for collecting data for targeting
 
-  bool ReadyShooter(bool hightTarget);
+  bool ReadyShooter(ElevationOption option);
   double CalcHighTargetSpeed(double d);
 
   double mAutoShootSpeed= kShooterSpeedForAuto;
@@ -89,7 +87,7 @@ public:
   void TeleopInit();
   void RobotPeriodic();
   void FeedCargo();
-  void Shoot (bool highTarget, DriveSysTargetingState driveState);
+  void Shoot (ElevationOption option, DriveSysTargetingState driveState);
   void Idle();
   void CheckLimelight();
   void TurnLightOnOrOff (bool turnOn);

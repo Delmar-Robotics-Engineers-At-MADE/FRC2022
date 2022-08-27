@@ -46,6 +46,8 @@ public:
   void TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, RaspPi *rPi);
 #else
   void TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot);
+  void DriveSlowForSummer(double x, double y);
+  void Rotate180ForSummer();
 #endif
   void DoOnceInit();
   void RepeatableInit();
@@ -55,8 +57,6 @@ public:
   void DriveTrapezoid();
   void DriveSlowForAuto(double x, double y);
   void DriveSlowAndSnapForHanging (frc::Joystick *pilot);
-  void DriveSlowForSummer(double x, double y);
-  void Rotate180ForSummer();
 
   void RobotInit(Shooter *shooter, Intake *intake,
                 rev::CANSparkMax *fl, rev::CANSparkMax *rl, 
@@ -77,7 +77,7 @@ private:
   Intake *mIntake;
 
   static constexpr auto i2cPort = frc::I2C::Port::kOnboard;
-  rev::ColorSensorV3 mColorSensor{i2cPort};
+  // rev::ColorSensorV3 mColorSensor{i2cPort};
   frc2::PIDController *mPIDControllerLimelight; // for orienting robot with limelight
   frc2::PIDController *mPIDControllerRaspPi; // for orienting robot with limelight
   frc2::PIDController *mPIDControllerGyro; // for orienting robot with gyro

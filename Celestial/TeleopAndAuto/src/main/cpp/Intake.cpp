@@ -39,7 +39,7 @@ void Intake::TeleopPeriodic (frc::Joystick *pilot, bool ballAtFeeder, RaspPi *rP
   }
 
 #else
-  bool deploy = pilot->GetRawButton(8) || pilot->GetRawButton(7);
+  bool deploy = pilot->GetRawButton(1); // for logitech was: pilot->GetRawButton(8) || pilot->GetRawButton(7);
   if (deploy) {
     // mSolenoid.Set(frc::DoubleSolenoid::kReverse);
     // mRoller.Set(kIntakeSpeed);
@@ -93,7 +93,7 @@ void Intake::Deploy() {
   // frc::SmartDashboard::PutNumber("Intake Power", power);
   // frc::SmartDashboard::PutNumber("Intake Error1", mPIDController->GetPositionError());
   // frc::SmartDashboard::PutNumber("Intake Error2", mPIDController->GetVelocityError());
-  frc::SmartDashboard::PutBoolean("Intake Maxed", abs(power) >= 1.0);
+  // frc::SmartDashboard::PutBoolean("Intake Maxed", abs(power) >= 1.0);
 }
 
 void Intake::Retract() {

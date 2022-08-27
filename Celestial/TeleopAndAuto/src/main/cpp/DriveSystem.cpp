@@ -165,6 +165,10 @@ void DriveSystem::MyDriveCartesian(double ySpeed, double xSpeed, double zRotatio
   mPIDRearLeft->SetReference(rearLeft*kMaxRPM, rev::ControlType::kVelocity); // velocity in RPM
   mPIDRearRight->SetReference(rearRight*kMaxRPM, rev::ControlType::kVelocity); // velocity in RPM
   Feed();
+  // frc::SmartDashboard::PutNumber("FL", frontLeft*kMaxRPM);
+  // frc::SmartDashboard::PutNumber("FR", frontRight*kMaxRPM);
+  // frc::SmartDashboard::PutNumber("RL", rearLeft*kMaxRPM);
+  // frc::SmartDashboard::PutNumber("RR", rearRight*kMaxRPM);
 }
 
 
@@ -219,23 +223,26 @@ void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
     mTargetingState = kDriveNotTargeting;
     double x = pilot->GetX();
     double y = pilot->GetY();
-    double z = pilot->GetZ();
+    double z = pilot->GetRawAxis(3);  // with Logitech use: GetZ();
     bool driveSlowly = pilot->GetRawButton(5) || pilot->GetRawButton(6);
 
     // use rotation to keep robot at constant angle, unless driver is trying to spin
     double currHeading = mAHRS->GetAngle();
     double rotateRate = 0.0;
     if (abs(z) > kRotationDeadZone) { // driver is rotating
+      // std::cout << "driver rotating" << std::endl;
       rotateRate = driveSlowly ? -z*kSlowSpeedMultiplier : -z*kNormalYawMultiplier;
       mPIDControllerGyro->SetSetpoint(currHeading + 180.0); // update lock heading
     } else { // driver not rotating, so keep robot on lock heading
+      // std::cout << "driver NOT rotating" << std::endl;
       double rotateRate = mPIDControllerGyro->Calculate(currHeading + 180.0);  // offset by 180 to avoid discontinuity
       // clip rate to max rotation
       rotateRate = std::min(kDefaultRotateToTargetRate, rotateRate);
       rotateRate = std::max(-kDefaultRotateToTargetRate, rotateRate);
     }
+    frc::SmartDashboard::PutNumber("Lock Heading", mPIDControllerGyro->GetSetpoint());
 
-    if (pilot->GetRawButton(6) && pilot->GetRawButton(4)) {
+    if (pilot->GetRawButton(2) && pilot->GetRawButton(3)) { // logitech: 6 and 4
       mAHRS->ZeroYaw();   // use current robot orientation as field forward
     } else if (driveSlowly) { // drive slowly
       MyDriveCartesian(y*kSlowSpeedMultiplier, -x*kSlowSpeedMultiplier, rotateRate, mAHRS->GetAngle());
@@ -368,11 +375,11 @@ void DriveSystem::RepeatableInit() {
 void DriveSystem::RobotPeriodic() {
   // for debugging
   frc::SmartDashboard::PutNumber("Heading", mAHRS->GetAngle());
-  rev::ColorSensorV3::RawColor rawColor = mColorSensor.GetRawColor();
-  frc::SmartDashboard::PutNumber("Color R", rawColor.red);
-  frc::SmartDashboard::PutNumber("Color G", rawColor.green);
-  frc::SmartDashboard::PutNumber("Color B", rawColor.blue);
-  frc::SmartDashboard::PutNumber("Color IR", rawColor.ir);
+  // rev::ColorSensorV3::RawColor rawColor = mColorSensor.GetRawColor();
+  // frc::SmartDashboard::PutNumber("Color R", rawColor.red);
+  // frc::SmartDashboard::PutNumber("Color G", rawColor.green);
+  // frc::SmartDashboard::PutNumber("Color B", rawColor.blue);
+  // frc::SmartDashboard::PutNumber("Color IR", rawColor.ir);
 }
 
 void DriveSystem::DriveTrapezoid() {
@@ -392,6 +399,7 @@ void DriveSystem::CheckColorForAllClear(bool isWhite, bool isRed, bool isBlue) {
   }
 }
 
+#ifdef SUMMER
 void DriveSystem::DriveSlowForSummer(double x, double y) {
 
   // check for boundary lines for summer demo
@@ -451,3 +459,5 @@ void DriveSystem::Rotate180ForSummer() {
   rotateRate = std::max(-kDefaultRotateToTargetRate, rotateRate);
   MyDriveCartesian(0, 0, -rotateRate, currHeading);
 }
+
+#endif

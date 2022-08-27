@@ -6,13 +6,19 @@
 #include <frc/DigitalInput.h>
 #include <frc/controller/PIDController.h>
 
+enum ElevationOption {
+  kEOLongRange = 0,
+  kEOShortRange,
+  kEOManual
+};
+
 class Elevator {
 public:
   void TeleopPeriodic (frc::Joystick *copilot);
   void DoOnceInit();
   void RobotInit();
   void RobotPeriodic();
-  bool Elevate (bool hightTarget, double distance);
+  bool Elevate (ElevationOption option); // was (bool hightTarget, double distance);
   bool FixedElevationForAuto();
   // bool Elevate(double distance);
 
