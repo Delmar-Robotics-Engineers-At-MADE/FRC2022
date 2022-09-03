@@ -5,13 +5,19 @@
 
 // #define SUMMER
 
-static const double kIntakeSpeed = -14000; // before encoder was 0.6;
+static const double kIntakeSpeed = 8000; // before Falcon, was -14000; // before encoder was 0.6;
 
-const static double kPtuned = .0001;
-const static double kItuned = 0.0;
-const static double kDtuned = 0.0;
-const static double kFtuned = .00004;
-const static double kPIDTolerance = 500;
+// const static double kPtuned = .0001;
+// const static double kItuned = 0.0;
+// const static double kDtuned = 0.0;
+// const static double kFtuned = .00004;
+// const static double kPIDTolerance = 500;
+
+// PID coefficients initially copied from shooter
+static const double kFtuned = 0.0451;
+static const double kPtuned = 0.15;  
+static const double kDtuned = 0.002;
+// static const double kRampTuned = 2.5;
 
 void Intake::TeleopInit() {
 #ifdef SUMMER
@@ -54,15 +60,25 @@ void Intake::TeleopPeriodic (frc::Joystick *pilot, bool ballAtFeeder, RaspPi *rP
 }
 
 void Intake::RobotInit() {
-		mRoller.ConfigFactoryDefault();
-		mRoller.ConfigNominalOutputForward(0, kTimeoutMs);
-		mRoller.ConfigNominalOutputReverse(0, kTimeoutMs);
+		// mRoller.ConfigFactoryDefault();
+		// mRoller.ConfigNominalOutputForward(0, kTimeoutMs);
+		// mRoller.ConfigNominalOutputReverse(0, kTimeoutMs);
+    // mRoller.SetInverted(true);
+    mRoller.ConfigFactoryDefault();
     mRoller.SetInverted(true);
+    mRoller.SetNeutralMode(NeutralMode::Brake);
+    mRoller.Config_kF(0, kFtuned, 30); // was .045 in 2020
+    mRoller.Config_kP(0, kPtuned, 30);
+    mRoller.Config_kI(0, 0.0, 30);
+    mRoller.Config_kD(0, kDtuned, 30); // was 0 in 2020
+    // mRoller.ConfigClosedloopRamp(kRampTuned);
+    mRoller.ConfigSelectedFeedbackSensor(FeedbackDevice::IntegratedSensor, 0, 30);
 
-    mPIDController = new frc2::PIDController (kPtuned, kItuned, kDtuned);
-    mPIDController->SetTolerance(kPIDTolerance);
-    mPIDController->SetSetpoint(kIntakeSpeed);
-    frc::SmartDashboard::PutData("Intake PID", mPIDController);
+
+    // mPIDController = new frc2::PIDController (kPtuned, kItuned, kDtuned);
+    // mPIDController->SetTolerance(kPIDTolerance);
+    // mPIDController->SetSetpoint(kIntakeSpeed);
+    // frc::SmartDashboard::PutData("Intake PID", mPIDController);
 
 #ifdef SUMMER
   frc::SmartDashboard::PutBoolean("Ball Demo", mEnableSummerDemo);
@@ -82,13 +98,13 @@ void Intake::AutonomousPeriodic () {
 }
 
 void Intake::Deploy() {
-  mSolenoid.Set(frc::DoubleSolenoid::kReverse);
+  mSolenoid.Set(frc::DoubleSolenoid::kForward);
 
   // mRoller.Set(kIntakeSpeed);
-  double encoderSpeed = mEncoder.GetRate() ; // invert encoder, as in ManualElevate
-  double power = kFtuned * kIntakeSpeed;  // basically feed forward
-  power += mPIDController->Calculate(encoderSpeed); 
-  mRoller.Set(power); 
+  // double encoderSpeed = mEncoder.GetRate() ; // invert encoder, as in ManualElevate
+  // double power = kFtuned * kIntakeSpeed;  // basically feed forward
+  //power += mPIDController->Calculate(encoderSpeed); 
+  mRoller.Set(ControlMode::Velocity, kIntakeSpeed); 
   // frc::SmartDashboard::PutNumber("Intake Actual", encoderSpeed);
   // frc::SmartDashboard::PutNumber("Intake Power", power);
   // frc::SmartDashboard::PutNumber("Intake Error1", mPIDController->GetPositionError());
@@ -97,8 +113,8 @@ void Intake::Deploy() {
 }
 
 void Intake::Retract() {
-  mRoller.Set(0.0);
-  mSolenoid.Set(frc::DoubleSolenoid::kForward);
+  mRoller.Set(ControlMode::Velocity, 0.0);
+  mSolenoid.Set(frc::DoubleSolenoid::kReverse);
 }
 
 void Intake::FetchBall (bool ballAtFeeder, RaspPi *rPi) {

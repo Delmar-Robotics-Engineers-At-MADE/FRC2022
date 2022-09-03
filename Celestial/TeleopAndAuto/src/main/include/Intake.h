@@ -36,10 +36,10 @@ public:
 
 private:
   frc::DoubleSolenoid mSolenoid{frc::PneumaticsModuleType::CTREPCM, 2, 3};
-  WPI_TalonSRX mRoller{8};
+  WPI_TalonFX mRoller{5};
   frc::Timer mTimer; 
   frc::Encoder mEncoder{6, 7, false, frc::Encoder::k4X};
-  frc2::PIDController *mPIDController;
+  // frc2::PIDController *mPIDController;
 
   void FetchBall (bool ballAtFeeder, RaspPi *rPi);
   void Deploy();
