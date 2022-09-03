@@ -117,6 +117,8 @@ void Intake::Retract() {
   mSolenoid.Set(frc::DoubleSolenoid::kReverse);
 }
 
+#ifdef SUMMER 
+
 void Intake::FetchBall (bool ballAtFeeder, RaspPi *rPi) {
   switch (mFetchState) {
     default:
@@ -200,7 +202,4 @@ void Intake::FetchBall (bool ballAtFeeder, RaspPi *rPi) {
   }
 }
 
-// bool Intake::DemoReturningBall() {
-//   bool result = (mFetchState == kFBSBallReturning);
-//   return result;
-// }
+#endif 

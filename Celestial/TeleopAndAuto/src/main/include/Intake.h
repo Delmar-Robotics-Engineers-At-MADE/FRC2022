@@ -41,7 +41,10 @@ private:
   frc::Encoder mEncoder{6, 7, false, frc::Encoder::k4X};
   // frc2::PIDController *mPIDController;
 
+#ifdef SUMMER
   void FetchBall (bool ballAtFeeder, RaspPi *rPi);
+#endif
+
   void Deploy();
   void Retract();
 

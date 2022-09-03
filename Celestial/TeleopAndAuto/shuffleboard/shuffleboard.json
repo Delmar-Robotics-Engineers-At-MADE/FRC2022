@@ -444,19 +444,63 @@
             ],
             "content": {
               "_type": "PID Controller",
-              "_source0": "network_table:///SmartDashboard/Intake PID",
-              "_title": "Intake PID"
-            }
-          },
-          "3,4": {
-            "size": [
-              1,
-              2
-            ],
-            "content": {
-              "_type": "PID Controller",
               "_source0": "network_table:///SmartDashboard/RPi PID",
               "_title": "RPi PID"
+            }
+          },
+          "4,0": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Lock Heading",
+              "_title": "Lock Heading"
+            }
+          },
+          "7,5": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/FL",
+              "_title": "FL"
+            }
+          },
+          "8,5": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/FR",
+              "_title": "FR"
+            }
+          },
+          "9,5": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/RL",
+              "_title": "RL"
+            }
+          },
+          "10,5": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/RR",
+              "_title": "RR"
             }
           }
         }
