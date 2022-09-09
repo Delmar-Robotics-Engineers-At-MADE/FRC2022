@@ -98,7 +98,7 @@ void Intake::AutonomousPeriodic () {
 }
 
 void Intake::Deploy() {
-  mSolenoid.Set(frc::DoubleSolenoid::kForward);
+  mSolenoid.Set(frc::DoubleSolenoid::kReverse); // in 2022 was kForward
 
   // mRoller.Set(kIntakeSpeed);
   // double encoderSpeed = mEncoder.GetRate() ; // invert encoder, as in ManualElevate
@@ -114,7 +114,7 @@ void Intake::Deploy() {
 
 void Intake::Retract() {
   mRoller.Set(ControlMode::Velocity, 0.0);
-  mSolenoid.Set(frc::DoubleSolenoid::kReverse);
+  mSolenoid.Set(frc::DoubleSolenoid::kForward); // in 2022 was kReverse
 }
 
 #ifdef SUMMER 
