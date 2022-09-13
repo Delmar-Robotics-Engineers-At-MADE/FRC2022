@@ -14,7 +14,10 @@ private:
   frc::DigitalInput mEyeFeeder{5}; 
 
   bool mManualFeeding = false; // might never be true, as we have not figured out where to put controls yet 
+
+#ifdef SUMMER
   void DemoReturnBall(Intake *intake);
+#endif
 
 public:
   bool CargoAvailable();

@@ -114,6 +114,8 @@ void DriveSystem::RotateToTarget (frc::Joystick *pilot, frc::Joystick *copilot) 
   MyDriveCartesian(0, 0, rotateRate, 0);
 }
 
+#ifdef SUMMER
+
 void DriveSystem::RotateToBall(RaspPi *rPi) {
   double rotateRate = 0.0;
   // for Summer demo, Intake calls rPi->CheckForBall()
@@ -145,6 +147,21 @@ void DriveSystem::RotateToBall(RaspPi *rPi) {
   // frc::SmartDashboard::PutNumber("Rotate", rotateRate);
   MyDriveCartesian(0, 0, rotateRate, 0);
 }
+
+#else
+
+double DriveSystem::RotateToBall(RaspPi *rPi) {
+  double rotateRate = 0.0;
+  double angleToTarget = rPi->mNearestBallX; 
+  if (rPi->mBallAhead) {
+      rotateRate = mPIDControllerRaspPi->Calculate(angleToTarget);
+  } else {
+      rotateRate = 0;
+  }
+  return rotateRate;
+}
+
+#endif
 
 void DriveSystem::DriveSlowAndSnapForHanging (frc::Joystick *pilot){
   // offset everything 180 deg. to avoid discontinuity at 0/360
@@ -213,9 +230,14 @@ void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, 
 
 #else
 
-void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
+void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, RaspPi *rPi){
+
   bool shooting = (copilot->GetRawButton(4) || copilot->GetRawButton(2));
   // std::cout << "driving" << std::endl;
+
+  bool trackBall = pilot->GetRawButton(kButtonIntakeAuto) && 
+      (mIntake->mFetchState == kFBSBallAhead || mIntake->mFetchState == kFBSBallGone);
+
   if (shooting) {
     std::cout << "drivesys: shooting" << std::endl;
     RotateToTarget(pilot, copilot);
@@ -229,7 +251,10 @@ void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot){
     // use rotation to keep robot at constant angle, unless driver is trying to spin
     double currHeading = mAHRS->GetAngle();
     double rotateRate = 0.0;
-    if (abs(z) > kRotationDeadZone) { // driver is rotating
+    if (trackBall) { // auto intake button, so rotation goverened by rasp. pi
+      rotateRate = RotateToBall(rPi);
+      mPIDControllerGyro->SetSetpoint(currHeading + 180.0); // update lock heading
+    } else if (abs(z) > kRotationDeadZone) { // driver is rotating
       // std::cout << "driver rotating" << std::endl;
       rotateRate = driveSlowly ? -z*kSlowSpeedMultiplier : -z*kNormalYawMultiplier;
       mPIDControllerGyro->SetSetpoint(currHeading + 180.0); // update lock heading

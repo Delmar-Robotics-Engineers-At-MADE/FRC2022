@@ -7,7 +7,7 @@
 static const double kFeederSpeed = 0.9;
 
 bool Feeder::CargoAvailable() {
-  return mEyeFeeder.Get();
+  return !mEyeFeeder.Get(); // after mods to funnel, added reflective tape and inverted
 }
 
 void Feeder::FeedCargo() {
@@ -29,6 +29,8 @@ void Feeder::StopFeedingCargo() {
   }
 }
 
+#ifdef SUMMER
+
 void Feeder::DemoReturnBall(Intake *intake) {
   if (intake->mFetchState == kFBSBallReturning) {
     mFeeder.Set(-kFeederSpeed);
@@ -38,6 +40,8 @@ void Feeder::DemoReturnBall(Intake *intake) {
     mFeeder.Set(0.0);
   }
 }
+
+#endif
 
 void Feeder::TeleopPeriodic (Intake *intake){
   frc::SmartDashboard::PutBoolean("Cargo Present", CargoAvailable());

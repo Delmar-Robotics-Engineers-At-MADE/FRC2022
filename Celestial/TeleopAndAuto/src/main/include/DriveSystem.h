@@ -43,17 +43,17 @@ public:
   // ~DriveSystem() override = default;
 
 #ifdef SUMMER
-  void TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, RaspPi *rPi);
+  void RotateToBall(RaspPi *rPi); 
 #else
-  void TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot);
   void DriveSlowForSummer(double x, double y);
   void Rotate180ForSummer();
+  double RotateToBall(RaspPi *rPi); 
 #endif
+  void TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, RaspPi *rPi);
   void DoOnceInit();
   void RepeatableInit();
   void RobotPeriodic();
   void RotateToTarget(frc::Joystick *pilot, frc::Joystick *copilot);
-  void RotateToBall(RaspPi *rPi); 
   void DriveTrapezoid();
   void DriveSlowForAuto(double x, double y);
   void DriveSlowAndSnapForHanging (frc::Joystick *pilot);

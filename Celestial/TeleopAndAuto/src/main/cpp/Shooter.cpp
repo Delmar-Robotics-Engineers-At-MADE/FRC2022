@@ -197,7 +197,8 @@ void Shooter::Idle(){
 }
 
 
-void Shooter::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, DriveSysTargetingState driveState){
+void Shooter::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, 
+                              DriveSysTargetingState driveState){
   // mPhi = frc::SmartDashboard::GetNumber("Phi", mPhi); // angle of limelight from vertical
   // mH2 = frc::SmartDashboard::GetNumber("H2", mH2); // height of target above limelight
   bool shootLongRange = copilot->GetRawButton(4);

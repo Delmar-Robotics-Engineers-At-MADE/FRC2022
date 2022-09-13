@@ -5,7 +5,7 @@
 
 // #define SUMMER
 
-static const double kIntakeSpeed = 8000; // before Falcon, was -14000; // before encoder was 0.6;
+static const double kIntakeSpeedTuned = 3000; // before Falcon, was -14000; // before encoder was 0.6;
 
 // const static double kPtuned = .0001;
 // const static double kItuned = 0.0;
@@ -45,16 +45,29 @@ void Intake::TeleopPeriodic (frc::Joystick *pilot, bool ballAtFeeder, RaspPi *rP
   }
 
 #else
-  bool deploy = pilot->GetRawButton(1); // for logitech was: pilot->GetRawButton(8) || pilot->GetRawButton(7);
+
+  bool deploy = pilot->GetRawButton(kButtonIntakeDeploy); // for logitech was: pilot->GetRawButton(8) || pilot->GetRawButton(7);
+  bool autoIntake = pilot->GetRawButton(kButtonIntakeAuto);
+  frc::SmartDashboard::PutBoolean("Auto Fetch", autoIntake);
+
   if (deploy) {
     // mSolenoid.Set(frc::DoubleSolenoid::kReverse);
     // mRoller.Set(kIntakeSpeed);
     Deploy();
+  } else if (autoIntake) {
+    FetchBall(ballAtFeeder, rPi);
   } else {
     // mRoller.Set(0.0);
     // mSolenoid.Set(frc::DoubleSolenoid::kForward);
     Retract();
   }
+
+  // if (pilot->GetRawButton(1)) {frc::SmartDashboard::PutNumber("Pilot Btn", 1);}
+  // else if (pilot->GetRawButton(2)) {frc::SmartDashboard::PutNumber("Pilot Btn", 2);}
+  // else if (pilot->GetRawButton(3)) {frc::SmartDashboard::PutNumber("Pilot Btn", 3);}
+  // else if (pilot->GetRawButton(4)) {frc::SmartDashboard::PutNumber("Pilot Btn", 4);}
+  // else {frc::SmartDashboard::PutNumber("Pilot Btn", -1);}
+
 #endif
 
 }
@@ -74,6 +87,8 @@ void Intake::RobotInit() {
     // mRoller.ConfigClosedloopRamp(kRampTuned);
     mRoller.ConfigSelectedFeedbackSensor(FeedbackDevice::IntegratedSensor, 0, 30);
 
+    mIntakeSpeed = kIntakeSpeedTuned;
+    frc::SmartDashboard::PutNumber("Intake V", mIntakeSpeed);
 
     // mPIDController = new frc2::PIDController (kPtuned, kItuned, kDtuned);
     // mPIDController->SetTolerance(kPIDTolerance);
@@ -93,6 +108,11 @@ void Intake::DoOnceInit() {
     mSolenoid.Set(frc::DoubleSolenoid::kForward);  // retract intake
 }
 
+void Intake::RepeatableInit() {
+  mIntakeSpeed = frc::SmartDashboard::GetNumber("Intake V", 0);
+}
+
+
 void Intake::AutonomousPeriodic () {
 
 }
@@ -104,7 +124,7 @@ void Intake::Deploy() {
   // double encoderSpeed = mEncoder.GetRate() ; // invert encoder, as in ManualElevate
   // double power = kFtuned * kIntakeSpeed;  // basically feed forward
   //power += mPIDController->Calculate(encoderSpeed); 
-  mRoller.Set(ControlMode::Velocity, kIntakeSpeed); 
+  mRoller.Set(ControlMode::Velocity, mIntakeSpeed); 
   // frc::SmartDashboard::PutNumber("Intake Actual", encoderSpeed);
   // frc::SmartDashboard::PutNumber("Intake Power", power);
   // frc::SmartDashboard::PutNumber("Intake Error1", mPIDController->GetPositionError());
@@ -200,6 +220,54 @@ void Intake::FetchBall (bool ballAtFeeder, RaspPi *rPi) {
       }
       break;
   }
+}
+
+#else
+
+void Intake::FetchBall (bool ballAtFeeder, RaspPi *rPi) {
+  rPi->CheckForBall();
+  frc::SmartDashboard::PutBoolean("Ball Ahead", rPi->mBallAhead);
+  switch (mFetchState) {
+    default:
+    case kFBSWaitingForBall:
+      Retract();
+      // check ML for ball close enough
+      if (rPi->mBallAhead) {
+        mFetchState = kFBSBallAhead;
+      } else if (ballAtFeeder) {
+        mFetchState = kFBSBallAtFeeder;
+      }
+      break;
+    case kFBSBallAhead:
+      // lower intake and turn it on
+      Deploy();
+      // stay in this state until ball at feeder or ball no longer seen
+      if (ballAtFeeder) {
+        mFetchState = kFBSBallAtFeeder;
+      } else if (!rPi->mBallAhead) {
+        mFetchState = kFBSBallGone;
+        mTimer.Reset(); mTimer.Start(); // use timer to smooth out ball seen/not seen flickering
+      }
+      break;
+    case kFBSBallAtFeeder:
+      Retract();
+      if (!ballAtFeeder) {
+        mFetchState = kFBSWaitingForBall;
+      }
+      break;
+    case kFBSBallGone:
+      // same as ball ahead for 5 secs
+      Deploy();
+      if (ballAtFeeder) {
+        mFetchState = kFBSBallAtFeeder;
+        mTimer.Reset(); // keep ball in feeder for period of time
+        mTimer.Start();
+      } else if (mTimer.Get() > 5.0_s) { // if we haven't seen a ball for 5 secs
+        mFetchState = kFBSWaitingForBall;
+      }
+      break;
+  }
+  // frc::SmartDashboard::PutNumber("Fetch State", mFetchState);
 }
 
 #endif 

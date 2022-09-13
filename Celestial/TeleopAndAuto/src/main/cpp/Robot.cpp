@@ -47,6 +47,7 @@ void Robot::RepeatableInit() {
   mRobotDrive.RepeatableInit();
   mClimber.RepeatableInit();
   mShooter->RepeatableInit();
+  mIntake.RepeatableInit();
 }
 
 void Robot::TeleopInit() {
@@ -61,11 +62,7 @@ void Robot::TeleopPeriodic() {
 
   mClimber.TeleopPeriodic(&mCopilot);
   mShooter->TeleopPeriodic(&mPilot, &mCopilot, mRobotDrive.mTargetingState);
-#ifdef SUMMER  
   mRobotDrive.TeleopPeriodic(&mPilot, &mCopilot, &mRaspPi);
-#else  
-  mRobotDrive.TeleopPeriodic(&mPilot, &mCopilot);
-#endif
   mIntake.TeleopPeriodic(&mPilot, mFeeder.CargoAvailable(), &mRaspPi);
   mFeeder.TeleopPeriodic(&mIntake);
 
