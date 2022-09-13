@@ -352,7 +352,7 @@
               "_title": "Heading"
             }
           },
-          "5,2": {
+          "9,1": {
             "size": [
               1,
               1
@@ -402,7 +402,7 @@
               "_title": "Light is On"
             }
           },
-          "7,4": {
+          "9,4": {
             "size": [
               1,
               1
@@ -448,7 +448,7 @@
               "_title": "RPi PID"
             }
           },
-          "4,0": {
+          "7,4": {
             "size": [
               1,
               1
@@ -501,6 +501,30 @@
               "_type": "Text View",
               "_source0": "network_table:///SmartDashboard/RR",
               "_title": "RR"
+            }
+          },
+          "5,2": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/Intake V",
+              "_title": "Intake V"
+            }
+          },
+          "8,4": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Boolean Box",
+              "_source0": "network_table:///SmartDashboard/Auto Fetch",
+              "_title": "Auto Fetch",
+              "Colors/Color when true": "#7CFC00FF",
+              "Colors/Color when false": "#8B0000FF"
             }
           }
         }
@@ -676,9 +700,9 @@
     }
   ],
   "windowGeometry": {
-    "x": -1928.0,
-    "y": -8.0,
-    "width": 1936.0,
-    "height": 1096.0
+    "x": -7.0,
+    "y": 0.0,
+    "width": 1538.0,
+    "height": 895.0
   }
 }
