@@ -242,7 +242,7 @@ void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, 
       (mIntake->mFetchState == kFBSBallAhead || mIntake->mFetchState == kFBSBallGone);
 
   if (shooting) {
-    std::cout << "drivesys: shooting" << std::endl;
+    // std::cout << "drivesys: shooting" << std::endl;
     RotateToTarget(pilot, copilot);
   } else {
     mTargetingState = kDriveNotTargeting;

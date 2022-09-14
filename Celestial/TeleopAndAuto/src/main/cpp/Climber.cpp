@@ -170,7 +170,7 @@ void Climber::TeleopInit(){
 
 void Climber::TeleopPeriodic (frc::Joystick *copilot){
 
-  bool bluebuttnoPressed = copilot->GetRawButton(1);
+  bool bluebuttonPressed = copilot->GetRawButton(1);
   int povPad = copilot->GetPOV();
   bool smartControl = false;
   // bool manualControl = false;
@@ -190,13 +190,19 @@ void Climber::TeleopPeriodic (frc::Joystick *copilot){
   if (smartControl) {
     SmartClimber(povPad);
   } else {
-    ManualClimber(copilot, bluebuttnoPressed);
+    ManualClimber(copilot, bluebuttonPressed);
     CheckHomePositions();  // if operator needs to home a climber to enable smart-climber, check here
   }
   // } else {
   //   // possibly just let up on blue button
   //   StopClimbers();
   // }
+
+  // if (copilot->GetRawButton(1)) {frc::SmartDashboard::PutNumber("Copilot Btn", 1);}
+  // else if (copilot->GetRawButton(2)) {frc::SmartDashboard::PutNumber("Copilot Btn", 2);}
+  // else if (copilot->GetRawButton(3)) {frc::SmartDashboard::PutNumber("Copilot Btn", 3);}
+  // else if (copilot->GetRawButton(4)) {frc::SmartDashboard::PutNumber("Copilot Btn", 4);}
+  // else {frc::SmartDashboard::PutNumber("Copilot Btn", -1);}
 
 }
 
