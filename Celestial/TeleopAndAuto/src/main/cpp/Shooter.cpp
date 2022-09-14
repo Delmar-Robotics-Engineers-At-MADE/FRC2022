@@ -17,10 +17,6 @@ static const double kPtuned = 0.15;  // was 0.1
 static const double kDtuned = 0.002;
 static const double kRampTuned = 2.5;
 
-static const int kButtonShooterBlind = 3;
-static const int kButtonShooterShort = 2;
-static const int kButtonShooterLong = 4;
-
 // static const double kCoeff2022[3] = {-173.0/18.0, 11845.0/18.0, 5057}; // used at regional
 
 double ConvertRadsToDegrees (double rads) {
@@ -125,9 +121,9 @@ bool Shooter::ReadyShooter(ElevationOption option) {
         double speedTarget = CalcHighTargetSpeed(mTargetDistance);
         double actualSpeed = mPortShooter.GetSelectedSensorVelocity();
         double pidError = 0.0;
+        frc::SmartDashboard::PutNumber("Shooter V target", speedTarget);
         if (FalconSpeedInRange(speedTarget)) {
           mPortShooter.Set(ControlMode::Velocity, speedTarget);
-          frc::SmartDashboard::PutNumber("Shooter V target", speedTarget);
           pidError = mPortShooter.GetClosedLoopError();
           result = elevationReady 
                 && abs(pidError) < kVelocityTolerance

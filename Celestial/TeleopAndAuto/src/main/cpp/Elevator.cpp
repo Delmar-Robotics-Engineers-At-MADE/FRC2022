@@ -18,6 +18,7 @@ void Elevator::ManualElevate (frc::Joystick *copilot) {
   // positive power moves nut up, lowering elevation, flattening trajectory, for farther away
   // negative power moves nut down, increasing elevation, for steeper trajectory
   double speed = -copilot->GetY();
+  // frc::SmartDashboard::PutNumber("Elevator V", speed);
   double position = -mEncoder.GetDistance();  // IMPORTANT: invert encoder!
   bool onLimitSwitch = !mLimitSwitch.Get();
   // frc::SmartDashboard::PutNumber("elevator speed", speed);
@@ -59,7 +60,7 @@ void Elevator::DoOnceInit() {
 
 void Elevator::TeleopPeriodic (frc::Joystick *copilot) {
   CheckHomePosition();
-  if (mHomed && copilot->GetRawButton(4)) { // shooting at high goal
+  if (mHomed && (copilot->GetRawButton(kButtonShooterLong) || copilot->GetRawButton(kButtonShooterShort))) {
     // Elevate method is called from Shoot in Shooter, so do nothing here except check bump factor
     mBump = frc::SmartDashboard::GetNumber("Elevator Bump", mBump);
   } else {
@@ -104,11 +105,14 @@ bool Elevator::Elevate (ElevationOption option) {
   case kEOLongRange:
     if (mHomed) {
       // double target = CalcHighTargetElevation(distance);
+      // frc::SmartDashboard::PutNumber("Elevator Targ", automaticTarget);
       double position = -mEncoder.GetDistance(); // invert encoder, as in ManualElevate
       mPIDController->SetSetpoint(automaticTarget);
       double speed = mPIDController->Calculate(position);  
       // if (target > kEncoderLimitTop || target < kEncoderLimitBottom) {std::cout << "elevator target beyond limit"<< std::endl;}
       mMotor.Set(speed);
+      // frc::SmartDashboard::PutNumber("Elevator V", speed);
+      frc::SmartDashboard::PutNumber("elevator pos", position);
       result = mPIDController->AtSetpoint();
     }
     break;

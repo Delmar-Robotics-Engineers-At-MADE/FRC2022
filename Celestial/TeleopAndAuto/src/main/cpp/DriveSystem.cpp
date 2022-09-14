@@ -263,12 +263,13 @@ void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, 
       mPIDControllerGyro->SetSetpoint(currHeading + 180.0); // update lock heading
     } else { // driver not rotating, so keep robot on lock heading
       // std::cout << "driver NOT rotating" << std::endl;
-      double rotateRate = mPIDControllerGyro->Calculate(currHeading + 180.0);  // offset by 180 to avoid discontinuity
+      rotateRate = mPIDControllerGyro->Calculate(currHeading + 180.0);  // offset by 180 to avoid discontinuity
       // clip rate to max rotation
       rotateRate = std::min(kDefaultRotateToTargetRate, rotateRate);
       rotateRate = std::max(-kDefaultRotateToTargetRate, rotateRate);
     }
     frc::SmartDashboard::PutNumber("Lock Heading", mPIDControllerGyro->GetSetpoint());
+    // frc::SmartDashboard::PutNumber("Rot Rate", rotateRate);
 
     if (pilot->GetRawButton(kButtonIntakeAuto) && pilot->GetRawButton(kButtonDriveFieldReset)) { // logitech: 6 and 4
       mAHRS->ZeroYaw();   // use current robot orientation as field forward

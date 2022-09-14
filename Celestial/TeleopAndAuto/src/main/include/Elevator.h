@@ -6,6 +6,10 @@
 #include <frc/DigitalInput.h>
 #include <frc/controller/PIDController.h>
 
+static const int kButtonShooterBlind = 3;
+static const int kButtonShooterShort = 2;
+static const int kButtonShooterLong = 4;
+
 enum ElevationOption {
   kEOLongRange = 0,
   kEOShortRange,
