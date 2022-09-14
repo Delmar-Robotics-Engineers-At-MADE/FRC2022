@@ -17,6 +17,10 @@ static const double kPtuned = 0.15;  // was 0.1
 static const double kDtuned = 0.002;
 static const double kRampTuned = 2.5;
 
+static const int kButtonShooterBlind = 3;
+static const int kButtonShooterShort = 2;
+static const int kButtonShooterLong = 4;
+
 // static const double kCoeff2022[3] = {-173.0/18.0, 11845.0/18.0, 5057}; // used at regional
 
 double ConvertRadsToDegrees (double rads) {
@@ -201,9 +205,9 @@ void Shooter::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot,
                               DriveSysTargetingState driveState){
   // mPhi = frc::SmartDashboard::GetNumber("Phi", mPhi); // angle of limelight from vertical
   // mH2 = frc::SmartDashboard::GetNumber("H2", mH2); // height of target above limelight
-  bool shootLongRange = copilot->GetRawButton(4);
-  bool shootShortRange = copilot->GetRawButton(2);
-  bool shootBlind = copilot->GetRawButton(3);
+  bool shootLongRange = copilot->GetRawButton(kButtonShooterLong);
+  bool shootShortRange = copilot->GetRawButton(kButtonShooterShort);
+  bool shootBlind = copilot->GetRawButton(kButtonShooterBlind);
 
 #ifdef SUMMER
   // monitor intake's summer demo mode, and shoot if necessary
@@ -314,7 +318,7 @@ void Shooter::AutonomousInit() {
 }
 
 void Shooter::BlindShot(frc::Joystick *copilot) {
-  bool shootButtonPressed = copilot->GetRawButton(2);
+  bool shootButtonPressed = copilot->GetRawButton(kButtonShooterBlind);
 #ifdef SUMMER
   // monitor intake's summer demo mode, and shoot if necessary
   if (mIntake->mFetchState == kFBSShooting) {

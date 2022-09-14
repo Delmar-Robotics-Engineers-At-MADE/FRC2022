@@ -23,6 +23,8 @@ const static double kItunedRaspPi = 0.0;
 const static double kDtunedRaspPi = 0.0;
 const static double kPIDToleranceRaspPi = 0.05;
 
+static const int kButtonDriveFieldReset = 3;
+
 // from SysID tool
 constexpr auto kSysIdkS = 0.14615_V;
 constexpr auto kSysIdkV = 0.97133_V * 1_s / 1_tr;  // 12_V / kShooterFreeRPS;
@@ -50,11 +52,12 @@ const double kMaxRPM = 5700;
 
 const static double kSlowSpeedMultiplier = 0.1;
 const static double kAutoSpeedMultiplier = 0.1;
-const static double kNormalSpeedMultiplier = 0.1;
+const static double kNormalSpeedMultiplierY = 0.1;
+const static double kNormalSpeedMultiplierX = 0.2;
 const static double kNormalYawMultiplier = 0.1;
 //const static double kDemoYawMultiplier = 0.25;
-const static double kDemoSpeedMultX = 0.1;
-const static double kDemoSpeedMultY = 0.05;
+// const static double kDemoSpeedMultX = 0.1;
+// const static double kDemoSpeedMultY = 0.05;
 
 const static double kDefaultRotateToTargetRate = 0.04;
 const static double kRotationDeadZone = 0.1;
@@ -267,7 +270,7 @@ void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, 
     }
     frc::SmartDashboard::PutNumber("Lock Heading", mPIDControllerGyro->GetSetpoint());
 
-    if (pilot->GetRawButton(2) && pilot->GetRawButton(3)) { // logitech: 6 and 4
+    if (pilot->GetRawButton(kButtonIntakeAuto) && pilot->GetRawButton(kButtonDriveFieldReset)) { // logitech: 6 and 4
       mAHRS->ZeroYaw();   // use current robot orientation as field forward
     } else if (driveSlowly) { // drive slowly
       MyDriveCartesian(y*kSlowSpeedMultiplier, -x*kSlowSpeedMultiplier, rotateRate, mAHRS->GetAngle());
@@ -275,7 +278,7 @@ void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, 
     //   DriveSlowAndSnapForHanging (pilot);
     } else {
       // std::cout << "normal: " << y << ", " << x << std::endl;
-      MyDriveCartesian(y*kNormalSpeedMultiplier, -x*kNormalSpeedMultiplier, rotateRate, mAHRS->GetAngle());
+      MyDriveCartesian(y*kNormalSpeedMultiplierY, -x*kNormalSpeedMultiplierX, rotateRate, mAHRS->GetAngle());
     }
   }
 }
