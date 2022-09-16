@@ -17,6 +17,9 @@ static const double kPtuned = 0.15;  // was 0.1
 static const double kDtuned = 0.002;
 static const double kRampTuned = 2.5;
 
+static const double kShortRangeCutoff = 13.0;
+static const double kMidRangeCutoff = 17.0;
+
 // static const double kCoeff2022[3] = {-173.0/18.0, 11845.0/18.0, 5057}; // used at regional
 
 double ConvertRadsToDegrees (double rads) {
@@ -87,14 +90,53 @@ void Shooter::CheckLimelight() {
   frc::SmartDashboard::PutNumber("Distance", mTargetDistance);
 }
 
-double Shooter::CalcHighTargetSpeed(double d){
+double CalcHighTargetSpeedShortRange(double d){
+  double result = (28.6096 * d * d) - (215.259 * d) + 10589.2;
+  return result;
+}
+
+double CalcHighTargetSpeedMidRange(double d){
+
+  // quadratic
+  double result = (-3.78142 * d * d) + (405.464 * d) + 7292.46;
+
+  // cubic
+  // double result = (-14.0222 * d * d * d) + (716.558 * d * d) - (11712.6 * d) + 74009.4;
+
+  return result;
+}
+
+double CalcHighTargetSpeedLongRange(double d){
+
+  // quadratic
+  // double result = (9.97246 * d * d) - (315.143 * d) + 16516.9;
+
+  // cubic
+  double result = (9.65017 * d * d * d) - (611.192 * d * d) + (12903 * d) - 76437.9;
+
+  return result;
+}
+
+double Shooter::CalcHighTargetSpeed(TargetRange shortMidLong, double d){
 
   // used for 2022 regional: 
   // double result = (-173.0/18.0) * d * d + (11845.0/18.0) * d + 5057;
   // std::cout << "speed target: " << result << std::endl;
-  
   // for summer 2022: 11.5601 x^3 - 570.057 x^2 + 9517.92 x - 41011.8
-  double result = (11.5601 * d * d * d) - (570.057 * d * d) + (9517.92 * d) - 41011.8;
+  // double result = (11.5601 * d * d * d) - (570.057 * d * d) + (9517.92 * d) - 41011.8;
+  
+  double result = 0.0;
+  switch (shortMidLong) {
+  case kTRShort:
+    result = CalcHighTargetSpeedShortRange(d);
+    break;
+  case kTRMid:
+    result = CalcHighTargetSpeedMidRange(d);
+    break;
+  case kTRLong:
+    result = CalcHighTargetSpeedLongRange(d);
+    break;
+  }
 
   // allow drivers to boost or deboost with multiplier
   result *= mSpeedMultiplier;
@@ -111,17 +153,39 @@ bool FalconSpeedInRange(double speed) {
   return result;
 }
 
-bool Shooter::ReadyShooter(ElevationOption option) {
-  bool result = false;
+TargetRange CalcShortMidLongRange(ElevationButtonOption option, double d){
+  TargetRange result = kTRShort;
   switch (option) {
-    case kEOLongRange:
-    case kEOShortRange:
+  case kEBOShortRange:
+    result = kTRShort;
+    break;
+  default:
+  case kEBOLongOrMidRange:
+    if (d < kShortRangeCutoff) {
+      result = kTRShort;
+    } else if (d < kMidRangeCutoff) {
+      result = kTRMid;
+    } else { 
+      result = kTRLong;
+    }
+    break;
+  }
+  return result;
+}
+
+bool Shooter::ReadyShooter(ElevationButtonOption option) {
+  bool result = false;
+  TargetRange shortMidLong = CalcShortMidLongRange(option, mTargetDistance);
+  switch (option) {
+    case kEBOLongOrMidRange:
+    case kEBOShortRange:
       if (mTargetSeen) {
-        bool elevationReady = mElevator.Elevate(option);
-        double speedTarget = CalcHighTargetSpeed(mTargetDistance);
+        bool elevationReady = mElevator.Elevate(shortMidLong, mTargetDistance);
+        double speedTarget = CalcHighTargetSpeed(shortMidLong, mTargetDistance);
         double actualSpeed = mPortShooter.GetSelectedSensorVelocity();
         double pidError = 0.0;
         frc::SmartDashboard::PutNumber("Shooter V target", speedTarget);
+        frc::SmartDashboard::PutNumber("Target Range", shortMidLong);
         if (FalconSpeedInRange(speedTarget)) {
           mPortShooter.Set(ControlMode::Velocity, speedTarget);
           pidError = mPortShooter.GetClosedLoopError();
@@ -133,7 +197,7 @@ bool Shooter::ReadyShooter(ElevationOption option) {
         // frc::SmartDashboard::PutNumber("Shooter Error", pidError);
       }
       break;
-    case kEOManual:
+    case kEBOManual:
       default:
       // for now permit dashboard widget to control speed
       mMotorOutVelocity = frc::SmartDashboard::GetNumber("Shooter Speed Low Target", 0);
@@ -156,7 +220,7 @@ bool Shooter::FixedElevationForAuto() {
   return result;
 }
 
-void Shooter::Shoot (ElevationOption option, DriveSysTargetingState driveState) {
+void Shooter::Shoot (ElevationButtonOption option, DriveSysTargetingState driveState) {
   bool onTarget = false;
   bool shooterReady = false;
   // frc::SmartDashboard::PutNumber("Shooter State", mState);
@@ -199,7 +263,7 @@ void Shooter::Idle(){
 
 void Shooter::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, 
                               DriveSysTargetingState driveState){
-  // mPhi = frc::SmartDashboard::GetNumber("Phi", mPhi); // angle of limelight from vertical
+  mPhi = frc::SmartDashboard::GetNumber("Phi", mPhi); // angle of limelight from vertical
   // mH2 = frc::SmartDashboard::GetNumber("H2", mH2); // height of target above limelight
   bool shootLongRange = copilot->GetRawButton(kButtonShooterLong);
   bool shootShortRange = copilot->GetRawButton(kButtonShooterShort);
@@ -216,7 +280,7 @@ void Shooter::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot,
     mSpeedMultiplier = frc::SmartDashboard::GetNumber("Shooter Boost", mSpeedMultiplier);
     TurnLightOnOrOff(true);
     CheckLimelight();
-    ElevationOption option = shootLongRange ? kEOLongRange : kEOShortRange;
+    ElevationButtonOption option = shootLongRange ? kEBOLongOrMidRange : kEBOShortRange;
     Shoot(option, driveState);
     // std::cout << "shooter state" << mState << std::endl;
   } else if (shootBlind) {
@@ -247,7 +311,7 @@ void Shooter::RobotInit(Feeder *feeder, Intake *intake) {
   mFeeder = feeder;
   mIntake = intake;
 
-  // frc::SmartDashboard::PutNumber("Phi", mPhi);
+  frc::SmartDashboard::PutNumber("Phi", mPhi);
   // frc::SmartDashboard::PutNumber("H2", mH2);
   frc::SmartDashboard::PutNumber("Auto Shoot V", mAutoShootSpeed);
   frc::SmartDashboard::PutNumber("Shooter Speed Low Target", mAutoShootSpeed);
@@ -333,7 +397,7 @@ void Shooter::BlindShot(frc::Joystick *copilot) {
       // FixedSpeedForAuto();
       // FixedElevationForAuto();
       // leave elevator in place, and set shooter speed according to dashboard
-      ReadyShooter(kEOManual);  // don't wait for this to be true
+      ReadyShooter(kEBOManual);  // don't wait for this to be true
       if (mBlindShotTimer.Get() > kBlindShotReadyTime) {
         mBlindShotState = kBSSShooting;
       }

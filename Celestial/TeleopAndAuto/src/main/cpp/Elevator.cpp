@@ -4,10 +4,11 @@
 #include <Constants.h>
 
 static const double kEncoderLimitTop = 300.0;
-static const double kEncoderLimitBottom = 20.0;
+static const double kEncoderLimitBottom = 0.0;
 static const double kElevationForAuto = 55.75;
-static const double kElevationShortRange = 20.0;
-static const double kElevationLongRange = 55.75;
+static const double kElevationShortRange = 6.0;
+static const double kElevationMidRange = 50.0;
+static const double kElevationLongRange = 120.0; // was 100 during first data collect
 
 const static double kPtuned = 0.1;
 const static double kItuned = 0.0;
@@ -68,7 +69,7 @@ void Elevator::TeleopPeriodic (frc::Joystick *copilot) {
   }
 }
 
-double Elevator::CalcHighTargetElevation(double d){
+double Elevator::CalcElevatorTarget(TargetRange shortMidLong, double d){
   // used for 2022 regional:
   // double result = (59.0/180.0) * d * d - (1303.0/180.0) * d + 1081.0/10.0;
   // std::cout << "elevation target: " << result << std::endl;
@@ -82,11 +83,19 @@ double Elevator::CalcHighTargetElevation(double d){
   // double result = (0.985622 * d * d * d) - (40.8047 * d * d) + (558.493 * d) - 2446.18;
 
   // simplify things: just two or three elevations depending on distance
+
   double result = 0.0;
-  if (d < 16.5) {
-    result = 83;
-  } else { 
-    result = 117;
+  switch (shortMidLong) {
+  default:
+  case kTRShort:
+    result = kElevationShortRange;
+    break;
+  case kTRMid:
+    result = kElevationMidRange;
+    break;
+  case kTRLong:
+    result = kElevationLongRange;
+    break;
   }
 
   // allow drivers to adjust calculated elevation
@@ -95,29 +104,20 @@ double Elevator::CalcHighTargetElevation(double d){
   return result;
 }
 
-bool Elevator::Elevate (ElevationOption option) {
+bool Elevator::Elevate (TargetRange shortMidLong, double d) {
   bool result = false;
-  double automaticTarget = kElevationLongRange;
-  switch (option) {
-  case kEOShortRange:
-    automaticTarget = kElevationShortRange;
-    // fall through
-  case kEOLongRange:
-    if (mHomed) {
-      // double target = CalcHighTargetElevation(distance);
-      // frc::SmartDashboard::PutNumber("Elevator Targ", automaticTarget);
-      double position = -mEncoder.GetDistance(); // invert encoder, as in ManualElevate
-      mPIDController->SetSetpoint(automaticTarget);
-      double speed = mPIDController->Calculate(position);  
-      // if (target > kEncoderLimitTop || target < kEncoderLimitBottom) {std::cout << "elevator target beyond limit"<< std::endl;}
-      mMotor.Set(speed);
-      // frc::SmartDashboard::PutNumber("Elevator V", speed);
-      frc::SmartDashboard::PutNumber("elevator pos", position);
-      result = mPIDController->AtSetpoint();
-    }
-    break;
-  case kEOManual:
-  default:
+  if (mHomed) {
+    double automaticTarget = CalcElevatorTarget(shortMidLong, d);
+    frc::SmartDashboard::PutNumber("Elevator Targ", automaticTarget);
+    double position = -mEncoder.GetDistance(); // invert encoder, as in ManualElevate
+    mPIDController->SetSetpoint(automaticTarget);
+    double speed = mPIDController->Calculate(position);  
+    // if (target > kEncoderLimitTop || target < kEncoderLimitBottom) {std::cout << "elevator target beyond limit"<< std::endl;}
+    mMotor.Set(speed);
+    // frc::SmartDashboard::PutNumber("Elevator V", speed);
+    frc::SmartDashboard::PutNumber("elevator pos", position);
+    result = mPIDController->AtSetpoint();
+  } else {
     // allow manual position via teleopPeriodic
     result = true;
   }
@@ -148,7 +148,7 @@ void Elevator::RobotInit() {
 
   mPIDController = new frc2::PIDController (kPtuned, kItuned, kDtuned);
   mPIDController->SetTolerance(kPIDTolerance);
-  frc::SmartDashboard::PutData("Elevator PID", mPIDController);  // dashboard should be able to change values
+  // frc::SmartDashboard::PutData("Elevator PID", mPIDController);  // dashboard should be able to change values
   frc::SmartDashboard::PutNumber("Elevator Bump", mBump);
 }
 

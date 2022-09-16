@@ -7,13 +7,19 @@
 #include <frc/controller/PIDController.h>
 
 static const int kButtonShooterBlind = 3;
-static const int kButtonShooterShort = 2;
-static const int kButtonShooterLong = 4;
+static const int kButtonShooterShort = 4; // was 2 in 2022
+static const int kButtonShooterLong = 2; // was 4 in 2022
 
-enum ElevationOption {
-  kEOLongRange = 0,
-  kEOShortRange,
-  kEOManual
+enum ElevationButtonOption {
+  kEBOLongOrMidRange = 0,
+  kEBOShortRange,
+  kEBOManual
+};
+
+enum TargetRange {
+  kTRShort = 0,
+  kTRMid,
+  kTRLong
 };
 
 class Elevator {
@@ -22,7 +28,7 @@ public:
   void DoOnceInit();
   void RobotInit();
   void RobotPeriodic();
-  bool Elevate (ElevationOption option); // was (bool hightTarget, double distance);
+  bool Elevate (TargetRange shortMidLong, double d); // was (bool hightTarget, double distance);
   bool FixedElevationForAuto();
   // bool Elevate(double distance);
 
@@ -53,6 +59,6 @@ private:
   
   void ManualElevate (frc::Joystick *copilot);
   void CheckHomePosition();
-  double CalcHighTargetElevation(double d);
+  double CalcElevatorTarget(TargetRange shortMidLong, double d);
 
 };

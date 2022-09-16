@@ -241,6 +241,9 @@ void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, 
   bool trackBall = pilot->GetRawButton(kButtonIntakeAuto) && 
       (mIntake->mFetchState == kFBSBallAhead || mIntake->mFetchState == kFBSBallGone);
 
+  bool fieldRelative = (pilot->GetZ() > 0.5);
+  frc::SmartDashboard::PutBoolean("Field Relative", fieldRelative);
+
   if (shooting) {
     // std::cout << "drivesys: shooting" << std::endl;
     RotateToTarget(pilot, copilot);
@@ -257,7 +260,7 @@ void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, 
     if (trackBall) { // auto intake button, so rotation goverened by rasp. pi
       rotateRate = RotateToBall(rPi);
       mPIDControllerGyro->SetSetpoint(currHeading + 180.0); // update lock heading
-    } else if (abs(z) > kRotationDeadZone) { // driver is rotating
+    } else if (true) { // (abs(z) > kRotationDeadZone) { // driver is rotating
       // std::cout << "driver rotating" << std::endl;
       rotateRate = driveSlowly ? -z*kSlowSpeedMultiplier : -z*kNormalYawMultiplier;
       mPIDControllerGyro->SetSetpoint(currHeading + 180.0); // update lock heading
@@ -268,18 +271,23 @@ void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, 
       rotateRate = std::min(kDefaultRotateToTargetRate, rotateRate);
       rotateRate = std::max(-kDefaultRotateToTargetRate, rotateRate);
     }
-    frc::SmartDashboard::PutNumber("Lock Heading", mPIDControllerGyro->GetSetpoint());
+    // frc::SmartDashboard::PutNumber("Lock Heading", mPIDControllerGyro->GetSetpoint());
     // frc::SmartDashboard::PutNumber("Rot Rate", rotateRate);
+
+    double angle = 0.0;      // for robot relative
+    if (fieldRelative) {
+      angle = currHeading;   // for field relative
+    }
 
     if (pilot->GetRawButton(kButtonIntakeAuto) && pilot->GetRawButton(kButtonDriveFieldReset)) { // logitech: 6 and 4
       mAHRS->ZeroYaw();   // use current robot orientation as field forward
     } else if (driveSlowly) { // drive slowly
-      MyDriveCartesian(y*kSlowSpeedMultiplier, -x*kSlowSpeedMultiplier, rotateRate, mAHRS->GetAngle());
+      MyDriveCartesian(y*kSlowSpeedMultiplier, -x*kSlowSpeedMultiplier, rotateRate, angle);
     // } else if (pilot->GetRawButton(2)) { // drive slowly and snap to hanging line
     //   DriveSlowAndSnapForHanging (pilot);
     } else {
       // std::cout << "normal: " << y << ", " << x << std::endl;
-      MyDriveCartesian(y*kNormalSpeedMultiplierY, -x*kNormalSpeedMultiplierX, rotateRate, mAHRS->GetAngle());
+      MyDriveCartesian(y*kNormalSpeedMultiplierY, -x*kNormalSpeedMultiplierX, rotateRate, angle);
     }
   }
 }
@@ -367,8 +375,9 @@ void DriveSystem::RobotInit(Shooter *shooter, Intake *intake,
   // frc::SmartDashboard::PutData("Rear Left", pidRL);  // dashboard should be able to change values
   // frc::SmartDashboard::PutData("Front Right", pidFR);  // dashboard should be able to change values
   // frc::SmartDashboard::PutData("Rear Right", pidRR);  // dashboard should be able to change values
-  frc::SmartDashboard::PutData("Gyro PID", mPIDControllerGyro);
-  frc::SmartDashboard::PutData("RPi PID", mPIDControllerRaspPi);
+  
+  // frc::SmartDashboard::PutData("Gyro PID", mPIDControllerGyro);
+  // frc::SmartDashboard::PutData("RPi PID", mPIDControllerRaspPi);
 
   // Spark Max stuff
   SetPIDValues (pidFL);
@@ -403,7 +412,9 @@ void DriveSystem::RepeatableInit() {
 
 void DriveSystem::RobotPeriodic() {
   // for debugging
-  frc::SmartDashboard::PutNumber("Heading", mAHRS->GetAngle());
+  
+  // frc::SmartDashboard::PutNumber("Heading", mAHRS->GetAngle());
+
   // rev::ColorSensorV3::RawColor rawColor = mColorSensor.GetRawColor();
   // frc::SmartDashboard::PutNumber("Color R", rawColor.red);
   // frc::SmartDashboard::PutNumber("Color G", rawColor.green);

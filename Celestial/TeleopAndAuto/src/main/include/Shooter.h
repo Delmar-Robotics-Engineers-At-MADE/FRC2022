@@ -35,7 +35,7 @@ private:
 
   // shooter proper and Limelight
 
-  constexpr static double kPhi = 21.5;  // angle in degrees of limelight from vertical
+  constexpr static double kPhi = 10.0;  // angle in degrees of limelight from vertical, was 21.5 in 2022
   constexpr static double kH1 = 2.5;  // height in feet of limelight from floor
   constexpr static double kH2 = 8.6 - kH1; // height in feet of target ring from limelight
   double mPhi = kPhi;
@@ -53,8 +53,8 @@ private:
 
   double mMotorOutVelocity = 0.0; // for collecting data for targeting
 
-  bool ReadyShooter(ElevationOption option);
-  double CalcHighTargetSpeed(double d);
+  bool ReadyShooter(ElevationButtonOption option);
+  double CalcHighTargetSpeed(TargetRange shortMidLong, double d);
 
   double mAutoShootSpeed= kShooterSpeedForAuto;
 
@@ -78,7 +78,7 @@ public:
   double mTargetAngleHorizontal = 0.0;
   double mTargetAngleVertical = 0.0;
   double mTargetDistance = 0.0;
-  double mSpeedMultiplier = 1.0;
+  double mSpeedMultiplier = 1.05;  // before GRC 2022, a little boost is needed
 
   Shooter (); // constructor
   void TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, DriveSysTargetingState driveState);
@@ -87,7 +87,7 @@ public:
   void TeleopInit();
   void RobotPeriodic();
   void FeedCargo();
-  void Shoot (ElevationOption option, DriveSysTargetingState driveState);
+  void Shoot (ElevationButtonOption option, DriveSysTargetingState driveState);
   void Idle();
   void CheckLimelight();
   void TurnLightOnOrOff (bool turnOn);
