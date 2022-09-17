@@ -260,18 +260,18 @@ void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, 
     if (trackBall) { // auto intake button, so rotation goverened by rasp. pi
       rotateRate = RotateToBall(rPi);
       mPIDControllerGyro->SetSetpoint(currHeading + 180.0); // update lock heading
-    } else if (true) { // (abs(z) > kRotationDeadZone) { // driver is rotating
+    } else if (abs(z) > kRotationDeadZone) { // driver is rotating
       // std::cout << "driver rotating" << std::endl;
       rotateRate = driveSlowly ? -z*kSlowSpeedMultiplier : -z*kNormalYawMultiplier;
       mPIDControllerGyro->SetSetpoint(currHeading + 180.0); // update lock heading
     } else { // driver not rotating, so keep robot on lock heading
       // std::cout << "driver NOT rotating" << std::endl;
-      rotateRate = mPIDControllerGyro->Calculate(currHeading + 180.0);  // offset by 180 to avoid discontinuity
+      rotateRate = -(mPIDControllerGyro->Calculate(currHeading + 180.0));  // offset by 180 to avoid discontinuity
       // clip rate to max rotation
       rotateRate = std::min(kDefaultRotateToTargetRate, rotateRate);
       rotateRate = std::max(-kDefaultRotateToTargetRate, rotateRate);
     }
-    // frc::SmartDashboard::PutNumber("Lock Heading", mPIDControllerGyro->GetSetpoint());
+    frc::SmartDashboard::PutNumber("Lck Hd -180", mPIDControllerGyro->GetSetpoint() - 180);
     // frc::SmartDashboard::PutNumber("Rot Rate", rotateRate);
 
     double angle = 0.0;      // for robot relative
@@ -413,7 +413,7 @@ void DriveSystem::RepeatableInit() {
 void DriveSystem::RobotPeriodic() {
   // for debugging
 
-  // frc::SmartDashboard::PutNumber("Heading", mAHRS->GetAngle());
+  frc::SmartDashboard::PutNumber("Heading", mAHRS->GetAngle());
 
   // rev::ColorSensorV3::RawColor rawColor = mColorSensor.GetRawColor();
   // frc::SmartDashboard::PutNumber("Color R", rawColor.red);
