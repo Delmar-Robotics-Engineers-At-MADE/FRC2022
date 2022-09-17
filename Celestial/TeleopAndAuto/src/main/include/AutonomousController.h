@@ -46,7 +46,8 @@ private:
   frc::SendableChooser<std::string> mChooserOptionsDirection;
   frc::SendableChooser<std::string> mChooserOptionsWait;
   const std::string kAutoNameDemoDriving = "Demo Driving";
-  const std::string kAutoNameDriveAndShoot = "Drive And Shoot";
+  const std::string kAutoNameDriveAndShoot = "Drive + Shoot";
+  const std::string kAutoNameDriveAndBlind = "Drive + Blind Shoot";
   const std::string kAutoNameDriveOnly = "Drive Only";
   const std::string kAutoNameJustInit = "Just Init";
   const std::string kAutoOptionDirStraight = "Straight";
@@ -70,6 +71,7 @@ private:
   // void TurnOnly();
   void DriveOnly();
   void DriveAndShoot();
+  void DriveAndBlind();
 
 
 };

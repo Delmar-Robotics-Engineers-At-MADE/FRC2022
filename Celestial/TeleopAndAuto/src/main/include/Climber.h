@@ -27,7 +27,7 @@ private:
   // WPI_TalonSRX mClimberPort{3};
   // WPI_TalonSRX mClimberStar{12};
   WPI_TalonSRX mClimberPort{3};  
-  WPI_TalonSRX mClimberStar{12}; 
+  WPI_TalonSRX mClimberStar{4}; 
   frc::DigitalInput mLimitSwitchPort{3};
   frc::DigitalInput mLimitSwitchStar{2};
   bool mSmartClimberEnabled {false};

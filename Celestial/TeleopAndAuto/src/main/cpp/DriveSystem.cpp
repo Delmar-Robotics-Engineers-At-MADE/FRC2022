@@ -51,7 +51,7 @@ const double kMaxRPM = 5700;
 // const auto averageSetpointRPS = 1800_tr / 1_s; // 1800 RPM
 
 const static double kSlowSpeedMultiplier = 0.1;
-const static double kAutoSpeedMultiplier = 0.1;
+const static double kAutoSpeedMultiplier = 0.05;
 const static double kNormalSpeedMultiplierY = 0.1;
 const static double kNormalSpeedMultiplierX = 0.2;
 const static double kNormalYawMultiplier = 0.1;
@@ -81,7 +81,7 @@ DriveSystem::DriveSystem(frc::SpeedController& frontLeftMotor, frc::SpeedControl
   }
     
 
-void DriveSystem::RotateToTarget (frc::Joystick *pilot, frc::Joystick *copilot) { 
+void DriveSystem::RotateToTarget (/*frc::Joystick *pilot, frc::Joystick *copilot*/) { 
   double rotateRate = 0.0;
   double angleToTarget = mShooter->mTargetAngleHorizontal;
   // std::cout << "rotating, target seen: " << mShooter->mTargetSeen << std::endl;
@@ -109,8 +109,8 @@ void DriveSystem::RotateToTarget (frc::Joystick *pilot, frc::Joystick *copilot) 
       // let copilot rotate robot toward target until it locks on
       if (mShooter->mTargetSeen) {
         mTargetingState = kDriveRotatingToTarget;
-      } else {
-        rotateRate = copilot->GetX();
+      // } else {
+      //   rotateRate = copilot->GetX();
       }
       break;
   }
@@ -246,7 +246,7 @@ void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, 
 
   if (shooting) {
     // std::cout << "drivesys: shooting" << std::endl;
-    RotateToTarget(pilot, copilot);
+    RotateToTarget(/*pilot, copilot*/);
   } else {
     mTargetingState = kDriveNotTargeting;
     double x = pilot->GetX();
@@ -408,6 +408,7 @@ void DriveSystem::DoOnceInit()  {
 void DriveSystem::RepeatableInit() {
   // do this whenever we start either auto or teleop
   mAHRS->ZeroYaw();   // use current robot orientation as field forward
+  mPIDControllerGyro->SetSetpoint(180.0);
 }
 
 void DriveSystem::RobotPeriodic() {

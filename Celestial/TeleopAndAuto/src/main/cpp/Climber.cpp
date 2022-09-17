@@ -13,7 +13,7 @@ constexpr units::time::minute_t kEndGameTime = 1.0_min;
 // };
 
 // One rotation is 4096 encoder counts, and encoder is at the output of the gearbox
-const double kClimberPosMiddle = 32500.0; // was 10 * 4096;
+const double kClimberPosMiddle = 28000.0; // was 10 * 4096, then 32500;
 const double kClimberPosLow = 18000.0; 
 const double kClimberPosRetracted = 0.25 * 4096;
 

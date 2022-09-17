@@ -53,7 +53,7 @@ public:
   void DoOnceInit();
   void RepeatableInit();
   void RobotPeriodic();
-  void RotateToTarget(frc::Joystick *pilot, frc::Joystick *copilot);
+  void RotateToTarget(/*frc::Joystick *pilot, frc::Joystick *copilot*/);
   void DriveTrapezoid();
   void DriveSlowForAuto(double x, double y);
   void DriveSlowAndSnapForHanging (frc::Joystick *pilot);

@@ -19,6 +19,7 @@ AutonomousController::AutonomousController (DriveSystem *drive, Shooter *shooter
 #ifndef SUMMER
   mChooser.AddOption(kAutoNameDriveOnly, kAutoNameDriveOnly);
   mChooser.AddOption(kAutoNameDriveAndShoot, kAutoNameDriveAndShoot);
+  mChooser.AddOption(kAutoNameDriveAndBlind, kAutoNameDriveAndBlind);
   mChooser.AddOption(kAutoNameJustInit, kAutoNameJustInit);
 #endif
 
@@ -47,17 +48,17 @@ void AutonomousController::AutonomousInit() {
   mAutoSelected = mChooser.GetSelected();
   mAutoSelectedOptionsDirection = mChooserOptionsDirection.GetSelected();
   mAutoSelectedOptionsWait = mChooserOptionsWait.GetSelected();
+  bool doesSomething = false;
   if (mAutoSelected == kAutoNameDemoDriving) {
-      frc::SmartDashboard::PutBoolean("Auto Does Something", true);
+    doesSomething = true;
   } else if (mAutoSelected == kAutoNameDriveOnly) {
-      frc::SmartDashboard::PutBoolean("Auto Does Something", true);
+    doesSomething = true;
   } else if (mAutoSelected == kAutoNameDriveAndShoot) {
-      frc::SmartDashboard::PutBoolean("Auto Does Something", true);
-  } else if (mAutoSelected == kAutoNameJustInit) {
-      frc::SmartDashboard::PutBoolean("Auto Does Something", false);
-  } else {
-      frc::SmartDashboard::PutBoolean("Auto Does Something", false);
+    doesSomething = true;
+  } else if (mAutoSelected == kAutoNameDriveAndBlind) {
+    doesSomething = true;
   }
+  frc::SmartDashboard::PutBoolean("Auto Does Something", doesSomething);
   mDOSAutoState = kDOSBegin; 
   std::cout << "auto init: " << mAutoSelected << std::endl;
 
@@ -91,6 +92,45 @@ void AutonomousController::DriveOnly() {
 }
 
 void AutonomousController::DriveAndShoot() {
+  bool shooterReady = false;
+  switch (mDASAutoState) {
+    default:
+    case kDASBegin:
+      mDASAutoState = kDASDriving;
+      break;
+    case kDASDriving:
+      if (mAutoSelectedOptionsDirection == kAutoOptionDirStraight) {
+        mDrive->DriveSlowForAuto(0, -1);
+      } else if (mAutoSelectedOptionsDirection == kAutoOptionDirLeft) {
+        mDrive->DriveSlowForAuto(-0.7071, -0.7071); // drive at 45 degrees
+      } else if (mAutoSelectedOptionsDirection == kAutoOptionDirRight) {
+        mDrive->DriveSlowForAuto(0.7071, -0.7071); // drive at 45 degrees
+      }
+      if (mTimer.Get() > kAutoDriveTime) {
+        mDASAutoState = kDASReadying;
+      }
+      break;
+    case kDASReadying:
+      mShooter->CheckLimelight();
+      mDrive->StopMotor();
+      mDASAutoState = kDASShooting;
+      break;
+    case kDASShooting:
+      mDrive->RotateToTarget();
+      mShooter->Shoot(kEBOShortRange, mDrive->mTargetingState);
+      if (mTimer.Get() > kAutoShootTimeEnd) {
+        mDASAutoState = kDASCompleted;
+      }
+      break;
+    case kDASCompleted:
+      mDrive->StopMotor();
+      mShooter->Idle();
+      mFeeder->StopFeedingCargo();
+      break;    
+  }
+}
+
+void AutonomousController::DriveAndBlind() {
   switch (mDASAutoState) {
     default:
     case kDASBegin:
@@ -129,10 +169,10 @@ void AutonomousController::DriveAndShoot() {
       mDrive->StopMotor();
       mShooter->Idle();
       mFeeder->StopFeedingCargo();
+      frc::SmartDashboard::PutBoolean("Auto Complete", true);
       break;    
   }
 }
-
 
 // void AutonomousController::DriveTurnAround() {
 //   bool turningDone = false; bool drivingDone = false;
@@ -191,6 +231,8 @@ void AutonomousController::DriveAndShoot() {
 void AutonomousController::AutonomousPeriodic() {
   if (mAutoSelected == kAutoNameDriveOnly) {
     DriveOnly();
+  } else if (mAutoSelected == kAutoNameDriveAndBlind) {
+    DriveAndBlind();
   } else if (mAutoSelected == kAutoNameDriveAndShoot) {
     DriveAndShoot();
   } else if (mAutoSelected == kAutoNameDemoDriving) {
