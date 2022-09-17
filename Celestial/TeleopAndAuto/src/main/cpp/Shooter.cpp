@@ -200,6 +200,7 @@ bool Shooter::ReadyShooter(ElevationButtonOption option) {
     case kEBOManual:
       default:
       // for now permit dashboard widget to control speed
+      frc::SmartDashboard::PutNumber("Target Range", -1); // range is N/A
       mMotorOutVelocity = frc::SmartDashboard::GetNumber("Shooter Speed Low Target", 0);
       mPortShooter.Set(ControlMode::Velocity, mMotorOutVelocity);
       double actualVelocity = mPortShooter.GetSelectedSensorVelocity();

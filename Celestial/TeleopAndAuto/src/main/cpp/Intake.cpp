@@ -47,15 +47,15 @@ void Intake::TeleopPeriodic (frc::Joystick *pilot, bool ballAtFeeder, RaspPi *rP
 #else
 
   bool deploy = pilot->GetRawButton(kButtonIntakeDeploy); // for logitech was: pilot->GetRawButton(8) || pilot->GetRawButton(7);
-  // bool autoIntake = pilot->GetRawButton(kButtonIntakeAuto);
-  // frc::SmartDashboard::PutBoolean("Auto Fetch", autoIntake);
+  bool autoIntake = pilot->GetRawButton(kButtonIntakeAuto);
+  frc::SmartDashboard::PutBoolean("Auto Fetch", autoIntake);
 
   if (deploy) {
     // mSolenoid.Set(frc::DoubleSolenoid::kReverse);
     // mRoller.Set(kIntakeSpeed);
     Deploy();
-  // } else if (autoIntake) {
-  //   FetchBall(ballAtFeeder, rPi);
+  } else if (autoIntake) {
+    FetchBall(ballAtFeeder, rPi);
   } else {
     // mRoller.Set(0.0);
     // mSolenoid.Set(frc::DoubleSolenoid::kForward);
@@ -226,11 +226,11 @@ void Intake::FetchBall (bool ballAtFeeder, RaspPi *rPi) {
 
 void Intake::FetchBall (bool ballAtFeeder, RaspPi *rPi) {
   rPi->CheckForBall();
-  // frc::SmartDashboard::PutBoolean("Ball Ahead", rPi->mBallAhead);
+  frc::SmartDashboard::PutBoolean("Ball Ahead", rPi->mBallAhead);
   switch (mFetchState) {
     default:
     case kFBSWaitingForBall:
-      Retract();
+      Deploy();
       // check ML for ball close enough
       if (rPi->mBallAhead) {
         mFetchState = kFBSBallAhead;

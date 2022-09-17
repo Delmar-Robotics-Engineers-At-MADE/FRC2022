@@ -18,7 +18,7 @@ const static double kItunedLimelight = 0.0;
 const static double kDtunedLimelight = 0.0;
 const static double kPIDToleranceLimeLight = 3.0;
 
-const static double kPtunedRaspPi= 0.1;
+const static double kPtunedRaspPi= 0.3;
 const static double kItunedRaspPi = 0.0;
 const static double kDtunedRaspPi = 0.0;
 const static double kPIDToleranceRaspPi = 0.05;
@@ -242,7 +242,7 @@ void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, 
       (mIntake->mFetchState == kFBSBallAhead || mIntake->mFetchState == kFBSBallGone);
 
   bool fieldRelative = (pilot->GetZ() > 0.5);
-  frc::SmartDashboard::PutBoolean("Field Relative", fieldRelative);
+  frc::SmartDashboard::PutBoolean("Robot Relative", !fieldRelative);
 
   if (shooting) {
     // std::cout << "drivesys: shooting" << std::endl;
@@ -279,7 +279,7 @@ void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, 
       angle = currHeading;   // for field relative
     }
 
-    if (pilot->GetRawButton(kButtonIntakeAuto) && pilot->GetRawButton(kButtonDriveFieldReset)) { // logitech: 6 and 4
+    if (/*pilot->GetRawButton(kButtonIntakeAuto) &&*/ pilot->GetRawButton(kButtonDriveFieldReset)) { // logitech: 6 and 4
       mAHRS->ZeroYaw();   // use current robot orientation as field forward
     } else if (driveSlowly) { // drive slowly
       MyDriveCartesian(y*kSlowSpeedMultiplier, -x*kSlowSpeedMultiplier, rotateRate, angle);
@@ -377,7 +377,7 @@ void DriveSystem::RobotInit(Shooter *shooter, Intake *intake,
   // frc::SmartDashboard::PutData("Rear Right", pidRR);  // dashboard should be able to change values
   
   // frc::SmartDashboard::PutData("Gyro PID", mPIDControllerGyro);
-  // frc::SmartDashboard::PutData("RPi PID", mPIDControllerRaspPi);
+  frc::SmartDashboard::PutData("RPi PID", mPIDControllerRaspPi);
 
   // Spark Max stuff
   SetPIDValues (pidFL);
@@ -412,7 +412,7 @@ void DriveSystem::RepeatableInit() {
 
 void DriveSystem::RobotPeriodic() {
   // for debugging
-  
+
   // frc::SmartDashboard::PutNumber("Heading", mAHRS->GetAngle());
 
   // rev::ColorSensorV3::RawColor rawColor = mColorSensor.GetRawColor();
