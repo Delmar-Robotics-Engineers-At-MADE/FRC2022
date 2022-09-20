@@ -5,6 +5,7 @@
 // #define SUMMER
 
 static const double kFeederSpeed = 0.9;
+static const double kReverseFeederSpeed = -0.4;
 
 bool Feeder::CargoAvailable() {
   return !mEyeFeeder.Get(); // after mods to funnel, added reflective tape and inverted
@@ -18,6 +19,10 @@ void Feeder::FeedCargo() {
     frc::SmartDashboard::PutBoolean("Feeding Cargo", true);
     mFeeder.Set(kFeederSpeed);
   }
+}
+
+void Feeder::ReverseFeed() {
+  mFeeder.Set(kReverseFeederSpeed);
 }
 
 void Feeder::StopFeedingCargo() {

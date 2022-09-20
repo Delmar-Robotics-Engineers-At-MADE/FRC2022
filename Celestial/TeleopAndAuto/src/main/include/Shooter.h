@@ -11,6 +11,8 @@
 
 static const double kShooterSpeedForAuto = 13300; // was 14000
 static const double kShooterSpeedForBlindShot = 13300; 
+static const double kShooterSpeedForDangerClose = 11000;
+static const double kExpelBallSpeed = -5000;  // reverse!
 
 enum ShooterState {
   kShooterUnknownState = 0,
@@ -97,6 +99,7 @@ public:
   void ShootForAuto();
   void AutonomousInit();
   void BlindShot(frc::Joystick *copilot);
+  void ExpelBall ();
   void DemoReturnBall(bool returning);
 
 };

@@ -92,7 +92,7 @@ void AutonomousController::DriveOnly() {
 }
 
 void AutonomousController::DriveAndShoot() {
-  bool shooterReady = false;
+  // not waiting for ready, just using timer instead... bool shooterReady = false;
   switch (mDASAutoState) {
     default:
     case kDASBegin:
@@ -117,7 +117,7 @@ void AutonomousController::DriveAndShoot() {
       break;
     case kDASShooting:
       mDrive->RotateToTarget();
-      mShooter->Shoot(kEBOShortRange, mDrive->mTargetingState);
+      mShooter->Shoot(kEBOLongOrMidRange, mDrive->mTargetingState);
       if (mTimer.Get() > kAutoShootTimeEnd) {
         mDASAutoState = kDASCompleted;
       }

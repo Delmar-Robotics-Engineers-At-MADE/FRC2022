@@ -22,6 +22,7 @@ private:
 public:
   bool CargoAvailable();
   void FeedCargo();
+  void ReverseFeed();
   void StopFeedingCargo();
   void ManualFeed (frc::Joystick *pilot);
   void TeleopPeriodic (Intake *intake);

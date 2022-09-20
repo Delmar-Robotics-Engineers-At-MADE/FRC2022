@@ -12,7 +12,7 @@ static const int kButtonShooterLong = 2; // was 4 in 2022
 
 enum ElevationButtonOption {
   kEBOLongOrMidRange = 0,
-  kEBOShortRange,
+  kEBODangerClose,
   kEBOManual
 };
 

@@ -156,7 +156,7 @@ bool FalconSpeedInRange(double speed) {
 TargetRange CalcShortMidLongRange(ElevationButtonOption option, double d){
   TargetRange result = kTRShort;
   switch (option) {
-  case kEBOShortRange:
+  case kEBODangerClose:
     result = kTRShort;
     break;
   default:
@@ -178,10 +178,12 @@ bool Shooter::ReadyShooter(ElevationButtonOption option) {
   TargetRange shortMidLong = CalcShortMidLongRange(option, mTargetDistance);
   switch (option) {
     case kEBOLongOrMidRange:
-    case kEBOShortRange:
-      if (mTargetSeen) {
+    case kEBODangerClose:
+      if (mTargetSeen || option == kEBODangerClose) { // ok to shoot without target up close
         bool elevationReady = mElevator.Elevate(shortMidLong, mTargetDistance);
-        double speedTarget = CalcHighTargetSpeed(shortMidLong, mTargetDistance);
+        double speedTarget = 0.0;
+        if (option == kEBODangerClose) {speedTarget = kShooterSpeedForDangerClose;}
+        else {speedTarget = CalcHighTargetSpeed(shortMidLong, mTargetDistance);}
         double actualSpeed = mPortShooter.GetSelectedSensorVelocity();
         double pidError = 0.0;
         frc::SmartDashboard::PutNumber("Shooter V target", speedTarget);
@@ -212,7 +214,6 @@ bool Shooter::ReadyShooter(ElevationButtonOption option) {
 }
 
 void Shooter::ShootForAuto() {
-  // mFeeder.Set(kFeederSpeed);  // change to FeedCargo() eventually
   mFeeder->FeedCargo();
 }
 
@@ -235,7 +236,7 @@ void Shooter::Shoot (ElevationButtonOption option, DriveSysTargetingState driveS
     case kRotatingToTarget:
       mFeeder->StopFeedingCargo();
       // drive system has access to state info, and will know to rotate
-      onTarget = (driveState == kDriveOnTarget);
+      onTarget = ((driveState == kDriveOnTarget) || (option == kEBODangerClose)); // can't see target so close; shoot anyway
       shooterReady = ReadyShooter(option);
       frc::SmartDashboard::PutBoolean("On Target", onTarget);
       frc::SmartDashboard::PutBoolean("Shooter Ready", shooterReady);
@@ -261,14 +262,20 @@ void Shooter::Idle(){
   mPortShooter.Set(ControlMode::Velocity, kRollerIdleSpeed);
 }
 
+void Shooter::ExpelBall (){
+  mFeeder->ReverseFeed();
+  mPortShooter.Set(ControlMode::Velocity, kExpelBallSpeed);
+}
+
 
 void Shooter::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, 
                               DriveSysTargetingState driveState){
   mPhi = frc::SmartDashboard::GetNumber("Phi", mPhi); // angle of limelight from vertical
   // mH2 = frc::SmartDashboard::GetNumber("H2", mH2); // height of target above limelight
   bool shootLongRange = copilot->GetRawButton(kButtonShooterLong);
-  bool shootShortRange = copilot->GetRawButton(kButtonShooterShort);
   bool shootBlind = copilot->GetRawButton(kButtonShooterBlind);
+  bool shootShortRange = copilot->GetRawButton(kButtonShooterShort);
+  bool expelBall = (copilot->GetPOV() == 0);
 
 #ifdef SUMMER
   // monitor intake's summer demo mode, and shoot if necessary
@@ -281,7 +288,7 @@ void Shooter::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot,
     mSpeedMultiplier = frc::SmartDashboard::GetNumber("Shooter Boost", mSpeedMultiplier);
     TurnLightOnOrOff(true);
     CheckLimelight();
-    ElevationButtonOption option = shootLongRange ? kEBOLongOrMidRange : kEBOShortRange;
+    ElevationButtonOption option = shootLongRange ? kEBOLongOrMidRange : kEBODangerClose;
     Shoot(option, driveState);
     // std::cout << "shooter state" << mState << std::endl;
   } else if (shootBlind) {
@@ -289,6 +296,8 @@ void Shooter::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot,
     CheckLimelight();  // to populate numbers in dashboard; not used for blind shot
     // for now, do blind shot
     BlindShot(copilot);
+  } else if (expelBall) {
+    ExpelBall();
   } else { // no shooter buttons pressed
     TurnLightOnOrOff(false);
     Idle();
