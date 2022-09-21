@@ -97,6 +97,8 @@ private:
   rev::SparkMaxPIDController *mPIDRearLeft  ;
   rev::SparkMaxPIDController *mPIDFrontRight;
   rev::SparkMaxPIDController *mPIDRearRight ;
+
+  rev::SparkMaxRelativeEncoder *mEncoderFrontRight;
   
   SummerDemoDriveStates mDemoDriveState = kSDDUnknownState;
 

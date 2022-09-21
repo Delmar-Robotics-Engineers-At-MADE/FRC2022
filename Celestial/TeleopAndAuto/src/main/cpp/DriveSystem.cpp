@@ -185,10 +185,17 @@ void DriveSystem::MyDriveCartesian(double ySpeed, double xSpeed, double zRotatio
   mPIDRearLeft->SetReference(rearLeft*kMaxRPM, rev::ControlType::kVelocity); // velocity in RPM
   mPIDRearRight->SetReference(rearRight*kMaxRPM, rev::ControlType::kVelocity); // velocity in RPM
   Feed();
-  // frc::SmartDashboard::PutNumber("FL", frontLeft*kMaxRPM);
-  // frc::SmartDashboard::PutNumber("FR", frontRight*kMaxRPM);
-  // frc::SmartDashboard::PutNumber("RL", rearLeft*kMaxRPM);
-  // frc::SmartDashboard::PutNumber("RR", rearRight*kMaxRPM);
+  frc::SmartDashboard::PutNumber("FL", frontLeft*kMaxRPM);
+  frc::SmartDashboard::PutNumber("FR", frontRight*kMaxRPM);
+  frc::SmartDashboard::PutNumber("RL", rearLeft*kMaxRPM);
+  frc::SmartDashboard::PutNumber("RR", rearRight*kMaxRPM);
+
+  // front right motor has been problematic so check it
+  double frActualV = mEncoderFrontRight->GetVelocity()*60;  // 60 because RPM vs RPS
+  // bool frCheck = (abs(frActualV - frontRight*kMaxRPM)); // error greater than 25%
+  frc::SmartDashboard::PutNumber("FR Actual V", frActualV);
+  // frc::SmartDashboard::PutBoolean("FR OK", frCheck);
+
 }
 
 
@@ -353,6 +360,8 @@ void DriveSystem::RobotInit(Shooter *shooter, Intake *intake,
   mPIDRearLeft   = pidRL;
   mPIDFrontRight = pidFR;
   mPIDRearRight  = pidRR;
+
+  mEncoderFrontRight = encoderFR;
 
   // PID for limelight
   mPIDControllerLimelight = new frc2::PIDController (kPtunedLimelight, kItunedLimelight, kDtunedLimelight);
