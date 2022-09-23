@@ -80,7 +80,7 @@ public:
   double mTargetAngleHorizontal = 0.0;
   double mTargetAngleVertical = 0.0;
   double mTargetDistance = 0.0;
-  double mSpeedMultiplier = 1.05;  // before GRC 2022, a little boost is needed
+  double mSpeedMultiplier = 1.0;  // before GRC 2022, a little boost is needed
 
   Shooter (); // constructor
   void TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, DriveSysTargetingState driveState);

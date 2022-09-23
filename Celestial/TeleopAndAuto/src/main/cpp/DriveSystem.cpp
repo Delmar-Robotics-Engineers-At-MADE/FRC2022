@@ -25,6 +25,8 @@ const static double kPIDToleranceRaspPi = 0.05;
 
 static const int kButtonDriveFieldReset = 3;
 
+static const int kLoggingFrequency = 100; // log every Nth time through loop
+
 // from SysID tool
 constexpr auto kSysIdkS = 0.14615_V;
 constexpr auto kSysIdkV = 0.97133_V * 1_s / 1_tr;  // 12_V / kShooterFreeRPS;
@@ -195,6 +197,15 @@ void DriveSystem::MyDriveCartesian(double ySpeed, double xSpeed, double zRotatio
   // bool frCheck = (abs(frActualV - frontRight*kMaxRPM)); // error greater than 25%
   frc::SmartDashboard::PutNumber("FR Actual V", frActualV);
   // frc::SmartDashboard::PutBoolean("FR OK", frCheck);
+  if (mLoggingEnable) {
+    if (mLoggingCount == kLoggingFrequency) {
+      mLoggingCount = 0;
+      mLogFRVSetpoint.Append(frontRight*kMaxRPM);
+      mLogFRVActual.Append(frActualV);
+    } else {
+      mLoggingCount++;
+    }
+  }
 
 }
 
@@ -412,12 +423,20 @@ void DriveSystem::RobotInit(Shooter *shooter, Intake *intake,
 
 void DriveSystem::DoOnceInit()  {
 
+  // logging
+  frc::DataLogManager::Start();
+  wpi::log::DataLog& log = frc::DataLogManager::GetLog();
+  mLogFRVSetpoint = wpi::log::DoubleLogEntry(log, "/8077/FRVSetpoint");
+  mLogFRVActual = wpi::log::DoubleLogEntry(log, "/8077/FRVActual");
+
 }
 
 void DriveSystem::RepeatableInit() {
   // do this whenever we start either auto or teleop
   mAHRS->ZeroYaw();   // use current robot orientation as field forward
   mPIDControllerGyro->SetSetpoint(180.0);
+  frc::SmartDashboard::PutBoolean("Logging", mLoggingEnable);
+  mLoggingEnable = frc::SmartDashboard::GetBoolean("Logging", mLoggingEnable);
 }
 
 void DriveSystem::RobotPeriodic() {

@@ -93,7 +93,7 @@ void AutonomousController::DriveOnly() {
 
 void AutonomousController::DriveAndShoot() {
   // not waiting for ready, just using timer instead... bool shooterReady = false;
-  frc::SmartDashboard::PutNumber("Aut State", mDASAutoState);
+  // frc::SmartDashboard::PutNumber("Aut State", mDASAutoState);
   switch (mDASAutoState) {
     default:
     case kDASBegin:
@@ -112,6 +112,7 @@ void AutonomousController::DriveAndShoot() {
       }
       break;
     case kDASReadying:
+      mShooter->TurnLightOnOrOff(true);
       mShooter->CheckLimelight();
       mDrive->StopMotor();
       mDASAutoState = kDASShooting;
@@ -125,6 +126,7 @@ void AutonomousController::DriveAndShoot() {
       }
       break;
     case kDASCompleted:
+      mShooter->TurnLightOnOrOff(false);
       mDrive->StopMotor();
       mShooter->Idle();
       mFeeder->StopFeedingCargo();

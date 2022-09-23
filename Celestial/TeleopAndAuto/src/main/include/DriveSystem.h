@@ -20,6 +20,8 @@
 #include <RaspPi.h>
 #include <Intake.h>
 #include <frc/controller/SimpleMotorFeedforward.h>
+#include "frc/DataLogManager.h"
+#include "wpi/DataLog.h"
 
 
 enum SummerDemoDriveStates {
@@ -107,5 +109,13 @@ private:
   
   void CheckColorForAllClear(bool isWhite, bool isRed, bool isBlue);
   void SetPIDValues (rev::SparkMaxPIDController *pidController);
+
+  // for logging
+  bool mLoggingEnable = false;
+  int mLoggingCount = 0;
+  wpi::log::DoubleLogEntry mLogFRTemperature;
+  wpi::log::DoubleLogEntry mLogFRCurrent;
+  wpi::log::DoubleLogEntry mLogFRVSetpoint;
+  wpi::log::DoubleLogEntry mLogFRVActual;
 
 };
