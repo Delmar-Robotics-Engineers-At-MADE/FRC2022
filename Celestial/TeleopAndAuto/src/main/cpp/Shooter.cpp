@@ -91,18 +91,22 @@ void Shooter::CheckLimelight() {
 }
 
 double CalcHighTargetSpeedShortRange(double d){
-  double result = (28.6096 * d * d) - (215.259 * d) + 10589.2;
+  // before limelight moved: double result = (28.6096 * d * d) - (215.259 * d) + 10589.2;
+  // after: 19765.4 - 2619.06 x + 189.107 x^2
+  //   https://www.wolframalpha.com/input?i=quadratic+fit+%7B6.1%2C10857.672%7D%2C%7B8.5%2C11367.825%7D%2C%7B7.8%2C10648%7D%2C%7B10%2C12446%7D%2C
+  double result = 19765.4 - 2619.06 * d + 189.107 * d * d;
   return result;
 }
 
 double CalcHighTargetSpeedMidRange(double d){
 
-  // quadratic
-  double result = (-3.78142 * d * d) + (405.464 * d) + 7292.46;
-
+  // quadratic before limelight moved
+  // double result = (-3.78142 * d * d) + (405.464 * d) + 7292.46;
   // cubic
   // double result = (-14.0222 * d * d * d) + (716.558 * d * d) - (11712.6 * d) + 74009.4;
-
+  // after: 8966.86 + 199.429 x + 5.43823 x^2
+  //   https://www.wolframalpha.com/input?i=quadratic+fit+%7B17.6%2C14660.667%7D%2C%7B12.8%2C12712.791%7D%2C%7B14%2C12573.6555%7D%2C%7B15.7%2C12991.062%7D%2C%7B18.1%2C14435.652%7D%2C%7B21.3%2C15553.142%7D%2C%7B15%2C13130.035%7D%2C
+  double result = 8966.86 + 199.429 * d + 5.43823 * d * d;
   return result;
 }
 
@@ -110,10 +114,11 @@ double CalcHighTargetSpeedLongRange(double d){
 
   // quadratic
   // double result = (9.97246 * d * d) - (315.143 * d) + 16516.9;
-
-  // cubic
-  double result = (9.65017 * d * d * d) - (611.192 * d * d) + (12903 * d) - 76437.9;
-
+  // cubic before limelight moved
+  // double result = (9.65017 * d * d * d) - (611.192 * d * d) + (12903 * d) - 76437.9;
+  // after:  18780.6 - 403.236 x + 12.2417 x^2
+  //   https://www.wolframalpha.com/input?i=quadratic+fit+%7B25.1%2C16427.708%7D%2C%7B24.2%2C16184.773%7D%2C%7B22.1%2C15747.49%7D%2C%7B19.1%2C15747.49%7D%2C%7B17.7%2C15358.794%7D%2C%7B21.3%2C15795%7D%2C%7B22.5%2C15824%7D
+  double result = 18780.6 - 403.236 * d + 12.2417 * d * d;
   return result;
 }
 
