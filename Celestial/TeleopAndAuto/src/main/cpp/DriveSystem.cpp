@@ -321,12 +321,26 @@ void DriveSystem::SetPIDValues (rev::SparkMaxPIDController *pidController) {
   // auto feedForwardV = mFeedForwardCalculator.Calculate(averageSetpointRPS, maxRPSPS);
   // auto feedForward = feedForwardV * maxRPS / maxVoltage;
   // std::cout << "setting Spark Max FF: " << feedForward.value() << std::endl;
-  pidController->SetP     (kPtunedDrive );
-  pidController->SetI     (kItunedDrive );
-  pidController->SetD     (kDtunedDrive );
-  pidController->SetIZone (kIZtunedDrive);
-  pidController->SetFF    (kFFtunedDrive);  // takes a gain, which is unitless, was feedForward.value()
-  pidController->SetOutputRange(kMinOutputDrive, kMaxOutputDrive);
+
+  // retry if any of these do not succeed, especially P
+  for (int i = 1; i <= 5; i++) {
+    pidController->SetP     (kPtunedDrive );
+    pidController->SetI     (kItunedDrive );
+    pidController->SetD     (kDtunedDrive );
+    pidController->SetIZone (kIZtunedDrive);
+    pidController->SetFF    (kFFtunedDrive);  // takes a gain, which is unitless, was feedForward.value()
+    pidController->SetOutputRange(kMinOutputDrive, kMaxOutputDrive);
+    
+    sleep(0.050); // wait for set to stick
+    double pcheck = pidController->GetP();
+    if (pcheck/kPtunedDrive < 1.1) { // good!  Don't need to retry
+      std::cout << "Drive motor P set to " << pcheck << " on try " << i << std::endl;
+      break;
+    } else { // didn't take?
+      std::cout << "Drive motor P NOT YET SET, is still " << pcheck << " on try " << i << ", should be " << kPtunedDrive << std::endl;
+    }
+  }
+
 }
 
 void SetEncoderConversion (rev::SparkMaxRelativeEncoder *encoder) {
@@ -359,11 +373,6 @@ void DriveSystem::RobotInit(Shooter *shooter, Intake *intake,
   mRearLeft   = rl;
   mFrontRight = fr;
   mRearRight  = rr;
-
-  mFrontLeft ->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
-  mRearLeft  ->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
-  mFrontRight->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
-  mRearRight ->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
 
   //m_deadband = 0.07; // default is 0.02;
 
@@ -400,6 +409,28 @@ void DriveSystem::RobotInit(Shooter *shooter, Intake *intake,
   frc::SmartDashboard::PutData("RPi PID", mPIDControllerRaspPi);
 
   // Spark Max stuff
+
+
+  mFrontLeft ->RestoreFactoryDefaults();
+  mRearLeft  ->RestoreFactoryDefaults();
+  mFrontRight->RestoreFactoryDefaults();
+  mRearRight ->RestoreFactoryDefaults();
+
+  mFrontRight->SetInverted(true);
+  mRearRight ->SetInverted(true);
+  mFrontLeft ->SetInverted(false);
+  mRearLeft  ->SetInverted(false);
+
+  mFrontLeft ->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+  mRearLeft  ->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+  mFrontRight->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+  mRearRight ->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
+
+  mFrontLeft ->SetSmartCurrentLimit(40);
+  mRearLeft  ->SetSmartCurrentLimit(40);
+  mFrontRight->SetSmartCurrentLimit(40);
+  mRearRight ->SetSmartCurrentLimit(40);
+
   SetPIDValues (pidFL);
   SetPIDValues (pidRL);
   SetPIDValues (pidFR);
@@ -428,14 +459,13 @@ void DriveSystem::DoOnceInit()  {
   wpi::log::DataLog& log = frc::DataLogManager::GetLog();
   mLogFRVSetpoint = wpi::log::DoubleLogEntry(log, "/8077/FRVSetpoint");
   mLogFRVActual = wpi::log::DoubleLogEntry(log, "/8077/FRVActual");
-
+  frc::SmartDashboard::PutBoolean("Logging", mLoggingEnable);
 }
 
 void DriveSystem::RepeatableInit() {
   // do this whenever we start either auto or teleop
   mAHRS->ZeroYaw();   // use current robot orientation as field forward
   mPIDControllerGyro->SetSetpoint(180.0);
-  frc::SmartDashboard::PutBoolean("Logging", mLoggingEnable);
   mLoggingEnable = frc::SmartDashboard::GetBoolean("Logging", mLoggingEnable);
 }
 
