@@ -55,7 +55,7 @@ const double kMaxRPM = 5700;
 const static double kSlowSpeedMultiplier = 0.1;
 const static double kAutoSpeedMultiplier = 0.05;
 const static double kNormalSpeedMultiplierY = 0.1;
-const static double kNormalSpeedMultiplierX = 0.2;
+const static double kNormalSpeedMultiplierX = 0.3;
 const static double kNormalYawMultiplier = 0.1;
 //const static double kDemoYawMultiplier = 0.25;
 // const static double kDemoSpeedMultX = 0.1;
@@ -426,10 +426,10 @@ void DriveSystem::RobotInit(Shooter *shooter, Intake *intake,
   mFrontRight->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
   mRearRight ->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
 
-  mFrontLeft ->SetSmartCurrentLimit(40);
-  mRearLeft  ->SetSmartCurrentLimit(40);
-  mFrontRight->SetSmartCurrentLimit(40);
-  mRearRight ->SetSmartCurrentLimit(40);
+  mFrontLeft ->SetSmartCurrentLimit(45);
+  mRearLeft  ->SetSmartCurrentLimit(45);
+  mFrontRight->SetSmartCurrentLimit(45);
+  mRearRight ->SetSmartCurrentLimit(45);
 
   SetPIDValues (pidFL);
   SetPIDValues (pidRL);
