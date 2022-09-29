@@ -249,7 +249,7 @@
               "Colors/Color when false": "#8B0000FF"
             }
           },
-          "7,0": {
+          "5,0": {
             "size": [
               2,
               1
@@ -260,7 +260,7 @@
               "_title": "A Modes"
             }
           },
-          "11,0": {
+          "9,0": {
             "size": [
               1,
               1
@@ -297,7 +297,7 @@
               "Colors/Color when false": "#8B0000FF"
             }
           },
-          "9,0": {
+          "7,0": {
             "size": [
               1,
               1
@@ -308,7 +308,7 @@
               "_title": "A Move?"
             }
           },
-          "10,0": {
+          "8,0": {
             "size": [
               1,
               1
@@ -437,7 +437,7 @@
               "Colors/Color when false": "#8B0000FF"
             }
           },
-          "9,4": {
+          "8,5": {
             "size": [
               1,
               1
@@ -450,7 +450,7 @@
               "Colors/Color when false": "#8B0000FF"
             }
           },
-          "10,4": {
+          "9,5": {
             "size": [
               1,
               1
@@ -496,7 +496,7 @@
               "_title": "Lck Hd -180"
             }
           },
-          "10,3": {
+          "6,4": {
             "size": [
               1,
               1
@@ -508,6 +508,72 @@
               "Range/Min": -1.0,
               "Range/Max": 2.0,
               "Visuals/Show value": true
+            }
+          },
+          "10,0": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/RL",
+              "_title": "RL"
+            }
+          },
+          "10,1": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/RR",
+              "_title": "RR"
+            }
+          },
+          "10,2": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/FL",
+              "_title": "FL"
+            }
+          },
+          "10,3": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/FR",
+              "_title": "FR"
+            }
+          },
+          "10,4": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Text View",
+              "_source0": "network_table:///SmartDashboard/FR Actual V",
+              "_title": "FR Actual V"
+            }
+          },
+          "5,4": {
+            "size": [
+              1,
+              1
+            ],
+            "content": {
+              "_type": "Toggle Switch",
+              "_source0": "network_table:///SmartDashboard/Logging",
+              "_title": "Logging"
             }
           }
         }
@@ -685,7 +751,7 @@
   "windowGeometry": {
     "x": -7.0,
     "y": 0.0,
-    "width": 1666.0,
+    "width": 1394.0,
     "height": 895.0
   }
 }
