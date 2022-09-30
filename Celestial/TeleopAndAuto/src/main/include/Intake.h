@@ -9,7 +9,9 @@
 #include <frc/Encoder.h>
 #include <frc/controller/PIDController.h>
 
-#ifdef SUMMER
+#define FALL
+
+#if defined(SUMMER)
 
 enum FetchBallStates {
 		kFBSUnknownState = 0,
@@ -23,7 +25,20 @@ enum FetchBallStates {
     kFBSShooting
 	};
 
+#elif defined(FALL)
+
+enum FetchBallStates {
+		kFBSUnknownState = 0,
+    kFBSWaitingForBall,
+    kFBSBallAhead,
+    kFBSBallGone,
+		kFBSBallAtFeeder,
+    kFBSShooting
+	};
+
 #else
+
+junk
 
 enum FetchBallStates {
 		kFBSUnknownState = 0,

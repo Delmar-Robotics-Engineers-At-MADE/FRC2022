@@ -10,7 +10,7 @@
 #include <Intake.h>
 
 static const double kShooterSpeedForAuto = 12000; // was 14000 then 13300
-static const double kShooterSpeedForBlindShot = 13300; 
+static const double kShooterSpeedForBlindShot = 8000; 
 static const double kShooterSpeedForDangerClose = 11000;
 static const double kExpelBallSpeed = -5000;  // reverse!
 

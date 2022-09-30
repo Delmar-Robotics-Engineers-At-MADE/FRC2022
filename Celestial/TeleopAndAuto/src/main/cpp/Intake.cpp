@@ -4,6 +4,7 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 
 // #define SUMMER
+#define FALL
 
 static const double kIntakeSpeedTuned = 3500; // before Falcon, was -14000; // before encoder was 0.6;
 
@@ -31,7 +32,8 @@ void Intake::TeleopInit() {
 
 void Intake::TeleopPeriodic (frc::Joystick *pilot, bool ballAtFeeder, RaspPi *rPi) {
 
-#ifdef SUMMER
+#if defined(SUMMER)
+
   mEnableSummerDemo = frc::SmartDashboard::GetBoolean("Ball Demo", mEnableSummerDemo);
   mEnableSummerDemoShoot = frc::SmartDashboard::GetBoolean("Also Shoot", mEnableSummerDemoShoot);
   mEnableSummerDemoRotateShoot = frc::SmartDashboard::GetBoolean("Also Rotate", mEnableSummerDemoRotateShoot);
@@ -42,6 +44,23 @@ void Intake::TeleopPeriodic (frc::Joystick *pilot, bool ballAtFeeder, RaspPi *rP
     FetchBall(ballAtFeeder, rPi);
   } else {
     Retract();
+  }
+
+#elif defined(FALL)
+
+  bool autoIntake = (pilot->GetZ() > 0.5);
+  frc::SmartDashboard::PutBoolean("Auto Fetch", autoIntake);
+  bool deploy = !autoIntake && pilot->GetRawButton(kButtonIntakeDeploy); 
+
+  if (autoIntake)
+    FetchBall(ballAtFeeder, rPi);
+  else { // not auto intake
+    mFetchState = kFBSWaitingForBall; // reset auto state
+    if (deploy) {
+      Deploy();
+    } else {
+      Retract();
+    }
   }
 
 #else
@@ -137,7 +156,7 @@ void Intake::Retract() {
   mSolenoid.Set(frc::DoubleSolenoid::kForward); // in 2022 was kReverse
 }
 
-#ifdef SUMMER 
+#if defined(SUMMER)
 
 void Intake::FetchBall (bool ballAtFeeder, RaspPi *rPi) {
   switch (mFetchState) {
@@ -220,6 +239,66 @@ void Intake::FetchBall (bool ballAtFeeder, RaspPi *rPi) {
       }
       break;
   }
+}
+
+#elif defined (FALL)
+
+void Intake::FetchBall (bool ballAtFeeder, RaspPi *rPi) {
+  rPi->CheckForBall();
+  frc::SmartDashboard::PutBoolean("Ball Ahead", rPi->mBallAhead);
+  switch (mFetchState) {
+    default:
+    case kFBSWaitingForBall:
+      Retract();
+      // check ML for ball close enough
+      if (rPi->mBallAhead) {
+        mFetchState = kFBSBallAhead;
+      } else if (ballAtFeeder) {
+        mFetchState = kFBSBallAtFeeder;
+        mTimer.Reset(); mTimer.Start(); // keep ball in feeder for period of time
+      }
+      break;
+    case kFBSBallAhead:
+      // lower intake and turn it on
+      Deploy();
+      // stay in this state until ball at feeder or ball no longer seen
+      if (ballAtFeeder) {
+        mFetchState = kFBSBallAtFeeder;
+        mTimer.Reset(); mTimer.Start(); // keep ball in feeder for period of time
+      } else if (!rPi->mBallAhead) {
+        mFetchState = kFBSBallGone;
+        mTimer.Reset(); mTimer.Start(); // use timer to smooth out ball seen/not seen flickering
+      }
+      break;
+    case kFBSBallAtFeeder:
+      Retract();
+      // if (!ballAtFeeder) {
+      //   mFetchState = kFBSWaitingForBall;
+      // }
+      // for fall, stay in this state for 2 secs, then shoot
+      if (mTimer.Get() > 2.0_s) {
+        mFetchState = kFBSShooting;
+        mTimer.Reset(); mTimer.Start(); // shoot for a period of time
+      }
+      break;
+    case kFBSBallGone:
+      // same as ball ahead for 5 secs
+      Deploy();
+      if (ballAtFeeder) {
+        mFetchState = kFBSBallAtFeeder;
+        mTimer.Reset(); mTimer.Start(); // keep ball in feeder for period of time
+      } else if (mTimer.Get() > 5.0_s) { // if we haven't seen a ball for 5 secs
+        mFetchState = kFBSWaitingForBall;
+      }
+      break;
+    case kFBSShooting:
+      // for fall, use blind shot, which takes a while
+      if (mTimer.Get() > 4.0_s) {
+        mFetchState = kFBSWaitingForBall;
+      }
+      break;
+  }
+  // frc::SmartDashboard::PutNumber("Fetch State", mFetchState);
 }
 
 #else

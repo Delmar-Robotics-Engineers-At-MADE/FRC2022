@@ -6,6 +6,7 @@
 #include <iostream>
 
 // #define SUMMER
+#define FALL
 
 static const double kMinTargetAreaPercent = 0.0;
 static const double kRollerIdleSpeed = 0.0;  // was 2300 for 2022 competition
@@ -205,10 +206,11 @@ bool Shooter::ReadyShooter(ElevationButtonOption option) {
       }
       break;
     case kEBOManual:
-      default:
+    default:
       // for now permit dashboard widget to control speed
       frc::SmartDashboard::PutNumber("Target Range", -1); // range is N/A
-      mMotorOutVelocity = frc::SmartDashboard::GetNumber("Shooter Speed Low Target", 0);
+      mMotorOutVelocity = frc::SmartDashboard::GetNumber("Shooter Speed Blind Shot", 0);
+      // std::cout << "shooter speed" << mMotorOutVelocity << std::endl;
       mPortShooter.Set(ControlMode::Velocity, mMotorOutVelocity);
       double actualVelocity = mPortShooter.GetSelectedSensorVelocity();
       if (abs(actualVelocity - mMotorOutVelocity) < kVelocityTolerance) {
@@ -282,10 +284,15 @@ void Shooter::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot,
   bool shootShortRange = copilot->GetRawButton(kButtonShooterShort);
   bool expelBall = (copilot->GetPOV() == 0);
 
-#ifdef SUMMER
+#if defined(SUMMER)
   // monitor intake's summer demo mode, and shoot if necessary
   if (mIntake->mFetchState == kFBSShooting) {
     shootAtLowGoal = true;
+  }
+#elif defined(FALL)  
+  // monitor intake's fall demo mode, and shoot if necessary
+  if (mIntake->mFetchState == kFBSShooting) {
+    shootBlind = true;
   }
 #endif
 
@@ -329,7 +336,7 @@ void Shooter::RobotInit(Feeder *feeder, Intake *intake) {
   frc::SmartDashboard::PutNumber("Phi", mPhi);
   // frc::SmartDashboard::PutNumber("H2", mH2);
   frc::SmartDashboard::PutNumber("Auto Shoot V", mAutoShootSpeed);
-  frc::SmartDashboard::PutNumber("Shooter Speed Low Target", mAutoShootSpeed);
+  frc::SmartDashboard::PutNumber("Shooter Speed Blind Shot", kShooterSpeedForBlindShot);
   frc::SmartDashboard::PutNumber("Shooter Boost", mSpeedMultiplier);
 
   mStarShooter.ConfigFactoryDefault();
@@ -394,8 +401,13 @@ void Shooter::AutonomousInit() {
 
 void Shooter::BlindShot(frc::Joystick *copilot) {
   bool shootButtonPressed = copilot->GetRawButton(kButtonShooterBlind);
-#ifdef SUMMER
+#if defined(SUMMER)
   // monitor intake's summer demo mode, and shoot if necessary
+  if (mIntake->mFetchState == kFBSShooting) {
+    shootButtonPressed = true;
+  }
+#elif defined (FALL)
+  // monitor intake's fall demo mode, and shoot if necessary
   if (mIntake->mFetchState == kFBSShooting) {
     shootButtonPressed = true;
   }
@@ -429,4 +441,6 @@ void Shooter::BlindShot(frc::Joystick *copilot) {
       mFeeder->StopFeedingCargo();
       break;    
   }
+  // frc::SmartDashboard::PutNumber("Shooter State", mBlindShotState);
+
 }

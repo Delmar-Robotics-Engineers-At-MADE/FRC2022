@@ -8,6 +8,7 @@
 #include <units/voltage.h>
 
 // #define SUMMER
+#define FALL
 
 const static double kPtunedGyro = 0.005;
 const static double kItunedGyro = 0.0;
@@ -210,7 +211,7 @@ void DriveSystem::MyDriveCartesian(double ySpeed, double xSpeed, double zRotatio
 }
 
 
-#ifdef SUMMER
+#if defined(SUMMER)
 
 void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, RaspPi *rPi){
   bool shooting = (copilot->GetRawButton(4) || copilot->GetRawButton(2));
@@ -249,6 +250,62 @@ void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, 
   }
 }
 
+#elif defined(FALL)
+
+void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, RaspPi *rPi){
+
+  bool trackBall = (mIntake->mFetchState == kFBSBallAhead
+                 || mIntake->mFetchState == kFBSBallGone);
+
+  bool fieldRelative = (pilot->GetZ() > 0.5);
+  bool robotRelative = !fieldRelative;
+  frc::SmartDashboard::PutBoolean("Robot Relative", robotRelative);
+  bool fallDemo = fieldRelative; // for fall demo, field relative setting is same as "enable demo"
+
+  mTargetingState = kDriveNotTargeting;
+  double x = fallDemo ? 0.0 : pilot->GetX();
+  double y = fallDemo ? 0.0 : pilot->GetY();
+  double z = fallDemo ? 0.0 : pilot->GetRawAxis(3);  // with Logitech use: GetZ();
+  bool driveSlowly = false;
+
+  // use rotation to keep robot at constant angle, unless driver is trying to spin
+  double currHeading = mAHRS->GetAngle();
+  double rotateRate = 0.0;
+  if (trackBall) { // auto intake button, so rotation goverened by rasp. pi
+    rotateRate = RotateToBall(rPi);
+    // do not update lock heading, so we will rotate back, was... mPIDControllerGyro->SetSetpoint(currHeading + 180.0); // update lock heading
+  } else if (abs(z) > kRotationDeadZone) { // driver is rotating
+    // std::cout << "driver rotating" << std::endl;
+    rotateRate = driveSlowly ? -z*kSlowSpeedMultiplier : -z*kNormalYawMultiplier;
+    mPIDControllerGyro->SetSetpoint(currHeading + 180.0); // update lock heading
+  } else { // driver not rotating, so keep robot on lock heading
+    // std::cout << "driver NOT rotating" << std::endl;
+    rotateRate = -(mPIDControllerGyro->Calculate(currHeading + 180.0));  // offset by 180 to avoid discontinuity
+    // clip rate to max rotation
+    rotateRate = std::min(kDefaultRotateToTargetRate, rotateRate);
+    rotateRate = std::max(-kDefaultRotateToTargetRate, rotateRate);
+  }
+  frc::SmartDashboard::PutNumber("Lck Hd -180", mPIDControllerGyro->GetSetpoint() - 180);
+  // frc::SmartDashboard::PutNumber("Rot Rate", rotateRate);
+
+  double angle = 0.0;      // for robot relative
+  if (fieldRelative) {
+    angle = currHeading;   // for field relative
+  }
+
+  if (/*pilot->GetRawButton(kButtonIntakeAuto) &&*/ pilot->GetRawButton(kButtonDriveFieldReset)) { // logitech: 6 and 4
+    mAHRS->ZeroYaw();   // use current robot orientation as field forward
+  } else if (driveSlowly) { // drive slowly
+    MyDriveCartesian(y*kSlowSpeedMultiplier, -x*kSlowSpeedMultiplier, rotateRate, angle);
+  // } else if (pilot->GetRawButton(2)) { // drive slowly and snap to hanging line
+  //   DriveSlowAndSnapForHanging (pilot);
+  } else {
+    // std::cout << "normal: " << y << ", " << x << std::endl;
+    MyDriveCartesian(y*kNormalSpeedMultiplierY, -x*kNormalSpeedMultiplierX, rotateRate, angle);
+  }
+  
+}
+
 #else
 
 void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, RaspPi *rPi){
@@ -270,7 +327,7 @@ void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, 
     double x = pilot->GetX();
     double y = pilot->GetY();
     double z = pilot->GetRawAxis(3);  // with Logitech use: GetZ();
-    bool driveSlowly = pilot->GetRawButton(5) || pilot->GetRawButton(6);
+    bool driveSlowly = false;
 
     // use rotation to keep robot at constant angle, unless driver is trying to spin
     double currHeading = mAHRS->GetAngle();
@@ -426,10 +483,10 @@ void DriveSystem::RobotInit(Shooter *shooter, Intake *intake,
   mFrontRight->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
   mRearRight ->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
 
-  mFrontLeft ->SetSmartCurrentLimit(45);
-  mRearLeft  ->SetSmartCurrentLimit(45);
-  mFrontRight->SetSmartCurrentLimit(45);
-  mRearRight ->SetSmartCurrentLimit(45);
+  mFrontLeft ->SetSmartCurrentLimit(50);
+  mRearLeft  ->SetSmartCurrentLimit(50);
+  mFrontRight->SetSmartCurrentLimit(50);
+  mRearRight ->SetSmartCurrentLimit(50);
 
   SetPIDValues (pidFL);
   SetPIDValues (pidRL);
