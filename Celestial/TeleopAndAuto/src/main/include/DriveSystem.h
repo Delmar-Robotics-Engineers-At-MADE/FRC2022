@@ -109,6 +109,7 @@ private:
   
   void CheckColorForAllClear(bool isWhite, bool isRed, bool isBlue);
   void SetPIDValues (rev::SparkMaxPIDController *pidController);
+  void SetLimits (rev::CANSparkMax *motor);
 
   // for logging
   bool mLoggingEnable = false;

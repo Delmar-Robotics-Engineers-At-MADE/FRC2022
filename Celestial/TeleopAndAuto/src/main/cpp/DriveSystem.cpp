@@ -26,7 +26,7 @@ const static double kPIDToleranceRaspPi = 0.05;
 
 static const int kButtonDriveFieldReset = 3;
 
-static const int kLoggingFrequency = 100; // log every Nth time through loop
+static const int kLoggingFrequency = 5; // log every Nth time through loop
 
 // from SysID tool
 constexpr auto kSysIdkS = 0.14615_V;
@@ -40,7 +40,7 @@ const static double kSysIdkD = 0;
 
 // Try this reference instead: https://github.com/REVrobotics/SPARK-MAX-Examples/blob/master/C%2B%2B/Velocity%20PID%20Control/src/main/cpp/Robot.cpp
 
-const static double kPtunedDrive = .00001; 
+const static double kPtunedDrive = .00005; 
 const static double kItunedDrive = 0.0;
 const static double kDtunedDrive = 0.0;
 const static double kIZtunedDrive = 0.0;
@@ -369,6 +369,11 @@ void DriveSystem::TeleopPeriodic (frc::Joystick *pilot, frc::Joystick *copilot, 
 
 #endif
 
+void DriveSystem::SetLimits (rev::CANSparkMax *motor) {
+  motor->SetSmartCurrentLimit(60);
+  motor->SetClosedLoopRampRate(0.5);
+}
+
 void DriveSystem::SetPIDValues (rev::SparkMaxPIDController *pidController) {
   // ref for calculating using SysID numbers: https://www.chiefdelphi.com/t/how-to-do-characterization-for-velocity-control-for-spark-max-and-neo/378990/6
   // According to Frisbeebot, mFeedForwardCalculator.Calculate returns volts
@@ -483,10 +488,10 @@ void DriveSystem::RobotInit(Shooter *shooter, Intake *intake,
   mFrontRight->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
   mRearRight ->SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
 
-  mFrontLeft ->SetSmartCurrentLimit(50);
-  mRearLeft  ->SetSmartCurrentLimit(50);
-  mFrontRight->SetSmartCurrentLimit(50);
-  mRearRight ->SetSmartCurrentLimit(50);
+  SetLimits(mFrontLeft);
+  SetLimits(mRearLeft);
+  SetLimits(mFrontRight);
+  SetLimits(mRearRight);
 
   SetPIDValues (pidFL);
   SetPIDValues (pidRL);
