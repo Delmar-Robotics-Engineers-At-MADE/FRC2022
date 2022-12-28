@@ -19,7 +19,7 @@ const static double kItunedLimelight = 0.0;
 const static double kDtunedLimelight = 0.0;
 const static double kPIDToleranceLimeLight = 3.0;
 
-const static double kPtunedRaspPi= 0.3;
+const static double kPtunedRaspPi= 0.25;
 const static double kItunedRaspPi = 0.0;
 const static double kDtunedRaspPi = 0.0;
 const static double kPIDToleranceRaspPi = 0.05;
@@ -454,7 +454,7 @@ void DriveSystem::RobotInit(Shooter *shooter, Intake *intake,
   mPIDControllerRaspPi = new frc2::PIDController (kPtunedRaspPi, kItunedRaspPi, kDtunedRaspPi);
   mPIDControllerRaspPi->SetTolerance(kPIDToleranceRaspPi, kPIDToleranceRaspPi); // degrees
   mPIDControllerRaspPi->SetSetpoint(0.5); // always centering target
-
+  
   // PID for snap to hanging
   mPIDControllerGyro = new frc2::PIDController (kPtunedGyro, kItunedGyro, kDtunedGyro);
   mPIDControllerGyro->SetTolerance(8, 8);  // within 8 degrees of direction is considered on set point

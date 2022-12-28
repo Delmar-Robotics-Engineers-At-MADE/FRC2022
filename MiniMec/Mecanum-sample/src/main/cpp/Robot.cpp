@@ -37,6 +37,10 @@ void Robot::RepeatableInit() {
   
 }
 
+void Robot::RobotPeriodic() {
+  frc::SmartDashboard::PutNumber("Heading", mAHRS->GetAngle());
+}
+
 void Robot::TeleopInit() {
   DoOnceInit();
   RepeatableInit();

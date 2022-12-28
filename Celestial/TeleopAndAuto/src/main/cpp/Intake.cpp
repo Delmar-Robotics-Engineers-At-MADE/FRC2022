@@ -6,7 +6,7 @@
 // #define SUMMER
 #define FALL
 
-static const double kIntakeSpeedTuned = 3500; // before Falcon, was -14000; // before encoder was 0.6;
+static const double kIntakeSpeedTuned = 2800; // before Falcon, was -14000; // before encoder was 0.6;
 
 // const static double kPtuned = .0001;
 // const static double kItuned = 0.0;
